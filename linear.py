@@ -106,6 +106,8 @@ train_op = optimizer.minimize(loss_op)
 # Initializing the variables
 init = tf.global_variables_initializer()
 
+grads = tf.gradients(loss_op, X)
+
 with tf.Session() as sess:
     sess.run(init)
 
@@ -123,18 +125,25 @@ with tf.Session() as sess:
         
         ##batch_y = np.asarray([[train_set[i][0],1.0]])
         # Run optimization op (backprop) and cost op (to get loss value)
-        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
+        gradients,_, c = sess.run([grads ,train_op, loss_op], feed_dict={X: train_set_X,
                                                         Y: train_set_Y})
         if c<0.00001 :
             break
         avg_cost += c
+
+        #np.savetxt("gradients.csv", gradients, delimiter="\n", fmt = "%.32f")
+        print(gradients)
+        
         # Compute average loss
             
         # Display logs per epoch step
        # if epoch % display_step == 0:
         print("Epoch:", '%04d' % (epoch+1), "cost={:.9f}".format(c))
+
     print("Optimization Finished!")
 
+   
+#  [array([[2, 1]], dtype=int32)]
     # Test model
     pred = tf.nn.softmax(logits)  # Apply softmax to logits
     correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1))
