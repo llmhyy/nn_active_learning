@@ -31,8 +31,8 @@ training_epochs = 2000
 display_step = 1
 
 # Network Parameters
-n_hidden_1 = 256 # 1st layer number of neurons
-n_hidden_2 = 256 # 2nd layer number of neurons
+n_hidden_1 = 10 # 1st layer number of neurons
+n_hidden_2 = 10 # 2nd layer number of neurons
 n_input = 2 # MNIST data input (img shape: 28*28)
 n_classes = 1 # MNIST total classes (0-9 digits)
 
@@ -132,8 +132,8 @@ with tf.Session() as sess:
         
         ##batch_y = np.asarray([[train_set[i][0],1.0]])
         # Run optimization op (backprop) and cost op (to get loss value)
-        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
-                                                        Y: train_set_Y})
+        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:10],
+                                                        Y: train_set_Y[:10]})
         with open("gradient.csv","w+") as my_csv:            # writing the file as my_csv
             csvWriter = csv.writer(my_csv,delimiter=',')  # using the csv module to write the file
     		##csvWriter.writerows(gradients) 
@@ -161,15 +161,14 @@ with tf.Session() as sess:
 
     gradients = None
     y_logits = None
-    gradients, y_logits = sess.run([grads, logits], feed_dict={X: train_set_X,
-                                                        Y: train_set_Y})
+    gradients, y_logits = sess.run([grads, logits], feed_dict={X: test_set_X,
+                                                        Y: test_set_Y})
 
-    print(gradients)
-    print(y_logits)
+    # print(gradients)
+    # print(y_logits)
 #  [array([[2, 1]], dtype=int32)]
     # Test model
-    pred = tf.nn.softmax(logits)  # Apply softmax to logits
-    correct_prediction = tf.equal(tf.argmax(pred, 1), tf.argmax(Y, 1))
+    correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(Y, 1))
     # Calculate accuracy
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print("Accuracy:", accuracy.eval({X: np.asarray(test_set_X), Y: np.asarray(test_set_Y)}))
