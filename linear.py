@@ -24,7 +24,7 @@ mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 import tensorflow as tf
 import csv
 import numpy as np
-
+import pandas as pd
 # Parameters
 learning_rate = 0.01
 training_epochs = 2000
@@ -34,7 +34,7 @@ display_step = 1
 n_hidden_1 = 256 # 1st layer number of neurons
 n_hidden_2 = 256 # 2nd layer number of neurons
 n_input = 2 # MNIST data input (img shape: 28*28)
-n_classes = 2 # MNIST total classes (0-9 digits)
+n_classes = 1 # MNIST total classes (0-9 digits)
 
 # tf Graph input
 X = tf.placeholder("float", [None, n_input])
@@ -60,9 +60,13 @@ train_set_Y = []
 
 # read training data
 with open('train.csv', 'rb') as csvfile:
-    spamreader = csv.reader(csvfile)
-    for row in spamreader:
-        train_set.append(row)
+    with open('train_next.csv','wb') as file: 
+        spamreader = csv.reader(csvfile)
+        writer=csv.writer(file)
+        for row in spamreader:
+            writer.writerow(row)
+            train_set.append(row)
+    file.close()
 
 # read testing data
 with open('test.csv', 'rb') as csvfile:
@@ -70,9 +74,9 @@ with open('test.csv', 'rb') as csvfile:
     for row in spamreader:
         test_set_X.append(row[1:])
         if (row[0]==1):
-            test_set_Y.append([0.0,1.0])
+            test_set_Y.append([row[0]])
         else:
-            test_set_Y.append([1.0,0.0])
+            test_set_Y.append([row[0]])
 
 # read testing data
 with open('train.csv', 'rb') as csvfile:
@@ -80,9 +84,9 @@ with open('train.csv', 'rb') as csvfile:
     for row in spamreader:
         train_set_X.append(row[1:])
         if (row[0]==1):
-            train_set_Y.append([0.0,1.0])
+            train_set_Y.append([row[0]])
         else:
-            train_set_Y.append([1.0,0.0])
+            train_set_Y.append([row[0]])
 
 
 # Create model
@@ -108,9 +112,12 @@ init = tf.global_variables_initializer()
 
 grads = tf.gradients(loss_op, X)
 
+
+
 with tf.Session() as sess:
     sess.run(init)
 
+    ##global gradients
     # Training cycle
     for epoch in range(training_epochs):
         avg_cost = 0.
@@ -126,13 +133,26 @@ with tf.Session() as sess:
         ##batch_y = np.asarray([[train_set[i][0],1.0]])
         # Run optimization op (backprop) and cost op (to get loss value)
         gradients,_, c = sess.run([grads ,train_op, loss_op], feed_dict={X: train_set_X,
-                                                        Y: train_set_Y})
+                                                        Y: train_set_Y}) 
+        print (gradients)
+        with open("gradient.csv","w+") as my_csv:            # writing the file as my_csv
+    		csvWriter = csv.writer(my_csv,delimiter=',')  # using the csv module to write the file
+    		##csvWriter.writerows(gradients) 
+
+    		for x in gradients[0]: 
+				
+
+				csvWriter.writerow(x)
         if c<0.00001 :
             break
         avg_cost += c
 
-        #np.savetxt("gradients.csv", gradients, delimiter="\n", fmt = "%.32f")
-        print(gradients)
+        ##np.savetxt("gradients.csv", gradients, delimiter="\n", fmt = "%.32f")
+        
+				
+    	##print (gradients)
+
+        ##print(gradients)
         
         # Compute average loss
             
@@ -141,8 +161,8 @@ with tf.Session() as sess:
         print("Epoch:", '%04d' % (epoch+1), "cost={:.9f}".format(c))
 
     print("Optimization Finished!")
+    
 
-   
 #  [array([[2, 1]], dtype=int32)]
     # Test model
     pred = tf.nn.softmax(logits)  # Apply softmax to logits
@@ -151,3 +171,19 @@ with tf.Session() as sess:
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     print("Accuracy:", accuracy.eval({X: np.asarray(test_set_X), Y: np.asarray(test_set_Y)}))
     print("Accuracy:", accuracy.eval({X: np.asarray(train_set_X), Y: np.asarray(train_set_Y)}))
+
+
+
+
+
+# ##update csv
+# with open('train_next.csv','a') as file:
+# 	print('xixi')
+# 	writer=csv.writer(file)
+# 	print(len(gradients[0]))
+# 	for i in range (len(gradients[0])):
+# 		##print (float(gradients[0][i][0]))
+
+# 		if((gradients[0][i][0])!=0.0):
+# 			print('haha')
+# 			writer.writerow(gradients[0][i])
