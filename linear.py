@@ -24,7 +24,7 @@ mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 import tensorflow as tf
 import csv
 import numpy as np
-import pandas as pd
+# import pandas as pd
 # Parameters
 learning_rate = 0.01
 training_epochs = 2000
@@ -59,17 +59,17 @@ train_set_X = []
 train_set_Y = []
 
 # read training data
-with open('train.csv', 'rb') as csvfile:
+with open('train.csv', 'rt') as csvfile:
     with open('train_next.csv','wb') as file: 
         spamreader = csv.reader(csvfile)
         writer=csv.writer(file)
         for row in spamreader:
-            writer.writerow(row)
+            # writer.writerow(row)
             train_set.append(row)
     file.close()
 
 # read testing data
-with open('test.csv', 'rb') as csvfile:
+with open('test.csv', 'rt') as csvfile:
     spamreader = csv.reader(csvfile)
     for row in spamreader:
         test_set_X.append(row[1:])
@@ -79,7 +79,7 @@ with open('test.csv', 'rb') as csvfile:
             test_set_Y.append([row[0]])
 
 # read testing data
-with open('train.csv', 'rb') as csvfile:
+with open('train.csv', 'rt') as csvfile:
     spamreader = csv.reader(csvfile)
     for row in spamreader:
         train_set_X.append(row[1:])
@@ -97,7 +97,8 @@ def multilayer_perceptron(x):
     layer_2 = tf.add(tf.matmul(layer_1, weights['h2']), biases['b2'])
     # Output fully connected layer with a neuron for each class
     out_layer = tf.matmul(layer_2, weights['out']) + biases['out']
-    return out_layer
+    output = tf.sigmoid(out_layer)
+    return output
 
 # Construct model
 logits = multilayer_perceptron(X)
@@ -110,8 +111,7 @@ train_op = optimizer.minimize(loss_op)
 # Initializing the variables
 init = tf.global_variables_initializer()
 
-grads = tf.gradients(loss_op, X)
-
+grads = tf.gradients(logits, X)
 
 
 with tf.Session() as sess:
@@ -132,18 +132,15 @@ with tf.Session() as sess:
         
         ##batch_y = np.asarray([[train_set[i][0],1.0]])
         # Run optimization op (backprop) and cost op (to get loss value)
-        gradients,_, c = sess.run([grads ,train_op, loss_op], feed_dict={X: train_set_X,
-                                                        Y: train_set_Y}) 
-        print (gradients)
+        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
+                                                        Y: train_set_Y})
         with open("gradient.csv","w+") as my_csv:            # writing the file as my_csv
-    		csvWriter = csv.writer(my_csv,delimiter=',')  # using the csv module to write the file
+            csvWriter = csv.writer(my_csv,delimiter=',')  # using the csv module to write the file
     		##csvWriter.writerows(gradients) 
 
-    		for x in gradients[0]: 
-				
-
-				csvWriter.writerow(x)
-        if c<0.00001 :
+            # for x in gradients[0]:
+            #     csvWriter.writerow(x)
+        if c<100000 :
             break
         avg_cost += c
 
@@ -161,8 +158,14 @@ with tf.Session() as sess:
         print("Epoch:", '%04d' % (epoch+1), "cost={:.9f}".format(c))
 
     print("Optimization Finished!")
-    
 
+    gradients = None
+    y_logits = None
+    gradients, y_logits = sess.run([grads, logits], feed_dict={X: train_set_X,
+                                                        Y: train_set_Y})
+
+    print(gradients)
+    print(y_logits)
 #  [array([[2, 1]], dtype=int32)]
     # Test model
     pred = tf.nn.softmax(logits)  # Apply softmax to logits
