@@ -24,16 +24,25 @@ from __future__ import print_function
 import tensorflow as tf
 import csv
 import numpy as np
+<<<<<<< HEAD
 import pandas as pd
 import random
+=======
+# import pandas as pd
+>>>>>>> d24f8ccc877f223b8d103db70235add0508d8404
 # Parameters
 learning_rate = 0.1
 training_epochs = 10
 display_step = 1
 
 # Network Parameters
+<<<<<<< HEAD
 n_hidden_1 = 10# 1st layer number of neurons
 n_hidden_2 = 10# 2nd layer number of neurons
+=======
+n_hidden_1 = 10 # 1st layer number of neurons
+n_hidden_2 = 10 # 2nd layer number of neurons
+>>>>>>> d24f8ccc877f223b8d103db70235add0508d8404
 n_input = 2 # MNIST data input (img shape: 28*28)
 n_classes = 1 # MNIST total classes (0-9 digits)
 
@@ -68,17 +77,17 @@ train_set_Y = []
 
 
 # read training data
-with open('train.csv', 'rb') as csvfile:
+with open('train.csv', 'rt') as csvfile:
     with open('train_next.csv','wb') as file: 
         spamreader = csv.reader(csvfile)
         writer=csv.writer(file)
         for row in spamreader:
-            writer.writerow(row)
+            # writer.writerow(row)
             train_set.append(row)
     file.close()
 
 # read testing data
-with open('test.csv', 'rb') as csvfile:
+with open('test.csv', 'rt') as csvfile:
     spamreader = csv.reader(csvfile)
     for row in spamreader:
     	# print(row)
@@ -93,7 +102,7 @@ with open('test.csv', 'rb') as csvfile:
             test_set_Y.append([0])
 
 # read testing data
-with open('train.csv', 'rb') as csvfile:
+with open('train.csv', 'rt') as csvfile:
     spamreader = csv.reader(csvfile)
     for row in spamreader:
     	l = [0,0]
@@ -139,8 +148,14 @@ def multilayer_perceptron(x):
     #layer2_out = tf.sigmoid(layer_2)
 
     # Output fully connected layer with a neuron for each class
+<<<<<<< HEAD
     out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
     return tf.nn.sigmoid(out_layer)
+=======
+    out_layer = tf.matmul(layer_2, weights['out']) + biases['out']
+    output = tf.sigmoid(out_layer)
+    return output
+>>>>>>> d24f8ccc877f223b8d103db70235add0508d8404
 
 # Construct model
 logits = multilayer_perceptron(X)
@@ -154,8 +169,12 @@ train_op = optimizer.minimize(loss_op)
 # Initializing the variables
 init = tf.global_variables_initializer()
 
+<<<<<<< HEAD
 grads = tf.gradients(loss_op, weights["out"])
 newgrads=tf.gradients(logits,X)
+=======
+grads = tf.gradients(logits, X)
+>>>>>>> d24f8ccc877f223b8d103db70235add0508d8404
 
 y = None
 
@@ -186,6 +205,7 @@ with tf.Session() as sess:
         
         ##batch_y = np.asarray([[train_set[i][0],1.0]])
         # Run optimization op (backprop) and cost op (to get loss value)
+<<<<<<< HEAD
         _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
                                                         Y: train_set_Y}) 
 
@@ -204,6 +224,19 @@ with tf.Session() as sess:
     #     if c<0.00001 :
     #         break
     #     avg_cost += c
+=======
+        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:10],
+                                                        Y: train_set_Y[:10]})
+        with open("gradient.csv","w+") as my_csv:            # writing the file as my_csv
+            csvWriter = csv.writer(my_csv,delimiter=',')  # using the csv module to write the file
+    		##csvWriter.writerows(gradients) 
+
+            # for x in gradients[0]:
+            #     csvWriter.writerow(x)
+        if c<100000 :
+            break
+        avg_cost += c
+>>>>>>> d24f8ccc877f223b8d103db70235add0508d8404
 
         ##np.savetxt("gradients.csv", gradients, delimiter="\n", fmt = "%.32f")
         
@@ -220,6 +253,7 @@ with tf.Session() as sess:
         print("Epoch:", '%04d' % (epoch+1), "cost={:.9f}".format(c))
 
     print("Optimization Finished!")
+<<<<<<< HEAD
     
     train_y = sess.run(logits, feed_dict={X: train_set_X})
     test_y = sess.run(logits, feed_dict={X: test_set_X})
@@ -238,6 +272,25 @@ with tf.Session() as sess:
     # accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
     # print("Test Accuracy:", accuracy.eval({X: np.asarray(test_set_X), Y: np.asarray(test_set_Y)}))
     # print("train Accuracy:", accuracy.eval({X: np.asarray(train_set_X), Y: np.asarray(train_set_Y)}))
+=======
+
+    gradients = None
+    y_logits = None
+    gradients, y_logits = sess.run([grads, logits], feed_dict={X: test_set_X,
+                                                        Y: test_set_Y})
+
+    # print(gradients)
+    # print(y_logits)
+#  [array([[2, 1]], dtype=int32)]
+    # Test model
+    correct_prediction = tf.equal(tf.argmax(logits, 1), tf.argmax(Y, 1))
+    # Calculate accuracy
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
+    print("Accuracy:", accuracy.eval({X: np.asarray(test_set_X), Y: np.asarray(test_set_Y)}))
+    print("Accuracy:", accuracy.eval({X: np.asarray(train_set_X), Y: np.asarray(train_set_Y)}))
+
+
+>>>>>>> d24f8ccc877f223b8d103db70235add0508d8404
 
 
 
