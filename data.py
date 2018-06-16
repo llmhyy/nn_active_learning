@@ -7,8 +7,8 @@ with open('train.csv', 'wb') as csvfile:
 		train = csv.writer(csvfile)
 		test = csv.writer(csvfile2)
 		for i in range(1000):
-			x = random.uniform(0,1000)
-			y = random.uniform(-1000,1000)
+			x = random.uniform(0,11)
+			y = random.uniform(-10,10)
 			if i<700:
 				if (y>math.log(x)):
 					train.writerow([0.0,x ,y])
