@@ -27,8 +27,8 @@ import numpy as np
 import random
 
 # Parameters
-learning_rate = 0.1
-training_epochs = 10
+learning_rate = 1
+training_epochs = 20
 display_step = 1
 
 # Network Parameters
@@ -190,8 +190,8 @@ with tf.Session() as sess:
     print(len(train_y))
     print(len(train_set_Y))
     calculateAccuracy(train_y, train_set_Y, False)
-    # calculateAccuracy(test_y, test_set_Y, False)
-
+    calculateAccuracy(test_y, test_set_Y, False)
+    print (g[0][0][0])
     ##print (y)
     # y=y[0]
     # print (test_set_Y)
