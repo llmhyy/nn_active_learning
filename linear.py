@@ -28,7 +28,9 @@ import random
 
 # Parameters
 learning_rate = 1
-training_epochs = 20
+
+
+training_epochs = 10
 display_step = 1
 
 # Network Parameters
@@ -67,11 +69,18 @@ train_set_Y = []
 # read training data
 with open('train.csv', 'rt') as csvfile:
     with open('train_next.csv', 'wb') as file:
+        i=0
         spamreader = csv.reader(csvfile)
         writer = csv.writer(file)
         for row in spamreader:
-            # writer.writerow(row)
-            train_set.append(row)
+            if(i>70):
+                break
+            i+=1
+            
+            writer.writerow(row)
+            writer.writerow([1-float(row[0]),float(row[1])+0.01,float(row[2])+0.01])
+            
+            
     file.close()
 
 # read testing data
@@ -130,6 +139,7 @@ def calculateAccuracy(y, set_Y, b):
 # Create model
 def multilayer_perceptron(x):
     # Hidden fully connected layer with 256 neurons
+    ##x0=tf.nn.batch_normalization(x,mean=0.01, variance=1,offset=0,scale=1,variance_epsilon=0.001)
     layer_1 = tf.nn.relu(tf.add(tf.matmul(x, weights['h1']), biases['b1']))
     # layer1_out = tf.sigmoid(layer_1)
 
@@ -169,29 +179,29 @@ with tf.Session() as sess:
     print("out", out)
 
     g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-    print(g)
+    ##print(g)
 
     ##global gradients                                                        Y: train_set_Y}
     # Training cycle
     for epoch in range(training_epochs):
-        avg_cost = 0.
-        total_batch = 700
+
         _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
                                                         Y: train_set_Y})
 
         g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-        print(g)
+        ##print(g)
         print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
     print("Optimization Finished!")
+    print(len(train_set_Y))
     train_y = sess.run(logits, feed_dict={X: train_set_X})
     test_y = sess.run(logits, feed_dict={X: test_set_X})
 
-    print(len(train_y))
-    print(len(train_set_Y))
+    # print(len(train_y))
+    # print(len(train_set_Y))
     calculateAccuracy(train_y, train_set_Y, False)
     calculateAccuracy(test_y, test_set_Y, False)
-    print (g[0][0][0])
+    
     ##print (y)
     # y=y[0]
     # print (test_set_Y)

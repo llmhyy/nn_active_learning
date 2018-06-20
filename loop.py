@@ -5,9 +5,12 @@ import numpy as np
 import random
 import math
 # Parameters
-learning_rate = 3
-training_epochs = 3
+learning_rate = 1
+training_epochs = 100
 display_step = 1
+changing_rate=[1]
+
+active_learning_iteration = 10
 
 # Network Parameters
 n_hidden_1 = 10  # 1st layer number of neurons
@@ -82,7 +85,8 @@ def calculateAccuracy(y, set_Y, b):
 # Create model
 def multilayer_perceptron(x):
     # Hidden fully connected layer with 256 neurons
-	layer_1 = tf.nn.relu(tf.add(tf.matmul(x, weights['h1']), biases['b1']))
+	x0=tf.nn.batch_normalization(x,mean=0.01, variance=1,offset=0,scale=1,variance_epsilon=0.001)
+	layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
     # layer1_out = tf.sigmoid(layer_1)
 
     # Hidden fully connected layer with 256 neurons
@@ -94,7 +98,24 @@ def multilayer_perceptron(x):
 	return tf.nn.sigmoid(out_layer)
 
 
+def logModel(x1,x2):
+	if(x2>math.log(x1)):
+		return True
+	else:
+		return False
 
+def circleModel(x1,x2):
+	if(x1*x1+x2*x2>100):
+		return True
+	else:
+		return False
+
+
+def polynomialModel(x1,x2):
+	if(x2>x1*x1*x1+x1*x1+x1):
+		return True
+	else:
+		return False
 # Construct model
 logits = multilayer_perceptron(X)
 
@@ -155,19 +176,21 @@ with tf.Session() as sess:
 
 	g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
 	##print(g)
-
-	for i in range(10):
+	smallGradient_Unchanged=0.0
+	smallGradient_total=0.0
+	largeGradient_Unchanged=0.0
+	largeGradient_total=0.0
+	for i in range(active_learning_iteration):
 		for epoch in range(training_epochs):
-			avg_cost = 0.
-			total_batch = 700
- 			_, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
-                                                        Y: train_set_Y})
+ 			_, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
 
-			g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-			print(g)
-			print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
+			
+			##print(g)
+			##print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
-		print(str(i)+"Turn Optimization Finished!")
+		g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+		print (g)
+		print(str(i)+"Turn Optimization Finished!\n")
 		train_y = sess.run(logits, feed_dict={X: train_set_X})
 		test_y = sess.run(logits, feed_dict={X: test_set_X})
 
@@ -177,17 +200,62 @@ with tf.Session() as sess:
 		calculateAccuracy(test_y, test_set_Y, False)
 		new_train_set_X=[]
 		new_train_set_Y=[]
-		for j in range(len(train_set_X)):
-			tmpX1=train_set_X[j][0]+g[0][j][0]*learning_rate
-			tmpX2=train_set_X[j][1]+g[0][j][1]*learning_rate
 
-			if (g[0][j][0]>0.03):
-				new_train_set_X.append([tmpX1,tmpX2])
 
-				if((tmpX1-12.5)*(tmpX1-12.5)+tmpX2*tmpX2<100 or (tmpX1+12.5)*(tmpX1+12.5)+tmpX2*tmpX2<100):
-					new_train_set_Y.append([0])
-				else:
-					new_train_set_Y.append([1])
+		# smallGradient_Unchanged=0
+		# smallGradient_total=0
+		# largeGradient_Unchanged=0
+		# largeGradient_total=0
+		for k in changing_rate:
+
+			for j in range(len(train_set_X)):
+				tmpX1=train_set_X[j][0]+g[0][j][0]*k
+				tmpX2=train_set_X[j][1]+g[0][j][1]*k
+
+				if (g[0][j][0]>0):
+					new_train_set_X.append([tmpX1,tmpX2])
+					
+					##if((tmpX1-12.5)*(tmpX1-12.5)+tmpX2*tmpX2<100 or (tmpX1+12.5)*(tmpX1+12.5)+tmpX2*tmpX2<100):
+					if(tmpX2>tmpX1*tmpX1*tmpX1+tmpX1*tmpX1+tmpX1):
+						
+						new_train_set_Y.append([0])
+					else:
+						
+						new_train_set_Y.append([1])
+
+
+				##boundary remaining test
+				##small gradient test
+				# X1=train_set_X[j][0]
+				# X2=train_set_X[j][1]
+				# newY=train_set_Y[j][0]
+				# ##print ("Y",newY)
+				# if(g[0][j][0]<0.01):
+					
+				# 	smallGradient_total+=1
+				# 	if(newY==0):
+				# 		if(polynomialModel(tmpX1,tmpX2)):
+				# 			smallGradient_Unchanged+=1
+				# 	elif(newY==1):
+				# 		if(not polynomialModel(tmpX1,tmpX2)):
+				# 			smallGradient_Unchanged+=1
+
+
+				# ##large gradient test
+				# if(g[0][j][0]>0.1):
+				# 	newtmpX1=train_set_X[j][0]-g[0][j][0]*k
+				# 	newtmpX2=train_set_X[j][1]-g[0][j][1]*k
+
+				# 	largeGradient_total+=1
+				# 	if(newY==0):
+				# 		if(polynomialModel(newtmpX1,newtmpX2)):
+				# 			largeGradient_Unchanged+=1
+				# 	elif(newY==1):
+				# 		if(not polynomialModel(newtmpX1,newtmpX2)):
+				# 			largeGradient_Unchanged+=1		
+
+
+
 
 
 		train_set_X=train_set_X+new_train_set_X
@@ -196,7 +264,11 @@ with tf.Session() as sess:
 		print(len(train_set_X))
 		print(len(train_set_Y))
 
+	# print(smallGradient_total)
+	# print (smallGradient_Unchanged)
+	# print(largeGradient_total)
+	# print (largeGradient_Unchanged)	
 
-
-
+	# print ("small gradient unchanged rate: ",smallGradient_Unchanged/smallGradient_total)
+	# print ("large gradient unchanged rate: ", largeGradient_Unchanged/largeGradient_total)
 
