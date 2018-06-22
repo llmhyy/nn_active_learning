@@ -1,36 +1,15 @@
-""" Multilayer Perceptron.
-A Multilayer Perceptron (Neural Network) implementation example using
-TensorFlow library. This example is using the MNIST database of handwritten
-digits (http://yann.lecun.com/exdb/mnist/).
-Links:
-    [MNIST Dataset](http://yann.lecun.com/exdb/mnist/).
-Author: Aymeric Damien
-Project: https://github.com/aymericdamien/TensorFlow-Examples/
-"""
-
-# ------------------------------------------------------------------
-#
-# THIS EXAMPLE HAS BEEN RENAMED 'neural_network.py', FOR SIMPLICITY.
-#
-# ------------------------------------------------------------------
-
-
 from __future__ import print_function
 
-# Import MNIST data
-# from tensorflow.examples.tutorials.mnist import input_data
-# mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
-
-import tensorflow as tf
-import csv
-import numpy as np
 import random
+
+import numpy as np
+import tensorflow as tf
+from matplotlib import pyplot as plt
+
 import util
 
 # Parameters
 learning_rate = 1
-
-
 training_epochs = 10
 display_step = 1
 
@@ -67,7 +46,7 @@ test_set_Y = []
 train_set_X = []
 train_set_Y = []
 
-util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y)
+util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, 'train.csv')
 
 # Construct model
 logits = util.multilayer_perceptron(X, weights, biases)
@@ -101,7 +80,6 @@ with tf.Session() as sess:
     ##global gradients                                                        Y: train_set_Y}
     # Training cycle
     for epoch in range(training_epochs):
-
         _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
                                                         Y: train_set_Y})
 
@@ -118,4 +96,10 @@ with tf.Session() as sess:
     # print(len(train_set_Y))
     util.calculateAccuracy(train_y, train_set_Y, False)
     util.calculateAccuracy(test_y, test_set_Y, False)
-    
+
+    predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+    util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
+
+
+
+

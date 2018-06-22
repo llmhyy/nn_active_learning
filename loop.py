@@ -1,15 +1,18 @@
 from __future__ import print_function
-import tensorflow as tf
-import csv
-import numpy as np
+
 import random
+
+import numpy as np
+import tensorflow as tf
+
+import testing_function
 import util
-import math
+
 # Parameters
 learning_rate = 1
-training_epochs = 100
+training_epochs = 1000
 display_step = 1
-changing_rate=[1]
+changing_rate = [1000]
 
 active_learning_iteration = 10
 
@@ -43,10 +46,10 @@ test_set_Y = []
 train_set_X = []
 train_set_Y = []
 
-util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y)
+util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, 'train_next.csv')
 
 # Construct model
-logits = util.multilayer_perceptron(X)
+logits = util.multilayer_perceptron(X, weights, biases)
 
 # Define loss and optimizer
 loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=Y))
@@ -62,142 +65,104 @@ newgrads = tf.gradients(logits, X)
 
 y = None
 
-# ten times training
-with tf.Session() as sess:
-	sess.run(init)
-	##data processing
+for i in range(active_learning_iteration):
+    print("*******", i, "th loop:")
+    print("training set size", len(train_set_X))
+    # ten times training
+    with tf.Session() as sess:
+        sess.run(init)
+        # h1 = sess.run(weights["h1"])
+        # out = sess.run(weights["out"])
+        #
+        # print("h1", h1)
+        # print("out", out)
 
+        g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+        ##print(g)
+        smallGradient_Unchanged = 0.0
+        smallGradient_total = 0.0
+        largeGradient_Unchanged = 0.0
+        largeGradient_total = 0.0
 
-	with open('test.csv', 'rt') as csvfile:
-		spamreader = csv.reader(csvfile)
-		for row in spamreader:
-        # print(row)
-			l = [0, 0]
-			l[0] = float(row[1])
- 			l[1] = float(row[2])
-        # print(l)
- 			test_set_X.append(l)
- 			if (row[0] == '1.0'):
-				test_set_Y.append([1])
-			else:
-				test_set_Y.append([0])
+        for epoch in range(training_epochs):
+            _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
 
-	with open('train_next.csv', 'rt') as csvfile:
-		spamreader = csv.reader(csvfile)
-		for row in spamreader:
-			l = [0, 0]
-			l[0] = float(row[1])
-			l[1] = float(row[2])
-        # print(l)
-			train_set_X.append(l)
-			if (row[0] == '1.0'):
-				train_set_Y.append([1])
-			else:
-				train_set_Y.append([0])
+        ##print(g)
+        ##print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
+        g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+        # print(g)
+        train_y = sess.run(logits, feed_dict={X: train_set_X})
+        test_y = sess.run(logits, feed_dict={X: test_set_X})
 
+        ##print(len(train_y))
+        ##print(len(train_set_Y))
+        util.calculateAccuracy(train_y, train_set_Y, False)
+        util.calculateAccuracy(test_y, test_set_Y, False)
 
-	h1 = sess.run(weights["h1"])
-	out = sess.run(weights["out"])
+        predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
 
-	print("h1", h1)
-	print("out", out)
+        new_train_set_X = []
+        new_train_set_Y = []
 
-	g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-	##print(g)
-	smallGradient_Unchanged=0.0
-	smallGradient_total=0.0
-	largeGradient_Unchanged=0.0
-	largeGradient_total=0.0
-	for i in range(active_learning_iteration):
-		for epoch in range(training_epochs):
- 			_, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
+        # smallGradient_Unchanged=0
+        # smallGradient_total=0
+        # largeGradient_Unchanged=0
+        # largeGradient_total=0
+        for k in changing_rate:
 
-			
-			##print(g)
-			##print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
+            print("boundary points")
+            for j in range(len(train_set_X)):
+                tmpX1 = train_set_X[j][0] + g[0][j][0] * k
+                tmpX2 = train_set_X[j][1] + g[0][j][1] * k
+                if (g[0][j][0] > 0.001):
+                    print("(", train_set_X[j][0], ", ", train_set_X[j][1], ")", "label: ", train_set_Y[j][0])
+                    new_train_set_X.append([tmpX1, tmpX2])
+                    if (testing_function.polynomialModel(tmpX1, tmpX2)):
+                        new_train_set_Y.append([0])
+                    else:
+                        new_train_set_Y.append([1])
 
-		g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-		print (g)
-		print(str(i)+"Turn Optimization Finished!\n")
-		train_y = sess.run(logits, feed_dict={X: train_set_X})
-		test_y = sess.run(logits, feed_dict={X: test_set_X})
+            ##boundary remaining test
+            ##small gradient test
+            # X1=train_set_X[j][0]
+            # X2=train_set_X[j][1]
+            # newY=train_set_Y[j][0]
+            # ##print ("Y",newY)
+            # if(g[0][j][0]<0.01):
 
-		##print(len(train_y))
-		##print(len(train_set_Y))
-		util.calculateAccuracy(train_y, train_set_Y, False)
-		util.calculateAccuracy(test_y, test_set_Y, False)
-		new_train_set_X=[]
-		new_train_set_Y=[]
+            # 	smallGradient_total+=1
+            # 	if(newY==0):
+            # 		if(polynomialModel(tmpX1,tmpX2)):
+            # 			smallGradient_Unchanged+=1
+            # 	elif(newY==1):
+            # 		if(not polynomialModel(tmpX1,tmpX2)):
+            # 			smallGradient_Unchanged+=1
 
+            # ##large gradient test
+            # if(g[0][j][0]>0.1):
+            # 	newtmpX1=train_set_X[j][0]-g[0][j][0]*k
+            # 	newtmpX2=train_set_X[j][1]-g[0][j][1]*k
 
-		# smallGradient_Unchanged=0
-		# smallGradient_total=0
-		# largeGradient_Unchanged=0
-		# largeGradient_total=0
-		for k in changing_rate:
+            # 	largeGradient_total+=1
+            # 	if(newY==0):
+            # 		if(polynomialModel(newtmpX1,newtmpX2)):
+            # 			largeGradient_Unchanged+=1
+            # 	elif(newY==1):
+            # 		if(not polynomialModel(newtmpX1,newtmpX2)):
+            # 			largeGradient_Unchanged+=1
 
-			for j in range(len(train_set_X)):
-				tmpX1=train_set_X[j][0]+g[0][j][0]*k
-				tmpX2=train_set_X[j][1]+g[0][j][1]*k
+        print("generated data points:")
+        for j in range(len(new_train_set_X)):
+            print("(", new_train_set_X[j][0], ", ", new_train_set_X[j][1], ")", "label: ", new_train_set_Y[j][0])
+        train_set_X = train_set_X + new_train_set_X
+        train_set_Y = train_set_Y + new_train_set_Y
 
-				if (g[0][j][0]>0):
-					new_train_set_X.append([tmpX1,tmpX2])
-					
-					##if((tmpX1-12.5)*(tmpX1-12.5)+tmpX2*tmpX2<100 or (tmpX1+12.5)*(tmpX1+12.5)+tmpX2*tmpX2<100):
-					if(tmpX2>tmpX1*tmpX1*tmpX1+tmpX1*tmpX1+tmpX1):
-						
-						new_train_set_Y.append([0])
-					else:
-						
-						new_train_set_Y.append([1])
+# print(smallGradient_total)
+# print (smallGradient_Unchanged)
+# print(largeGradient_total)
+# print (largeGradient_Unchanged)
 
-
-				##boundary remaining test
-				##small gradient test
-				# X1=train_set_X[j][0]
-				# X2=train_set_X[j][1]
-				# newY=train_set_Y[j][0]
-				# ##print ("Y",newY)
-				# if(g[0][j][0]<0.01):
-					
-				# 	smallGradient_total+=1
-				# 	if(newY==0):
-				# 		if(polynomialModel(tmpX1,tmpX2)):
-				# 			smallGradient_Unchanged+=1
-				# 	elif(newY==1):
-				# 		if(not polynomialModel(tmpX1,tmpX2)):
-				# 			smallGradient_Unchanged+=1
-
-
-				# ##large gradient test
-				# if(g[0][j][0]>0.1):
-				# 	newtmpX1=train_set_X[j][0]-g[0][j][0]*k
-				# 	newtmpX2=train_set_X[j][1]-g[0][j][1]*k
-
-				# 	largeGradient_total+=1
-				# 	if(newY==0):
-				# 		if(polynomialModel(newtmpX1,newtmpX2)):
-				# 			largeGradient_Unchanged+=1
-				# 	elif(newY==1):
-				# 		if(not polynomialModel(newtmpX1,newtmpX2)):
-				# 			largeGradient_Unchanged+=1		
-
-
-
-
-
-		train_set_X=train_set_X+new_train_set_X
-		train_set_Y=train_set_Y+new_train_set_Y
-
-		print(len(train_set_X))
-		print(len(train_set_Y))
-
-	# print(smallGradient_total)
-	# print (smallGradient_Unchanged)
-	# print(largeGradient_total)
-	# print (largeGradient_Unchanged)	
-
-	# print ("small gradient unchanged rate: ",smallGradient_Unchanged/smallGradient_total)
-	# print ("large gradient unchanged rate: ", largeGradient_Unchanged/largeGradient_total)
-
+# print ("small gradient unchanged rate: ",smallGradient_Unchanged/smallGradient_total)
+# print ("large gradient unchanged rate: ", largeGradient_Unchanged/largeGradient_total)

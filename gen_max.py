@@ -5,13 +5,12 @@ usage: python gen_diff.py -h
 from __future__ import print_function
 
 import argparse
-
-from scipy.misc import imsave
+import os
+import time
 
 from driving_models import *
+from scipy.misc import imsave
 from utils import *
-import time
-import os
 
 # read the parameter
 # argument parsing
@@ -56,7 +55,7 @@ model_layer_dict1 = init_coverage_tables(model)
 # start gen inputs
 img_paths = image.list_pictures('./testing/center', ext='jpg')
 
-print("begin time:",time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+print("begin time:", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 count = 0
 
 for i in xrange(args.seeds):
@@ -120,5 +119,5 @@ for i in xrange(args.seeds):
             imsave(store_path + "/" + str(orig_angle1) + '_orig.png', orig_img_deprocessed)
             break
 
-print("end time:",time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time())))
+print("end time:", time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
 print(count)
