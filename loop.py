@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import random
+import math
 
 import numpy as np
 import tensorflow as tf
@@ -10,7 +11,7 @@ import util
 
 # Parameters
 learning_rate = 1
-training_epochs = 1000
+training_epochs = 100
 display_step = 1
 changing_rate = [1000]
 
@@ -65,6 +66,11 @@ newgrads = tf.gradients(logits, X)
 
 y = None
 
+test_list = []
+for i in range(20):
+    test_list.append([0, i])
+
+
 for i in range(active_learning_iteration):
     print("*******", i, "th loop:")
     print("training set size", len(train_set_X))
@@ -91,6 +97,12 @@ for i in range(active_learning_iteration):
         ##print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
         g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+        test_g = sess.run(newgrads, feed_dict={X: test_list})
+        test_new_y = sess.run(logits, feed_dict={X: test_list})
+
+        # for i in range(len(test_list)):
+        #     print("data point ", test_list[i], " gradient ", test_g[0][i], " label ", test_new_y[i])
+
         # print(g)
         train_y = sess.run(logits, feed_dict={X: train_set_X})
         test_y = sess.run(logits, feed_dict={X: test_set_X})
@@ -100,8 +112,8 @@ for i in range(active_learning_iteration):
         util.calculateAccuracy(train_y, train_set_Y, False)
         util.calculateAccuracy(test_y, test_set_Y, False)
 
-        predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
+        # predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
 
         new_train_set_X = []
         new_train_set_Y = []
@@ -114,10 +126,34 @@ for i in range(active_learning_iteration):
 
             print("boundary points")
             for j in range(len(train_set_X)):
-                tmpX1 = train_set_X[j][0] + g[0][j][0] * k
-                tmpX2 = train_set_X[j][1] + g[0][j][1] * k
-                if (g[0][j][0] > 0.001):
-                    print("(", train_set_X[j][0], ", ", train_set_X[j][1], ")", "label: ", train_set_Y[j][0])
+                g_x = g[0][j][0]
+                g_y = g[0][j][1]
+                g_total = math.sqrt(g_x*g_x+g_y*g_y)
+
+                if (g_total > 0.001):
+                    tmpX1 = train_set_X[j][0] + g[0][j][0] * k
+                    tmpX2 = train_set_X[j][1] + g[0][j][1] * k
+
+                    tmpX1_ = train_set_X[j][0] - g[0][j][0] * k
+                    tmpX2_ = train_set_X[j][1] - g[0][j][1] * k
+
+                    print("(", train_set_X[j][0], ", ", train_set_X[j][1], ")", "label: ", train_set_Y[j][0],
+                          " gradient: (", g[0][j][0], ", ",  g[0][j][1], ")")
+
+                    new_pointsX = []
+                    new_pointsX.append([tmpX1, tmpX2])
+                    new_pointsX.append([tmpX1_, tmpX2_])
+                    new_pointsX.append([train_set_X[j][0], train_set_X[j][1]])
+                    new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+
+                    original_y = new_pointsY[2]
+                    p_y = new_pointsY[0]
+                    n_y = new_pointsY[1]
+
+                    if( (original_y<0.5 and p_y < original_y) or (original_y>0.5 and p_y>original_y)):
+                        tmpX1 = tmpX1_
+                        tmpX2 = tmpX2_
+
                     new_train_set_X.append([tmpX1, tmpX2])
                     if (testing_function.polynomialModel(tmpX1, tmpX2)):
                         new_train_set_Y.append([0])
