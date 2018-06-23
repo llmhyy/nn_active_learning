@@ -130,7 +130,7 @@ for i in range(active_learning_iteration):
                 g_y = g[0][j][1]
                 g_total = math.sqrt(g_x*g_x+g_y*g_y)
 
-                if (g_total > 0.001):
+                if (g_total > 0.00001):
                     tmpX1 = train_set_X[j][0] + g[0][j][0] * k
                     tmpX2 = train_set_X[j][1] + g[0][j][1] * k
 
