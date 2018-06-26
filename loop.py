@@ -14,7 +14,8 @@ learning_rate = 1
 training_epochs = 100
 display_step = 1
 changing_rate = [1000]
-
+step=1
+pointsRatio=0.2
 active_learning_iteration = 10
 
 # Network Parameters
@@ -117,11 +118,24 @@ for i in range(active_learning_iteration):
 
         new_train_set_X = []
         new_train_set_Y = []
-
+        dic={}
+        for k in range(len(train_set_X)):
+            dic[g[0][k][0]]=train_set_X[k]
+        
         # smallGradient_Unchanged=0
         # smallGradient_total=0
         # largeGradient_Unchanged=0
         # largeGradient_total=0
+
+        gradientList=g[0].tolist()
+        print (type(gradientList))
+        for i in range(len())
+        util.quickSort(gradientList)
+        print (gradientList)
+        threshold = gradientList[int(-len(gradientList)*pointsRatio)]
+        print(int(-len(gradientList)*pointsRatio))
+        print(gradientList[64])
+
         for k in changing_rate:
 
             print("boundary points")
@@ -130,7 +144,7 @@ for i in range(active_learning_iteration):
                 g_y = g[0][j][1]
                 g_total = math.sqrt(g_x*g_x+g_y*g_y)
 
-                if (g_total > 0.00001):
+                if (g_total > 0.001):
                     tmpX1 = train_set_X[j][0] + g[0][j][0] * k
                     tmpX2 = train_set_X[j][1] + g[0][j][1] * k
 
