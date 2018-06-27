@@ -2,7 +2,7 @@ import csv
 
 import tensorflow as tf
 import numpy as np
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
@@ -26,10 +26,10 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
     Z = pred_func(list)
     Z = Z.reshape(xx.shape)
     # Plot the contour and training examples
-    plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
+    # plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
-    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
-    plt.show()
+    # plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
+    # plt.show()
 
 
 def calculateAccuracy(y, set_Y, b):
