@@ -181,32 +181,32 @@ for i in range(active_learning_iteration):
 
             ##boundary remaining test
             ##small gradient test
-            X1=train_set_X[j][0]
-            X2=train_set_X[j][1]
-            newY=train_set_Y[j][0]
-            ##print ("Y",newY)
-            if(g[0][j][0]<0.01):
+            # X1=train_set_X[j][0]
+            # X2=train_set_X[j][1]
+            # newY=train_set_Y[j][0]
+            # ##print ("Y",newY)
+            # if(g[0][j][0]<0.01):
 
-            	smallGradient_total+=1
-            	if(newY==0):
-            		if(polynomialModel(tmpX1,tmpX2)):
-            			smallGradient_Unchanged+=1
-            	elif(newY==1):
-            		if(not polynomialModel(tmpX1,tmpX2)):
-            			smallGradient_Unchanged+=1
+            # 	smallGradient_total+=1
+            # 	if(newY==0):
+            # 		if(polynomialModel(tmpX1,tmpX2)):
+            # 			smallGradient_Unchanged+=1
+            # 	elif(newY==1):
+            # 		if(not polynomialModel(tmpX1,tmpX2)):
+            # 			smallGradient_Unchanged+=1
 
-            ##large gradient test
-            if(g[0][j][0]>0.1):
-            	newtmpX1=train_set_X[j][0]-g[0][j][0]*k
-            	newtmpX2=train_set_X[j][1]-g[0][j][1]*k
+            # ##large gradient test
+            # if(g[0][j][0]>0.1):
+            # 	newtmpX1=train_set_X[j][0]-g[0][j][0]*k
+            # 	newtmpX2=train_set_X[j][1]-g[0][j][1]*k
 
-            	largeGradient_total+=1
-            	if(newY==0):
-            		if(polynomialModel(newtmpX1,newtmpX2)):
-            			largeGradient_Unchanged+=1
-            	elif(newY==1):
-            		if(not polynomialModel(newtmpX1,newtmpX2)):
-            			largeGradient_Unchanged+=1
+            # 	largeGradient_total+=1
+            # 	if(newY==0):
+            # 		if(polynomialModel(newtmpX1,newtmpX2)):
+            # 			largeGradient_Unchanged+=1
+            # 	elif(newY==1):
+            # 		if(not polynomialModel(newtmpX1,newtmpX2)):
+            # 			largeGradient_Unchanged+=1
 
         # print("generated data points:")
         # for j in range(len(new_train_set_X)):

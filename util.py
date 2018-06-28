@@ -162,3 +162,14 @@ def partition(alist,first,last):
 
 
    return rightmark
+
+
+def data_partition(train_set_X,train_set_Y):
+    label_0=[]
+    label_1=[]
+    for i in range(len(train_set_X)):
+        if(train_set_Y[i][0]==0):
+            label_0.append(train_set_X[i])
+        elif(train_set_Y[i][0]==1):
+            label_1.append(train_set_X[i]) 
+    return label_0,label_1
