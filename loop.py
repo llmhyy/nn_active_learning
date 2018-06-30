@@ -14,7 +14,7 @@ learning_rate = 1
 training_epochs = 100
 display_step = 1
 changing_rate = [1000]
-step=1
+step=3
 pointsRatio=0.1
 active_learning_iteration = 10
 
@@ -128,31 +128,36 @@ for i in range(active_learning_iteration):
         # largeGradient_total=0
 
         gradientList=g[0].tolist()
-        print (type(gradientList))
+        # print (type(gradientList))
         # for i in range(len())
         util.quickSort(gradientList)
-        print (gradientList)
+        # print (gradientList)
         threshold = gradientList[int(-len(gradientList)*pointsRatio)]
         threshold = math.sqrt(threshold[0]*threshold[0]+threshold[1]*threshold[1])
-        print(threshold)
+        # print(threshold)
 
         for k in changing_rate:
 
-            print("boundary points")
+            # print("boundary points")
             for j in range(len(train_set_X)):
                 g_x = g[0][j][0]
                 g_y = g[0][j][1]
                 g_total = math.sqrt(g_x*g_x+g_y*g_y)
 
+                tmpX1 = 0
+                tmpX1_ = 0
+                tmpX2 = 0
+                tmpX2_ = 0
+
                 if (g_total > threshold):
-                    tmpX1 = train_set_X[j][0] + g[0][j][0] * k
-                    tmpX2 = train_set_X[j][1] + g[0][j][1] * k
+                    tmpX1 = train_set_X[j][0] + g_x*(step/g_total)
+                    tmpX2 = train_set_X[j][1] + g_y*(step/g_total)
 
-                    tmpX1_ = train_set_X[j][0] - g[0][j][0] * k
-                    tmpX2_ = train_set_X[j][1] - g[0][j][1] * k
+                    tmpX1_ = train_set_X[j][0] - g_x*(step/g_total)
+                    tmpX2_ = train_set_X[j][1] - g_y*(step/g_total)
 
-                    print("(", train_set_X[j][0], ", ", train_set_X[j][1], ")", "label: ", train_set_Y[j][0],
-                          " gradient: (", g[0][j][0], ", ",  g[0][j][1], ")")
+                    # print("(", train_set_X[j][0], ", ", train_set_X[j][1], ")", "label: ", train_set_Y[j][0],
+                    #       " gradient: (", g[0][j][0], ", ",  g[0][j][1], ")")
 
                     new_pointsX = []
                     new_pointsX.append([tmpX1, tmpX2])
@@ -167,12 +172,12 @@ for i in range(active_learning_iteration):
                     if( (original_y<0.5 and p_y < original_y) or (original_y>0.5 and p_y>original_y)):
                         tmpX1 = tmpX1_
                         tmpX2 = tmpX2_
-
-                    new_train_set_X.append([tmpX1, tmpX2])
-                    if (testing_function.polynomialModel(tmpX1, tmpX2)):
-                        new_train_set_Y.append([0])
-                    else:
-                        new_train_set_Y.append([1])
+                    if ([tmpX1, tmpX2] not in train_set_X):
+                        new_train_set_X.append([tmpX1, tmpX2])
+                        if (testing_function.polynomialModel(tmpX1, tmpX2)):
+                            new_train_set_Y.append([0])
+                        else:
+                            new_train_set_Y.append([1])
 
             ##boundary remaining test
             ##small gradient test
@@ -205,9 +210,9 @@ for i in range(active_learning_iteration):
             		if(not polynomialModel(newtmpX1,newtmpX2)):
             			largeGradient_Unchanged+=1
 
-        print("generated data points:")
-        for j in range(len(new_train_set_X)):
-            print("(", new_train_set_X[j][0], ", ", new_train_set_X[j][1], ")", "label: ", new_train_set_Y[j][0])
+        # print("generated data points:")
+        # for j in range(len(new_train_set_X)):
+        #     print("(", new_train_set_X[j][0], ", ", new_train_set_X[j][1], ")", "label: ", new_train_set_Y[j][0])
         train_set_X = train_set_X + new_train_set_X
         train_set_Y = train_set_Y + new_train_set_Y
 
