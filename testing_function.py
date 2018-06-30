@@ -20,3 +20,12 @@ def polynomialModel(x1, x2):
         return True
     else:
         return False
+
+def polycircleModel(center, radius, x):
+    for i in range(len(center)):
+        pointradius = 0
+        for j in range(len(x)):
+            pointradius += (x[j]-center[i][j])*(x[j]-center[i][j])
+        if (pointradius < radius[i]):
+            return True
+    return False

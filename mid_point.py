@@ -10,7 +10,7 @@ import testing_function
 import util
 
 # Parameters
-learning_rate = 1
+learning_rate = 5
 training_epochs = 100
 
 
@@ -92,7 +92,7 @@ for i in range(active_learning_iteration):
 		label_0,label_1=util.data_partition(train_set_X,train_set_Y)
 		print (len(label_0),len(label_1))
 		distanceList=[]
-		point_pairList=[]
+		point_pairList={}
 
 		for m in label_0:
 			for n in label_1:
@@ -102,14 +102,16 @@ for i in range(active_learning_iteration):
 
 					#if(distance in distanceList):
 						##print ("cnm")
-					pair=point_pair(m,n,distance)
-					if(len(point_pairList)==0):
-						point_pairList.append(pair)
-					else:						
-						for k in point_pairList:
-							if(not (k.point_label_0==m and k.point_label_1==n)):
+					key=(m[0],m[1],n[0],n[1])
+					
+					value=distance
 
-								point_pairList.append(pair)
+					if(not point_pairList):
+						point_pairList[key]=value
+					else:						
+						key=(m[0],m[1],n[0],n[1])
+						if(not (key in point_pairList.keys())):
+							point_pairList[key]=value
 					distanceList.append(distance)
 					#print(m,n)
 		
@@ -135,11 +137,11 @@ for i in range(active_learning_iteration):
 		print (len(point_pairList))
 		#print (train_set_X)
 		for m in selectedList:
-			for n in point_pairList:
-				if(m==n.distance):
+			for k,v in point_pairList.items():
+				if(m==v):
 
-					point_0=n.point_label_0
-					point_1=n.point_label_1
+					point_0=[k[0],k[1]]
+					point_1=[k[2],k[3]]
 					middlepoint=[]
 					middlepoint.append((point_0[0]+point_1[0])/2.0)
 					middlepoint.append((point_0[1]+point_1[1])/2.0)
