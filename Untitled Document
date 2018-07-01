@@ -2,3 +2,19 @@
 2. softmax-sigmoid
 3. data structure
 
+polynomial
+
+polyhedral: Ax=B
+
+active learning
+boundry remaining
+
+0.	fixed step size: discard crowded points (datapoint dropout) -> why crossing the boundry will reduce accuracy
+0.	optimize code
+
+1.	random generate 20 polynomial from simple to complicated
+2.	expand 2D to nD (random parameters) -> compare middle point, gradient, original method
+3.	decide ND discontinueous shap (polyhedral)
+
+4.	make graph
+5.	biased datapoints

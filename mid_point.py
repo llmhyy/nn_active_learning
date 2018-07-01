@@ -75,12 +75,6 @@ class point_pair:
 		self.point_label_1=point_label_1
 		self.distance=distance
 
-
-
-
-
-
-
 for i in range(active_learning_iteration):
 	print("*******", i, "th loop:")
 	print("training set size", len(train_set_X))
@@ -100,8 +94,6 @@ for i in range(active_learning_iteration):
 				distance=math.sqrt((m[0]-n[0])*(m[0]-n[0])+(m[1]-n[1])*(m[1]-n[1]))
 				if(distance>15):
 
-					#if(distance in distanceList):
-						##print ("cnm")
 					pair=point_pair(m,n,distance)
 					if(len(point_pairList)==0):
 						point_pairList.append(pair)

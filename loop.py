@@ -7,6 +7,7 @@ import numpy as np
 import tensorflow as tf
 
 import testing_function
+from testing_function import polynomialModel
 import util
 
 # Parameters
@@ -122,11 +123,6 @@ for i in range(active_learning_iteration):
         for k in range(len(train_set_X)):
             dic[g[0][k][0]]=train_set_X[k]
         
-        # smallGradient_Unchanged=0
-        # smallGradient_total=0
-        # largeGradient_Unchanged=0
-        # largeGradient_total=0
-
         gradientList=g[0].tolist()
         # print (type(gradientList))
         # for i in range(len())
@@ -137,6 +133,11 @@ for i in range(active_learning_iteration):
         # print(threshold)
 
         for k in changing_rate:
+
+            smallGradient_Unchanged=0
+            smallGradient_total=0
+            largeGradient_Unchanged=0
+            largeGradient_total=0
 
             # print("boundary points")
             for j in range(len(train_set_X)):
@@ -181,38 +182,50 @@ for i in range(active_learning_iteration):
 
             ##boundary remaining test
             ##small gradient test
-            X1=train_set_X[j][0]
-            X2=train_set_X[j][1]
-            newY=train_set_Y[j][0]
-            tmpX1 = X1 - g[0][j][1]
-            tmpX2 = X2 + g[0][j][0]
-            ##print ("Y",newY)
-            if(g[0][j][0]<0.01):
+                X1=train_set_X[j][0]
+                X2=train_set_X[j][1]
+                newY=train_set_Y[j][0]
+                g_x = g[0][j][0]
+                g_y = g[0][j][1]
+                g_total = math.sqrt(g_x*g_x+g_y*g_y)
 
-            	smallGradient_total+=1
-            	if(newY==0):
-            		if(polynomialModel(tmpX1,tmpX2)):
-            			smallGradient_Unchanged+=1
-            	elif(newY==1):
-            		if(not polynomialModel(tmpX1,tmpX2)):
-            			smallGradient_Unchanged+=1
+                if (g_total==0) :
+                    tmpX1 = X1 - step
+                    tmpX2 = X2 + step
+                else:
+                    tmpX1 = X1 - g[0][j][1]*(step/g_total)
+                    tmpX2 = X2 + g[0][j][0]*(step/g_total)
+                ##print ("Y",newY)
+                if(g[0][j][0]<0.01):
 
-            # ##large gradient test
-            if(g[0][j][0]>0.1):
-            	newtmpX1=train_set_X[j][0]-g[0][j][0]*k
-            	newtmpX2=train_set_X[j][1]-g[0][j][1]*k
+                	smallGradient_total+=1
+                	if(newY==0):
+                		if(polynomialModel(tmpX1,tmpX2)):
+                			smallGradient_Unchanged+=1.0
+                	elif(newY==1):
+                		if(not polynomialModel(tmpX1,tmpX2)):
+                			smallGradient_Unchanged+=1.0
 
-            	largeGradient_total+=1
-            	if(newY==0):
-            		if(polynomialModel(newtmpX1,newtmpX2)):
-            			largeGradient_Unchanged+=1
-            	elif(newY==1):
-            		if(not polynomialModel(newtmpX1,newtmpX2)):
-            			largeGradient_Unchanged+=1
+                # ##large gradient test
+                if(g[0][j][0]>0.01):
+                	# newtmpX1=train_set_X[j][0]-g[0][j][0]*k
+                	# newtmpX2=train_set_X[j][1]-g[0][j][1]*k
 
+                	largeGradient_total+=1
+                	if(newY==0):
+                		if(polynomialModel(tmpX1,tmpX2)):
+                			largeGradient_Unchanged+=1.0
+                	elif(newY==1):
+                		if(not polynomialModel(tmpX1,tmpX2)):
+                			largeGradient_Unchanged+=1.0
+                
         # print("generated data points:")
         # for j in range(len(new_train_set_X)):
         #     print("(", new_train_set_X[j][0], ", ", new_train_set_X[j][1], ")", "label: ", new_train_set_Y[j][0])
+        if (smallGradient_total != 0) :
+            print ("Small gradients", smallGradient_Unchanged/smallGradient_total)
+        if (largeGradient_total != 0):
+            print ("Large gradients", largeGradient_Unchanged/largeGradient_total)
         train_set_X = train_set_X + new_train_set_X
         train_set_Y = train_set_Y + new_train_set_Y
 

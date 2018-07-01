@@ -80,8 +80,8 @@ with tf.Session() as sess:
     ##global gradients                                                        Y: train_set_Y}
     # Training cycle
     for epoch in range(training_epochs):
-        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X,
-                                                        Y: train_set_Y})
+        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:200],
+                                                        Y: train_set_Y[:200]})
 
         g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
         ##print(g)
