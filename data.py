@@ -30,32 +30,27 @@ def basic():
 
 def randomPolynomial():
     number=random.randint(1,20)
-    number = 2
-    print (number)
     
+    print (number)
     with open('trainP.csv', 'wb') as csvfile:
         with open('testP.csv', 'wb') as csvfile2:
             train = csv.writer(csvfile)
             test = csv.writer(csvfile2)
-            coefficientList=[1]
-            
             for k in range (1000):
-                
+                coefficientList=[]
                 xList=[]
-                out=[]
-                for i in range(number-1):
-                    #coefficientList.append(random.uniform(-0, 10))
+                
+                for i in range(number):
+                    coefficientList.append(random.uniform(-0, 10))
                     power=number-i
-                    x=random.uniform(-10, 10)
-                    xList.append(x)
-                    out.append(math.pow(x,power))
+                    xList.append(math.pow(random.uniform(-10, 10),power))
                     
                 output=0
-                for i in range (number-1):
-                    output+=coefficientList[i]*out[i]
-                y=random.uniform(0, 50)
+                for i in range (number):
+                    output+=coefficientList[i]*xList[i]
+                y=random.uniform(-100000, 100000)
                 optList=[]
-                xList.append(y)
+               
                 flag=y>output
                 if k < 700:
                     ##if ((x-12.5)*(x-12.5)+y*y<100 or (x+12.5)*(x+12.5)+y*y<100):
@@ -80,7 +75,7 @@ def randomPolynomial():
                     else:
                         optList.append(1.0)
                         optList+=xList
-                        test.writerow(optList) 
+                        test.writerow(optList)          
 
 def randomCircle():
     number=random.randint(1,20)
@@ -98,7 +93,8 @@ def randomCircle():
                     # xList.append(math.pow(random.uniform(-10, 10),power))
                 circleList.append(random.uniform(-1.5, 1.5))
                 circleList.append(random.uniform(-1.5, 1.5))
-
+                coefficientList=[]
+            
                 output=0
                 optList=[]
                 flag=tf.polycircleModel(formula[0],formula[1],circleList)
