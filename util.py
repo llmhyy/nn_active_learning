@@ -166,7 +166,7 @@ def partition(alist,first,last):
    return rightmark
 
 
-def data_partition(train_set_X,train_set_Y):
+def data_partition(train_set_X, train_set_Y):
     label_0=[]
     label_1=[]
     for i in range(len(train_set_X)):

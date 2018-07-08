@@ -1,15 +1,14 @@
 from __future__ import print_function
 
-import random
 import math
-import xlwt
+import random
 
+import models
 import numpy as np
 import tensorflow as tf
+import xlwt
 
 import testing_function
-from testing_function import polynomialModel
-import models
 import util
 
 # Parameters
@@ -17,8 +16,8 @@ learning_rate = 1
 training_epochs = 100
 display_step = 1
 changing_rate = [1000]
-step=8
-pointsRatio=0.25
+step = 8
+pointsRatio = 0.25
 active_learning_iteration = 10
 
 # Network Parameters
@@ -134,30 +133,30 @@ for i in range(active_learning_iteration):
 
         new_train_set_X = []
         new_train_set_Y = []
-        
-        gradientList=g[0].tolist()
+
+        gradientList = g[0].tolist()
 
         g_list = []
-        
+
         # print (type(gradientList))
         for i in range(len(g[0])):
-            g_list.append(math.sqrt(g[0][i][0]*g[0][i][0]+g[0][i][1]*g[0][i][1]))
+            g_list.append(math.sqrt(g[0][i][0] * g[0][i][0] + g[0][i][1] * g[0][i][1]))
         util.quickSort(g_list)
-        
-        threshold = g_list[int(-len(gradientList)*pointsRatio)]
+
+        threshold = g_list[int(-len(gradientList) * pointsRatio)]
         # threshold = math.sqrt(threshold[0]*threshold[0]+threshold[1]*threshold[1]+threshold[2]*threshold[2]+threshold[3]*threshold[3])
         # print(threshold)
 
-        smallGradient_Unchanged=0
-        smallGradient_total=0
-        largeGradient_Unchanged=0
-        largeGradient_total=0
+        smallGradient_Unchanged = 0
+        smallGradient_total = 0
+        largeGradient_Unchanged = 0
+        largeGradient_total = 0
 
         # print("boundary points")
         for j in range(len(train_set_X)):
             g_x1 = g[0][j][0]
             g_x2 = g[0][j][1]
-            g_total = math.sqrt(g_x1*g_x1+g_x2*g_x2)
+            g_total = math.sqrt(g_x1 * g_x1 + g_x2 * g_x2)
 
             tmpX1 = 0
             tmpX1_ = 0
@@ -165,17 +164,17 @@ for i in range(active_learning_iteration):
             tmpX2_ = 0
 
             if (g_total > threshold):
-                tmpX1 = train_set_X[j][0] + g_x1*(step/g_total)
-                tmpX2 = train_set_X[j][1] + g_x2*(step/g_total)
+                tmpX1 = train_set_X[j][0] + g_x1 * (step / g_total)
+                tmpX2 = train_set_X[j][1] + g_x2 * (step / g_total)
 
-                tmpX1_ = train_set_X[j][0] - g_x1*(step/g_total)
-                tmpX2_ = train_set_X[j][1] - g_x2*(step/g_total)
+                tmpX1_ = train_set_X[j][0] - g_x1 * (step / g_total)
+                tmpX2_ = train_set_X[j][1] - g_x2 * (step / g_total)
 
-                tmpX1__ = train_set_X[j][0] + g_x1*(step/g_total)
-                tmpX2__= train_set_X[j][1] - g_x2*(step/g_total)
+                tmpX1__ = train_set_X[j][0] + g_x1 * (step / g_total)
+                tmpX2__ = train_set_X[j][1] - g_x2 * (step / g_total)
 
-                tmpX1___ = train_set_X[j][0] - g_x1*(step/g_total)
-                tmpX2___ = train_set_X[j][1] + g_x2*(step/g_total)
+                tmpX1___ = train_set_X[j][0] - g_x1 * (step / g_total)
+                tmpX2___ = train_set_X[j][1] + g_x2 * (step / g_total)
 
                 # print("(", train_set_X[j][0], ", ", train_set_X[j][1], ", ", train_set_X[j][2], ")", "label: ", train_set_Y[j][0],
                 #       " gradient: (", g[0][j][0], ", ",  g[0][j][1], ", ", g[0][j][2], ")")
@@ -196,19 +195,19 @@ for i in range(active_learning_iteration):
 
                 distances = [p_y, n_y, pn_y, np_y]
                 ans = 0
-                if (original_y<0.5):
+                if (original_y < 0.5):
                     ans = max(distances)
                 else:
                     ans = min(distances)
-                print(ans==p_y or ans==n_y)
+                print(ans == p_y or ans == n_y)
 
-                if (ans==p_y):
+                if (ans == p_y):
                     new = [tmpX1, tmpX2]
-                elif (ans==n_y):
+                elif (ans == n_y):
                     new = [tmpX1_, tmpX2_]
-                elif (ans==pn_y):
+                elif (ans == pn_y):
                     new = [tmpX1__, tmpX2__]
-                elif (ans==np_y):
+                elif (ans == np_y):
                     new = [tmpX1___, tmpX2___]
                 # if( (original_y<0.5 and p_y < original_y) or (original_y>0.5 and p_y>original_y)):
                 #     tmpX1 = tmpX1_
@@ -216,10 +215,10 @@ for i in range(active_learning_iteration):
 
                 if (new not in train_set_X):
                     new_train_set_X.append(new)
-                    haha=new
-                    xixi=model
-                    if (testing_function.polycircleModel(model[0],model[1],new)):
-                    # if (testing_function.polynomialModel(xixi,haha)):
+                    haha = new
+                    xixi = model
+                    if (testing_function.polycircleModel(model[0], model[1], new)):
+                        # if (testing_function.polynomialModel(xixi,haha)):
                         new_train_set_Y.append([0])
                     else:
                         new_train_set_Y.append([1])
@@ -262,7 +261,7 @@ for i in range(active_learning_iteration):
         #         	elif(newY==1):
         #         		if(not polynomialModel(tmpX1,tmpX2)):
         #         			largeGradient_Unchanged+=1.0
-                
+
         # # print("generated data points:")
         # for j in range(len(new_train_set_X)):
         #     print("(", new_train_set_X[j][0], ", ", new_train_set_X[j][1], ", ", new_train_set_X[j][2], ")", "label: ", new_train_set_Y[j][0])
@@ -274,9 +273,9 @@ for i in range(active_learning_iteration):
         train_set_Y = train_set_Y + new_train_set_Y
 for i, row in enumerate(result):
     for j, col in enumerate(row):
-        if (i==1):
-            if(type(model[0])!=list):
-                ws.write(i, j, str(col)+"x^"+ str(len(model)-j))
+        if (i == 1):
+            if (type(model[0]) != list):
+                ws.write(i, j, str(col) + "x^" + str(len(model) - j))
             else:
                 ws.write(i, j, str(col))
         else:
