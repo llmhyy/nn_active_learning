@@ -51,8 +51,10 @@ def calculateAccuracy(y, set_Y, b):
             test_wrong.append(y[i])
     # print (test_correct)
     # print (test_wrong)
+    result = len(test_correct) / float(len(test_correct) + len(test_wrong))
+    print(result)
+    return result
 
-    print(len(test_correct) / float(len(test_correct) + len(test_wrong)))
 
 
 # Create model
@@ -73,13 +75,13 @@ def multilayer_perceptron(x, weights, biases):
 
 def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, data_file_name):
     # read training data
-    with open('train.csv', 'r+') as csvfile:
+    with open('train_C.csv', 'r+') as csvfile:
         with open('train_next.csv', 'w+') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 140 or i > 210):
+                if (i < 140 or i > 160):
                     i += 1
                     continue
                 else:
@@ -89,7 +91,7 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, data_file_name)
         file.close()
 
     # read testing data
-    with open('test.csv', 'r+') as csvfile:
+    with open('test_C.csv', 'r+') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:
             # print(row)
@@ -173,3 +175,18 @@ def data_partition(train_set_X,train_set_Y):
         elif(train_set_Y[i][0]==1):
             label_1.append(train_set_X[i]) 
     return label_0,label_1
+
+
+
+def addPoints(number,distanceList,selectedList,pointer):
+    pivot=0
+    while pivot<number:
+        if distanceList[pointer] in selectedList:
+            pointer+=1
+
+        # add large points
+        
+        else:
+            selectedList.append(distanceList[pointer])
+            pivot+=1
+            pointer+=1

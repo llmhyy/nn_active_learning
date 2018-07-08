@@ -6,18 +6,19 @@ import math
 import numpy as np
 import tensorflow as tf
 
+import xlwt
+import models
+
 import testing_function
 import util
 
 # Parameters
-learning_rate = 1
+learning_rate = 0.4
 training_epochs = 100
 
-
-
-pointsNumber=20
-active_learning_iteration = 7
-threhold=8
+pointsNumber=10
+active_learning_iteration = 10
+threhold=5
 
 # Network Parameters
 n_hidden_1 = 10  # 1st layer number of neurons
@@ -29,6 +30,16 @@ random_seed = 0
 random.seed(random_seed)
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
+
+result = []
+
+wb = xlwt.Workbook()
+ws = wb.add_sheet("nearcircle_mid")
+
+model = models.formulas.get("circles", 0)
+result.append(["Active learning with mid points"])
+result.append(model)
+
 # tf Graph input
 X = tf.placeholder("float", [None, n_input])
 Y = tf.placeholder("float", [None, n_classes])
@@ -78,7 +89,7 @@ class point_pair:
 for i in range(active_learning_iteration):
 	print("*******", i, "th loop:")
 	print("training set size", len(train_set_X))
-	pointsNumber=20
+	pointsNumber=10
 	with tf.Session() as sess:
 		sess.run(init)
 		label_0=[]
@@ -86,78 +97,115 @@ for i in range(active_learning_iteration):
 		label_0,label_1=util.data_partition(train_set_X,train_set_Y)
 		print (len(label_0),len(label_1))
 		distanceList=[]
-		point_pairList=[]
+		point_pairList={}
 
 		for m in label_0:
 			for n in label_1:
 
 				distance=math.sqrt((m[0]-n[0])*(m[0]-n[0])+(m[1]-n[1])*(m[1]-n[1]))
-				if(distance>15):
+				if(distance>threhold):
 
-					pair=point_pair(m,n,distance)
-					if(len(point_pairList)==0):
-						point_pairList.append(pair)
-					else:						
-						for k in point_pairList:
-							if(not (k.point_label_0==m and k.point_label_1==n)):
-
-								point_pairList.append(pair)
+					#if(distance in distanceList):
+						##print ("cnm")
+					key=(m[0],m[1],n[0],n[1])
+					
+					value=distance
+					if (not point_pairList):
+						point_pairList[key]=value
+					elif (not (key in point_pairList.keys())):
+						point_pairList[key]=value
 					distanceList.append(distance)
 					#print(m,n)
 		
-		#print (len(distanceList))
+		#print (distanceList)
 
 
 		util.quickSort(distanceList)
+		#print(distanceList)
 		selectedList=[]
-		pivot=0
-		while pivot<pointsNumber:
+		# pivot=0
+		# while pivot<pointsNumber:
 			
-			if(distanceList[pivot] in selectedList):
-				pointsNumber+=1
-				pivot+=1
+		# 	if(distanceList[pivot] in selectedList):
+		# 		pointsNumber+=1
+		# 		pivot+=1
 
+		# 	else:
+
+		# 		selectedList.append(distanceList[pivot])
+		# 		pivot+=1
+		length=len(distanceList)
+		index1=length/3
+		index2=length/3*2
+		pointer = 0
+		for p in range(3):
+			if (pointer<index1):
+				num=int(pointsNumber*0.6)
+				util.addPoints(num,distanceList,selectedList,pointer)
+				pointer = index1
+			elif (pointer<index2):
+				num=int(pointsNumber*0.3)
+				util.addPoints(num,distanceList,selectedList,pointer)
+					#
+				pointer = index2
 			else:
+				num=int(pointsNumber*0.1)
+				util.addPoints(num,distanceList,selectedList,pointer)
 
-				selectedList.append(distanceList[pivot])
-				pivot+=1
+
+				# pick large pooints
 			
-		print (selectedList)
-		print (len(selectedList))
-		print (len(point_pairList))
+		##print (selectedList)
+		##print (distanceList)
+		# print (len(selectedList))
+		# print (len(point_pairList))
 		#print (train_set_X)
 		for m in selectedList:
-			for n in point_pairList:
-				if(m==n.distance):
+			for k,v in point_pairList.items():
+				if(m==v):
 
-					point_0=n.point_label_0
-					point_1=n.point_label_1
+					point_0=[k[0],k[1]]
+					point_1=[k[2],k[3]]
 					middlepoint=[]
 					middlepoint.append((point_0[0]+point_1[0])/2.0)
 					middlepoint.append((point_0[1]+point_1[1])/2.0)
-					print (point_0)
+					# print (point_0)
 					print ("original point",point_0,point_1)
 					print("middlepoint",middlepoint)	
-					flag=testing_function.polynomialModel(middlepoint[0],middlepoint[1])
+					xixi=[1]
+					flag = testing_function.polycircleModel(model[0],model[1],middlepoint)
+					# flag=testing_function.polynomialModel(xixi,middlepoint)
 					if(flag):
-						train_set_X.append(middlepoint)
-						train_set_Y.append([0])
-						# print ( train_set_X.index(point_0))
-						# print(point_0)
-						# train_set_X.remove(train_set_X[train_set_X.index(point_0)])
+						if (middlepoint not in train_set_X):
+							train_set_X.append(middlepoint)
+							train_set_Y.append([0])
 
 					else:
-						train_set_X.append(middlepoint)
-						train_set_Y.append([1])
-						# print (train_set_X.index(point_1))
-						# print(point_1)
-											
-						# train_set_X.remove(train_set_X[train_set_X.index(point_1)])
+						if (middlepoint not in train_set_X):
+							train_set_X.append(middlepoint)
+							train_set_Y.append([1])
+
 		for epoch in range(training_epochs):
 			_, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})				
 		train_y = sess.run(logits, feed_dict={X: train_set_X})
 		test_y = sess.run(logits, feed_dict={X: test_set_X})
 
 		print("new train size",len(train_set_X),len(train_set_Y))
-		util.calculateAccuracy(train_y, train_set_Y, False)
-		util.calculateAccuracy(test_y, test_set_Y, False)
+		train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
+		test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
+
+		result.append([i, "th Training accuracy", train_acc])
+        result.append([i, "th Testing accuracy", test_acc])
+        result.append(["\n"])
+
+for i, row in enumerate(result):
+    for j, col in enumerate(row):
+        if (i==1):
+            if(type(model[0])!=list):
+                ws.write(i, j, str(col)+"x^"+ str(len(model)-j))
+            else:
+                ws.write(i, j, str(col))
+        else:
+            ws.write(i, j, col)
+
+wb.save("train_results.xls")

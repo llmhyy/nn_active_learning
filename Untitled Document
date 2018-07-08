@@ -18,3 +18,11 @@ boundry remaining
 
 4.	make graph
 5.	biased datapoints
+
+1.	reduce data points
+2.	test possible combination of gradients in 2D
+3.	select testing data in a space uniformly
+4. 	sampling for mid points (n-folder, number inverse proportion to n)
+5.	adjust parameters for worse result
+6.	seperate polyhedral areas (near, far)
+7.	automatically generate excel file

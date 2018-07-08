@@ -7,6 +7,8 @@ import tensorflow as tf
 from matplotlib import pyplot as plt
 
 import util
+import models
+import xlwt
 
 # Parameters
 learning_rate = 1
@@ -46,7 +48,7 @@ test_set_Y = []
 train_set_X = []
 train_set_Y = []
 
-util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, 'train.csv')
+util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, 'train_C.csv')
 
 # Construct model
 logits = util.multilayer_perceptron(X, weights, biases)
@@ -62,6 +64,15 @@ init = tf.global_variables_initializer()
 
 grads = tf.gradients(loss_op, weights["out"])
 newgrads = tf.gradients(logits, X)
+
+result = []
+
+wb = xlwt.Workbook()
+ws = wb.add_sheet("farcircle_na")
+
+model = models.formulas.get("circles", 0)
+result.append(["Non-Active learning"])
+result.append(model)
 
 y = None
 
@@ -80,26 +91,40 @@ with tf.Session() as sess:
     ##global gradients                                                        Y: train_set_Y}
     # Training cycle
     for epoch in range(training_epochs):
-        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:200],
-                                                        Y: train_set_Y[:200]})
+        _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:100],
+                                                        Y: train_set_Y[:100]})
 
         g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
         ##print(g)
         print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
     print("Optimization Finished!")
-    print(len(train_set_Y))
+    # print(len(train_set_Y))
     train_y = sess.run(logits, feed_dict={X: train_set_X})
     test_y = sess.run(logits, feed_dict={X: test_set_X})
 
     # print(len(train_y))
     # print(len(train_set_Y))
-    util.calculateAccuracy(train_y, train_set_Y, False)
-    util.calculateAccuracy(test_y, test_set_Y, False)
+    train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
+    test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
+
+    result.append([epoch, "th Training accuracy", train_acc])
+    result.append([epoch, "th Testing accuracy", test_acc])
+    result.append(["\n"])
 
     predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-    util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
+    # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
 
+    for i, row in enumerate(result):
+        for j, col in enumerate(row):
+            if (i==1):
+                if(type(model[0])!=list):
+                    ws.write(i, j, str(col)+"x^"+ str(len(model)-j))
+                else:
+                    ws.write(i, j, str(col))
+            else:
+                ws.write(i, j, col)
 
+    wb.save("near_circle.xls")
 
 
