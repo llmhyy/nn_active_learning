@@ -14,56 +14,51 @@ def generate_data_points(formu, category):
 
 #TODO coefficient and xList should comes from formu
 def randomPolynomial(formu):
-    number = random.randint(1, 20)
+    trainName="train"+"_".join(str(x) for x in formu)+".csv"
+    testName="test"+"_".join(str(x) for x in formu)+".csv"
+    coefficientList=formu[:-1]
+    y=formu[-1]
+    with open(trainName, 'wb') as csvfile:
+        
+        train = csv.writer(csvfile)
+        
+        for k in range(700):
 
-    print(number)
-    with open('trainP.csv', 'wb') as csvfile:
-        with open('testP.csv', 'wb') as csvfile2:
-            train = csv.writer(csvfile)
-            test = csv.writer(csvfile2)
-            for k in range(1000):
+            #TODO coefficient and xList should comes from formu
 
-                #TODO coefficient and xList should comes from formu
 
-                coefficientList = []
-                xList = []
+            xList = []
+            variableNum=len(coefficientList)
+            for i in range(variableNum):
+                
+                xList.append(random.randint(-10,10))
 
-                for i in range(number):
-                    coefficientList.append(random.uniform(-0, 10))
-                    power = number - i
-                    xList.append(math.pow(random.uniform(-10, 10), power))
+            
+            
+            flag=tf.polynomialModel(coefficientList,xList,y)
+            
+            optList = []
+            
+            
+                
 
-                output = 0
-                for i in range(number):
-                    output += coefficientList[i] * xList[i]
-                y = random.uniform(-100000, 100000)
-                optList = []
+            if (flag):
+                optList.append(0.0)
+                
+                optList += xList
 
-                flag = y > output
-                if k < 700:
-                    ##if ((x-12.5)*(x-12.5)+y*y<100 or (x+12.5)*(x+12.5)+y*y<100):
+                train.writerow(optList)
+            else:
+                optList.append(1.0)
+                                       
+                optList += xList
 
-                    if (flag):
-                        optList.append(0.0)
-                        optList += xList
+                train.writerow(optList)
 
-                        train.writerow(optList)
-                    else:
-                        optList.append(1.0)
-                        optList += xList
+    testingPoint(formu,variableNum,400,-100,100,testName,formula.POLYNOMIAL)          
+    return trainName,testName
 
-                        train.writerow(optList)
-                else:
-                    ##if ((x-12.5)*(x-12.5)+y*y<100 or (x+12.5)*(x+12.5)+y*y<100):
-                    if (flag):
-                        optList.append(0.0)
-                        optList += xList
 
-                        test.writerow(optList)
-                    else:
-                        optList.append(1.0)
-                        optList += xList
-                        test.writerow(optList)
 
 # generate random data points for a circle formula
 def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
@@ -102,7 +97,6 @@ def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
                     train.writerow(data_point)
             testingPoint(formu, dim, 4000, -1000, 1000, test_path, formula.POLYHEDRON)
 
-
 def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagory):
     with open(path, 'wb') as csvfile:
         numberOfPoint = int(round(math.pow(number, (1.0 / dimension))))
@@ -118,8 +112,8 @@ def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagor
 
             if catagory==formula.POLYHEDRON:
                 flag = tf.polycircleModel(formu[0], formu[1], i)
-            # else:
-            #     flag = 
+            else:
+                flag = tf.polynomialModel(coefficientList,i,y)
 
             if (flag):
                 i.insert(0, 0.0)
@@ -128,3 +122,5 @@ def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagor
             test.writerow(i)
 
 # testingPoint(2, 4000, -1.5, 1.5)
+randomPolynomial([[1,2],[3],[4,5,6]])
+
