@@ -11,7 +11,7 @@ class Formulas():
     def put(self, category, formula):
         self.formulas[category].append(formula)
 
-    def get(self, category, index):
-        return self.formulas[category][index]
+    def get(self, category):
+        return self.formulas[category]
 
 

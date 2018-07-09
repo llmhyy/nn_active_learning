@@ -65,56 +65,46 @@ def randomPolynomial(formu):
                         optList += xList
                         test.writerow(optList)
 
-
-def randomCircle(formu):
+# generate random data points for a circle formula
+def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
     number = random.randint(1, 20)
-    number = 2
-    print(number)
+    dim = len(formu[0][0])
+    print(dim)
 
-    with open('train_C.csv', 'wb') as csvfile:
-        with open('test_C.csv', 'wb') as csvfile2:
+    trainname = "train" + "_".join(str(x) for x in formu[1]) + ".csv"
+    testname = "test" + "_".join(str(x) for x in formu[1]) + ".csv"
+
+    train_path = "./dataset/"+trainname
+    test_path = "./dataset/"+testname
+
+    with open(train_path, 'wb') as csvfile:
+        with open(test_path, 'wb') as csvfile2:
             train = csv.writer(csvfile)
             test = csv.writer(csvfile2)
-            for k in range(1000):
-                xList = []
-                circleList = []
-                # for i in range(number):
-                # xList.append(math.pow(random.uniform(-10, 10),power))
-                circleList.append(random.uniform(-1.5, 1.5))
-                circleList.append(random.uniform(-1.5, 1.5))
-                coefficientList = []
 
-                output = 0
-                optList = []
-                flag = tf.polycircleModel(formu[0], formu[1], circleList)
-                if k < 700:
-                    ##if ((x-12.5)*(x-12.5)+y*y<100 or (x+12.5)*(x+12.5)+y*y<100):
+            for k in range(700):
+                data_point = []
+                generated_point = []
+                for i in range(dim):
+                    generated_point.append(random.uniform(-1000, 1000))
 
-                    if (flag):
-                        optList.append(0.0)
-                        optList += circleList
+                flag = tf.polycircleModel(formu[0], formu[1], generated_point)
 
-                        train.writerow(optList)
-                    else:
-                        optList.append(1.0)
-                        optList += circleList
+                if (flag):
+                    data_point.append(0.0)
+                    data_point += generated_point
 
-                        train.writerow(optList)
+                    train.writerow(data_point)
                 else:
-                    ##if ((x-12.5)*(x-12.5)+y*y<100 or (x+12.5)*(x+12.5)+y*y<100):
-                    if (flag):
-                        optList.append(0.0)
-                        optList += circleList
+                    data_point.append(1.0)
+                    data_point += generated_point
 
-                        test.writerow(optList)
-                    else:
-                        optList.append(1.0)
-                        optList += circleList
-                        test.writerow(optList)
+                    train.writerow(data_point)
+            testingPoint(formu, dim, 4000, -1000, 1000, test_path, formula.POLYHEDRON)
 
 
-def testingPoint(formu, dimension, number, lowerbound, largebound):
-    with open('test_C.csv', 'wb') as csvfile:
+def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagory):
+    with open(path, 'wb') as csvfile:
         numberOfPoint = int(round(math.pow(number, (1.0 / dimension))))
         step = (largebound - lowerbound) / float(numberOfPoint)
         pointList = []
@@ -125,16 +115,16 @@ def testingPoint(formu, dimension, number, lowerbound, largebound):
         test = csv.writer(csvfile)
         for i in output:
             i = list(i)
-            point = []
-            flag = tf.polycircleModel(formu[0], formu[1], i)
+
+            if catagory==formula.POLYHEDRON:
+                flag = tf.polycircleModel(formu[0], formu[1], i)
+            # else:
+            #     flag = 
+
             if (flag):
-                # point.append(0.0)
-                # for i in range(len)
                 i.insert(0, 0.0)
             else:
                 i.insert(0, 1.0)
             test.writerow(i)
 
-
-randomCircle()
-testingPoint(2, 4000, -1.5, 1.5)
+# testingPoint(2, 4000, -1.5, 1.5)

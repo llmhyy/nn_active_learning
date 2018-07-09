@@ -1,5 +1,6 @@
 import formula
 import random
+import math
 
 def generate_formula(category, number):
     formulas = formula.Formulas()
@@ -40,7 +41,7 @@ def generate_polyhedron():
         for j in range(num_of_dimension):
             center_coordinate = random.randint(-1000, 1000)
             center.append(center_coordinate)
-        radius = random.randint(1,50)
+        radius = random.randint(int(math.sqrt(10)**num_of_dimension),int(2*math.sqrt(10)**num_of_dimension))
         centers.append(center)
         radiuses.append(radius)
     formula = [centers, radiuses]
