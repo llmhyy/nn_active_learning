@@ -15,15 +15,18 @@ def circleModel(x1, x2):
         return False
 
 
-def polynomialModel(coefficient,x):
+def polynomialModel(coefficientList,x,y):
 
-    number=2
-    y=x[-1]
+    variableNum=len(coefficientList)
     output=0
-    for i in range (number-1):
-        power=number-i
-        output+=coefficient[i]*math.pow(x[i],power) 
-    return y>output
+    for i in range(variableNum):
+        tmpList=coefficientList[i]
+        tmpLength=len(tmpList)
+        for j in range(tmpLength):
+            power=tmpLength-j
+                
+            output+=tmpList[j]*math.pow(x[i],power)
+            print ("output",output)
 
 
 def polycircleModel(center, radius, x):  

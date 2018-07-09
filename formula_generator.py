@@ -16,6 +16,7 @@ def generate_formula(category, number):
 
 def generate_polynomial():
     #TODO variable number is up to 10
+    y=random.randint(-10000,10000)
     variableNumber=random.randint(1,10)
     print(variableNumber)
     coefficientList=[]
@@ -24,8 +25,9 @@ def generate_polynomial():
         print(powerNumber)
         tmpList=[]
         for j in range (powerNumber):
-            tmpList.append(random.randint(1,5))
+            tmpList.append(random.randint(-5,5))
         coefficientList.append(tmpList)
+    coefficientList.append(y)
     print (coefficientList)
     return coefficientList
 
@@ -33,13 +35,6 @@ def generate_polyhedron():
     #TODO variable number is up to 10
     print()
 
-def generate_specific_formula():
-    formulas = formula.Formulas()
-    formulas.put(formula.POLYNOMIAL, [1, 2])
-    formulas.put(formula.POLYHEDRON, [[[1, 1], [-1, -1]], [0.5, 0.5]])
-    # formulas.put([[[12,0],[-12,0]],[4,4]])
-
-    return formulas
 
 f=generate_formula(formula.POLYNOMIAL,5)
 print (f.formulas)
