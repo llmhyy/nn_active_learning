@@ -1,6 +1,6 @@
 import formula
 import formula_generator as fg
-# import benchmark
+import benchmark
 # import gradient_active_learning as gal
 # import mid_point_active_learning as mal
 import data_point_generation

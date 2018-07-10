@@ -49,8 +49,6 @@ test_set_Y = []
 train_set_X = []
 train_set_Y = []
 
-util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, 'train_C.csv')
-
 # Construct model
 logits = util.multilayer_perceptron(X, weights, biases)
 
@@ -83,7 +81,7 @@ result = []
 y = None
 
 
-def generate_accuracy():
+def generate_accuracy(train_path, test_path):
     with tf.Session() as sess:
         sess.run(init)
 
@@ -92,6 +90,8 @@ def generate_accuracy():
 
         print("h1", h1)
         print("out", out)
+
+        util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path)
 
         g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
         ##print(g)
