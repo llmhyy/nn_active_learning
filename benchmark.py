@@ -4,12 +4,12 @@ import random
 
 import numpy as np
 import tensorflow as tf
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 
 import util
 import formula
 import formula_generator
-import xlwt
+
 
 # Parameters
 
@@ -26,6 +26,7 @@ def generate_accuracy(train_path, test_path):
     train_set_Y = []
 
     util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next=False)
+
     # Network Parameters
     n_hidden_1 = 10  # 1st layer number of neurons
     n_hidden_2 = 10  # 2nd layer number of neurons
@@ -122,7 +123,7 @@ def generate_accuracy(train_path, test_path):
         # result.append([epoch, "th Testing accuracy", test_acc])
         # result.append(["\n"])
 
-        predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+        #predicted = tf.cast(logits > 0.5, dtype=tf.float32)
         # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
 
         # for i, row in enumerate(result):
@@ -136,5 +137,3 @@ def generate_accuracy(train_path, test_path):
         #             ws.write(i, j, col)
         #
         # wb.save("near_circle.xls")
-
-

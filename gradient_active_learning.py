@@ -285,6 +285,8 @@ def generate_accuracy(train_path, test_path, formula, catagory):
             #     print ("Large gradients", largeGradient_Unchanged/largeGradient_total)
             train_set_X = train_set_X + new_train_set_X
             train_set_Y = train_set_Y + new_train_set_Y
+
+            # print(train_set_X)
     # for i, row in enumerate(result):
     #     for j, col in enumerate(row):
     #         if (i == 1):
@@ -304,3 +306,7 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
     # print ("small gradient unchanged rate: ",smallGradient_Unchanged/smallGradient_total)
     # print ("large gradient unchanged rate: ", largeGradient_Unchanged/largeGradient_total)
+
+    result.append(train_acc_list)
+    result.append(test_acc_list)
+    return result

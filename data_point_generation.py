@@ -60,7 +60,7 @@ def randomPolynomial(formu):
 
                 train.writerow(optList)
 
-    testingPoint(formu,variableNum,400,-10,10,test_path,formula.POLYNOMIAL)          
+    testingPoint(formu,variableNum,10000,-5,5,test_path,formula.POLYNOMIAL)          
     return train_path,test_path
 
 

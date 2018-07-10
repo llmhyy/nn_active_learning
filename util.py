@@ -72,7 +72,6 @@ def multilayer_perceptron(x, weights, biases):
     out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
     return tf.nn.sigmoid(out_layer)
 
-
 def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next):
     # read training data
     with open(train_path, 'r+') as csvfile:
@@ -106,6 +105,8 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
     if read_next:
         train_path = './dataset/train_next.csv'
     # read training data
+    if read_next:
+        train_path='./dataset/train_next.csv'
     with open(train_path, 'r+') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:
