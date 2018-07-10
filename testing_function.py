@@ -26,8 +26,10 @@ def polynomialModel(coefficientList,x,y):
             power=tmpLength-j
                 
             output+=tmpList[j]*math.pow(x[i],power)
-            print ("output",output)
-
+    if (output>y):
+        return True
+    else:
+        return False
 
 def polycircleModel(center, radius, x):  
     # center format:[[0,1,3],[1,1,1]], radius format: [10,25], x format: [1,2,3]

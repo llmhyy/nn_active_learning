@@ -60,7 +60,7 @@ def randomPolynomial(formu):
 
                 train.writerow(optList)
 
-    testingPoint(formu,variableNum,400,-100,100,test_path,formula.POLYNOMIAL)          
+    testingPoint(formu,variableNum,400,-10,10,test_path,formula.POLYNOMIAL)          
     return train_path,test_path
 
 
@@ -119,7 +119,7 @@ def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagor
             if catagory==formula.POLYHEDRON:
                 flag = tf.polycircleModel(formu[0], formu[1], i)
             else:
-                flag = tf.polynomialModel(formu[:1],i,formu[-1])
+                flag = tf.polynomialModel(formu[:-1],i,formu[-1])
 
             if (flag):
                 i.insert(0, 0.0)

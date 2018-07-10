@@ -5,7 +5,7 @@ import benchmark
 # import mid_point_active_learning as mal
 import data_point_generation
 
-category = formula.POLYHEDRON
+category = formula.POLYNOMIAL
 number = 5
 
 formulas = fg.generate_formula(category, number)
@@ -16,10 +16,14 @@ def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list, mid_list):
     print()
 
 for f in formula_list:
+
+    # f = [[-1,4,2,5],[-2,5,1,0],-1748]
     #TODO each foumla write its generated data into files with the formula name
     train_data_file, test_data_file = data_point_generation.generate_data_points(f, category)
 
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file)
+  
+    print (ben_train_acc, ben_test_acc)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
     gra_list = gal.generate_accuracy(train_data_file, test_data_file)
     #TODO mid_list should contain a set of mid_train_acc and mid_test_acc
