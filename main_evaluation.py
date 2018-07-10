@@ -1,7 +1,7 @@
 import formula
 import formula_generator as fg
 import benchmark
-# import gradient_active_learning as gal
+import gradient_active_learning as gal
 # import mid_point_active_learning as mal
 import data_point_generation
 
@@ -22,10 +22,8 @@ for f in formula_list:
     train_data_file, test_data_file = data_point_generation.generate_data_points(f, category)
 
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file)
-  
-    print (ben_train_acc, ben_test_acc)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
-    gra_list = gal.generate_accuracy(train_data_file, test_data_file)
+    gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category)
     #TODO mid_list should contain a set of mid_train_acc and mid_test_acc
     mid_list = mal.generate_accuracy(train_data_file, test_data_file)
 

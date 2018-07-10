@@ -25,7 +25,7 @@ def generate_accuracy(train_path, test_path):
     train_set_X = []
     train_set_Y = []
 
-    util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path)
+    util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next=False)
     # Network Parameters
     n_hidden_1 = 10  # 1st layer number of neurons
     n_hidden_2 = 10  # 2nd layer number of neurons
