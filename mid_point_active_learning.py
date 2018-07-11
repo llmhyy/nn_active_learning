@@ -3,13 +3,14 @@ from __future__ import print_function
 import math
 import random
 
-import models
+
 import numpy as np
 import tensorflow as tf
 import formula
 
 import testing_function
 import util
+import boundary_remaining as br
 def generate_accuracy(train_data_file, test_data_file,formu,category):
 
     # Parameters
@@ -81,6 +82,8 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
 
 
     for i in range(active_learning_iteration):
+
+
         print("*******", i, "th loop:")
         print("training set size", len(train_set_X))
         pointsNumber = 10
@@ -90,6 +93,7 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             label_1 = []
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             print(len(label_0), len(label_1))
+            
             distanceList = []
             point_pairList = {}
 
@@ -198,6 +202,35 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
 
             for epoch in range(training_epochs):
                 _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
+
+            #boundary remaining
+            g=sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+            label_0=[]
+            label_1=[]
+            label_0_gradient=[]
+            label_1_gradient=[]
+            label_0, label_1,label_0_gradient,label_1_gradient = util.data_partition_gradient(train_set_X, train_set_Y,g[0])
+            
+            newX=br.balancingPoint(label_0, label_1,label_0_gradient,label_1_gradient)
+            for point in newX:
+                if category == formula.POLYHEDRON:
+                    flag = testing_function.polycircleModel(formu[0], formu[1], point)
+                elif category== formula.POLYNOMIAL:
+                    flag= testing_function.polynomialModel(formu[:-1],point,formu[-1])
+
+                if (flag):
+                    
+                    train_set_X.append(point)
+                    train_set_Y.append([0])
+
+                else:
+                    
+                    train_set_X.append(point)
+                    train_set_Y.append([1])                
+
+
+
+
             train_y = sess.run(logits, feed_dict={X: train_set_X})
             test_y = sess.run(logits, feed_dict={X: test_set_X})
 
