@@ -3,11 +3,11 @@ from __future__ import print_function
 import math
 import random
 
-import models
 import formula as f
 import numpy as np
 import tensorflow as tf
 import xlwt
+from gradient import decide_gradient
 
 import testing_function
 import util
@@ -83,9 +83,8 @@ def generate_accuracy(train_path, test_path, formula, catagory):
     wb = xlwt.Workbook()
     ws = wb.add_sheet("farcircle_gradient")
 
-    model = models.formulas.get("circles", 0)
-    result.append(["Active learning using gradients"])
-    result.append(model)
+    # result.append(["Active learning using gradients"])
+    # result.append(model)
 
     for i in range(active_learning_iteration):
         print("*******", i, "th loop:")
@@ -152,7 +151,7 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
             threshold = g_list[int(-len(gradientList) * pointsRatio)]
             # threshold = math.sqrt(threshold[0]*threshold[0]+threshold[1]*threshold[1]+threshold[2]*threshold[2]+threshold[3]*threshold[3])
-            # print(threshold)
+            print(threshold)
 
             smallGradient_Unchanged = 0
             smallGradient_total = 0
@@ -160,79 +159,46 @@ def generate_accuracy(train_path, test_path, formula, catagory):
             largeGradient_total = 0
 
             # print("boundary points")
-            tmp = []
+
+            decision = decide_gradient(n_input)
             for j in range(len(train_set_X)):
                 grad = 0
                 for k in range(n_input):
-                    x = []
-                    tmp.append(x)
                     grad += g[0][j][k] * g[0][j][k]
                 g_total = math.sqrt(grad)
+                # print("Im here ==================================")
 
                 if (g_total > threshold):
-                    for k in range(n_input):
-                        tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
-                    # tmpX1_ = train_set_X[j][0] - g_x1 * (step / g_total)
-                    # tmpX2_ = train_set_X[j][1] - g_x2 * (step / g_total)
+                    new_pointsX = []
+                    for k in range(len(decision)):
+                        tmp = []
+                        for h in range(n_input):
+                            if (decision[k][h]==True):
+                                tmp.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
+                            else:
+                                tmp.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
+                        # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
+                        new_pointsX.append(tmp)
+                    new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
 
-                    # tmpX1__ = train_set_X[j][0] + g_x1 * (step / g_total)
-                    # tmpX2__ = train_set_X[j][1] - g_x2 * (step / g_total)
-
-                    # tmpX1___ = train_set_X[j][0] - g_x1 * (step / g_total)
-                    # tmpX2___ = train_set_X[j][1] + g_x2 * (step / g_total)
-
-                    # print("(", train_set_X[j][0], ", ", train_set_X[j][1], ", ", train_set_X[j][2], ")", "label: ", train_set_Y[j][0],
-                    #       " gradient: (", g[0][j][0], ", ",  g[0][j][1], ", ", g[0][j][2], ")")
-
-                    # new_pointsX = []
-                    # new_pointsX.append([tmpX1, tmpX2])
-                    # new_pointsX.append([tmpX1_, tmpX2_])
-                    # new_pointsX.append([tmpX1__, tmpX2__])
-                    # new_pointsX.append([tmpX1___, tmpX2___])
-                    # new_pointsX.append([train_set_X[j][0], train_set_X[j][1]])
-                    # new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
-
-                    # original_y = new_pointsY[4]
-                    # p_y = new_pointsY[0]
-                    # n_y = new_pointsY[1]
-                    # pn_y = new_pointsY[2]
-                    # np_y = new_pointsY[3]
-
-                    # distances = [p_y, n_y, pn_y, np_y]
+                    original_y = new_pointsY[-1]
+                    distances = [x for x in new_pointsY]
+                    distances = distances[:-1]
                     # ans = 0
-                    # if (original_y < 0.5):
-                    #     ans = max(distances)
-                    # else:
-                    #     ans = min(distances)
-                    # print(ans == p_y or ans == n_y)
-
-                    # if (ans == p_y):
-                    #     new = [tmpX1, tmpX2]
-                    # elif (ans == n_y):
-                    #     new = [tmpX1_, tmpX2_]
-                    # elif (ans == pn_y):
-                    #     new = [tmpX1__, tmpX2__]
-                    # elif (ans == np_y):
-                    #     new = [tmpX1___, tmpX2___]
-                    # if( (original_y<0.5 and p_y < original_y) or (original_y>0.5 and p_y>original_y)):
-                    #     tmpX1 = tmpX1_
-                    #     tmpX2 = tmpX2_
-                    new = []
-
-                    for k in range(n_input):
-                        new.append(tmp[k][0])
-
+                    if (original_y < 0.5):
+                        ans = max(distances)
+                    else:
+                        ans = min(distances)
+                    new = new_pointsX[distances.index(ans)]
 
                     if (new not in train_set_X):
                         new_train_set_X.append(new)
                         haha = new
-                        xixi = model
                         if catagory==f.POLYHEDRON:
                             flag = testing_function.polycircleModel(formula[0], formula[1], new)
                         else:
                             flag = testing_function.polynomialModel(formula[:-1], new, formula[-1])
                         if (flag):
-                            # if (testing_function.polynomialModel(xixi,haha)):
                             new_train_set_Y.append([0])
                         else:
                             new_train_set_Y.append([1])

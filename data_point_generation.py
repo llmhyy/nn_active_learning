@@ -30,40 +30,26 @@ def randomPolynomial(formu):
         for k in range(700):
 
             #TODO coefficient and xList should comes from formu
-
-
             xList = []
             variableNum=len(coefficientList)
             for i in range(variableNum):
                 
-                xList.append(random.randint(-10,10))
-
-            
+                xList.append(random.randint(-10,10))  
             
             flag=tf.polynomialModel(coefficientList,xList,y)
             
             optList = []
-            
-            
-                
-
             if (flag):
                 optList.append(0.0)
-                
                 optList += xList
-
                 train.writerow(optList)
             else:
-                optList.append(1.0)
-                                       
+                optList.append(1.0)                     
                 optList += xList
-
                 train.writerow(optList)
 
-    testingPoint(formu,variableNum,10000,-5,5,test_path,formula.POLYNOMIAL)          
-    return train_path,test_path
-
-
+    testingPoint(formu, variableNum, 10000, -5, 5, test_path, formula.POLYNOMIAL)          
+    return train_path, test_path
 
 # generate random data points for a circle formula
 def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
@@ -85,8 +71,13 @@ def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
             for k in range(700):
                 data_point = []
                 generated_point = []
-                for i in range(dim):
-                    generated_point.append(random.uniform(-1000, 1000))
+                if k%3==0:
+                    center = random.randint(0,len(formu[0])-1)
+                    for i in range(dim):
+                        generated_point.append(random.uniform(int(formu[0][center][i])-10, int(formu[0][center][i])+10))
+                else:
+                    for i in range(dim):
+                        generated_point.append(random.uniform(-1000, 1000))
 
                 flag = tf.polycircleModel(formu[0], formu[1], generated_point)
 
@@ -96,12 +87,39 @@ def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
 
                     train.writerow(data_point)
                 else:
-                    data_point.append(1.0)
+                    data_point.append(1.0) 
                     data_point += generated_point
 
                     train.writerow(data_point)
-            testingPoint(formu, dim, 4000, -1000, 1000, test_path, formula.POLYHEDRON)
+            PolyhedronPoint(formu, dim, 4000, test_path, formula.POLYHEDRON)
     return train_path, test_path
+
+def PolyhedronPoint(formu, dimension, number, path, catagory):
+    with open(path, 'wb') as csvfile:
+        test = csv.writer(csvfile)
+        numberOfPoint = int(round(math.pow(int(number/len(formu[0])), (1.0 / dimension))))
+        # numberOfPoint = 300
+        for j in range(len(formu[0])):  # j th center point
+
+            largebound = formu[1][j]
+            step = (2*largebound) / float(numberOfPoint)
+            pointList = []
+            for i in range(numberOfPoint):
+                pointList.append(-largebound + i * step)
+
+            output = list(product(pointList, repeat=dimension))
+
+            result = []
+            for i in output:
+                i = list(i)
+                for d in range(len(i)):
+                    i[d] += formu[0][j][d]          
+                flag = tf.polycircleModel(formu[0], formu[1], i)
+                if (flag):
+                    i.insert(0, 0.0)
+                else:
+                    i.insert(0, 1.0)
+                test.writerow(i)
 
 def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagory):
     with open(path, 'wb') as csvfile:
@@ -129,4 +147,3 @@ def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagor
 
 # testingPoint(2, 4000, -1.5, 1.5)
 # randomPolynomial([[1,2],[3],[4,5,6]])
-

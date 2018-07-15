@@ -172,8 +172,6 @@ def data_partition(train_set_X, train_set_Y):
             label_1.append(train_set_X[i]) 
     return label_0,label_1
 
-
-
 def addPoints(number,distanceList,selectedList,pointer):
     pivot=0
     while pivot<number:
@@ -186,3 +184,21 @@ def addPoints(number,distanceList,selectedList,pointer):
             selectedList.append(distanceList[pointer])
             pivot+=1
             pointer+=1
+
+def decide_new_points(origin_point, delta):
+    ans1 = []
+    ans2 = []
+    ans = []
+
+    if len(origin_point)==1:
+        ans1 = [origin_point[0] + delta[0]]
+        ans2 = [origin_point[0] - delta[0]]
+        ans = ans1 + ans2
+        return ans
+    else:
+        ans1 = [origin_point[0] + delta[0]] + decide_new_points(origin_point[1:], delta[1:])
+        ans2 = [origin_point[0] - delta[0]] + decide_new_points(origin_point[1:], delta[1:])
+        ans = ans1 + ans2
+        return ans
+
+print (decide_new_points([3, 1], [5, 7]))
