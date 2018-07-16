@@ -185,20 +185,16 @@ def addPoints(number,distanceList,selectedList,pointer):
             pivot+=1
             pointer+=1
 
-def decide_new_points(origin_point, delta):
-    ans1 = []
-    ans2 = []
-    ans = []
-
-    if len(origin_point)==1:
-        ans1 = [origin_point[0] + delta[0]]
-        ans2 = [origin_point[0] - delta[0]]
-        ans = ans1 + ans2
-        return ans
-    else:
-        ans1 = [origin_point[0] + delta[0]] + decide_new_points(origin_point[1:], delta[1:])
-        ans2 = [origin_point[0] - delta[0]] + decide_new_points(origin_point[1:], delta[1:])
-        ans = ans1 + ans2
-        return ans
-
-print (decide_new_points([3, 1], [5, 7]))
+def data_partition_gradient(train_set_X, train_set_Y,gradient):
+    label_0=[]
+    label_0_gradient=[]
+    label_1=[]
+    label_1_gradient=[]
+    for i in range(len(train_set_X)):
+        if(train_set_Y[i][0]==0):
+            label_0.append(train_set_X[i])
+            label_0_gradient.append(gradient[i])
+        elif(train_set_Y[i][0]==1):
+            label_1.append(train_set_X[i]) 
+            label_1_gradient.append(gradient[i])
+    return label_0,label_1,label_0_gradient,label_1_gradient

@@ -2,14 +2,18 @@ from __future__ import print_function
 
 import math
 import random
+from gradient import decide_gradient
 
-import models
 import numpy as np
 import tensorflow as tf
 import formula
 
 import testing_function
 import util
+import boundary_remaining as br
+
+step = 3
+
 def generate_accuracy(train_data_file, test_data_file,formu,category):
 
     # Parameters
@@ -81,6 +85,8 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
 
 
     for i in range(active_learning_iteration):
+
+
         print("*******", i, "th loop:")
         print("training set size", len(train_set_X))
         pointsNumber = 10
@@ -90,6 +96,10 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             label_1 = []
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             print(len(label_0), len(label_1))
+            
+            if (len(label_1)==0 or len(label_0)==0):
+                raise Exception("Cannot be classified")
+
             distanceList = []
             point_pairList = {}
 
@@ -198,15 +208,107 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
 
             for epoch in range(training_epochs):
                 _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
+
             train_y = sess.run(logits, feed_dict={X: train_set_X})
             test_y = sess.run(logits, feed_dict={X: test_set_X})
 
             print("new train size", len(train_set_X), len(train_set_Y))
             train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
             test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
-
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
+            #boundary remaining
+            g=sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+            # print(g)
+            label_0=[]
+            label_1=[]
+            label_0_gradient=[]
+            label_1_gradient=[]
+
+            label_selected=[]
+            label_length_selected=0
+            label_0, label_1,label_0_gradient,label_1_gradient = util.data_partition_gradient(train_set_X, train_set_Y,g[0])
+            length_0=len(label_0)+0.0
+            length_1=len(label_1)+0.0
+            length_added=0
+            if length_0/length_1<0.5:
+                label_selected=label_0
+                gradient_selected=label_0_gradient
+                length_added=length_1-length_0
+            elif length_1/length_0<0.5:
+                label_selected=label_1
+                gradient_selected=label_1_gradient
+                length_added=length_0-length_1
+            else:
+                continue                 
+
+            
+            gradient_list = []
+            decision = decide_gradient(len(label_selected[0]))
+            for j in range(len(label_selected)):
+                grad = 0
+                for k in range(len(label_selected[0])):
+                    grad += gradient_selected[j][k] * gradient_selected[j][k]
+                g_total = math.sqrt(grad)
+                # print("Im here ==================================")
+                if g_total==0:
+                    tmpg = []
+                    for d in range(len(label_selected[0])):
+                        tmpg.append(1)
+                        gradient_list.append(tmpg)
+                    continue
+                new_pointsX = []
+                for k in range(len(decision)):
+                    tmp = []
+                    for h in range(len(label_selected[0])):
+                        if (decision[k][h]==True):
+                            tmp.append(label_selected[j][h] - gradient_selected[j][h] * (step / g_total))
+                        else:
+                            tmp.append(label_selected[j][h] + gradient_selected[j][h] * (step / g_total))
+                    # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
+                    new_pointsX.append(tmp)
+                new_pointsX.append(label_selected[j])
+                new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+
+                original_y = new_pointsY[-1]
+                distances = [x for x in new_pointsY]
+                distances = distances[:-1]
+                # ans = 0
+                if (original_y < 0.5):
+                    ans = min(distances)
+                else:
+                    ans = max(distances)
+                direction = decision[distances.index(ans)]
+
+                return_value = []
+                for k in range(len(direction)):
+                    if direction[k]==True:
+                        return_value.append(-gradient_selected[j][k])
+                    else:
+                        return_value.append(gradient_selected[j][k])
+                gradient_list.append(return_value)
+
+            newX=br.balancingPoint(label_selected,gradient_list,length_added)
+            for point in newX:
+                if category == formula.POLYHEDRON:
+                    flag = testing_function.polycircleModel(formu[0], formu[1], point)
+                elif category== formula.POLYNOMIAL:
+                    flag= testing_function.polynomialModel(formu[:-1],point,formu[-1])
+
+                if (flag):
+                    
+                    train_set_X.append(point)
+                    train_set_Y.append([0])
+
+                else:
+                    
+                    train_set_X.append(point)
+                    train_set_Y.append([1])                
+
+
+
+
+
     result.append(train_acc_list)
     result.append(test_acc_list)
     return result

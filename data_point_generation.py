@@ -48,7 +48,7 @@ def randomPolynomial(formu):
                 optList += xList
                 train.writerow(optList)
 
-    testingPoint(formu, variableNum, 10000, -5, 5, test_path, formula.POLYNOMIAL)          
+    testingPoint(formu, variableNum, 10000, -10, 10, test_path, formula.POLYNOMIAL)          
     return train_path, test_path
 
 # generate random data points for a circle formula
