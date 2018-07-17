@@ -31,8 +31,6 @@ ws.write(0, 7, "mal")
 
 def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list, mid_list, index):
     #TODO
-
-
     ws.write(index+1, 0, str(f))
     ws.write(index+1, 1, str(ben_train_acc))
     ws.write(index+1, 2, str(ben_test_acc))

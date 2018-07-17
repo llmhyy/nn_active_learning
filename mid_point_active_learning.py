@@ -231,6 +231,8 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             length_0=len(label_0)+0.0
             length_1=len(label_1)+0.0
             length_added=0
+
+            # compare if data is unbalanced
             if length_0/length_1<0.5:
                 label_selected=label_0
                 gradient_selected=label_0_gradient
@@ -242,7 +244,9 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             else:
                 continue                 
 
-            
+################################################################
+# get all gradients for the unbalanced label points     
+
             gradient_list = []
             decision = decide_gradient(len(label_selected[0]))
             for j in range(len(label_selected)):
@@ -287,6 +291,8 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                     else:
                         return_value.append(gradient_selected[j][k])
                 gradient_list.append(return_value)
+
+################################################################                
 
             newX=br.balancingPoint(label_selected,gradient_list,length_added)
             for point in newX:

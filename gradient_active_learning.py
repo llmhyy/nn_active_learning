@@ -160,36 +160,80 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
             # print("boundary points")
 
-            decision = decide_gradient(n_input)
+#################################
+# decide new points
+
+            # decision = decide_gradient(n_input)
+            # for j in range(len(train_set_X)):
+            #     grad = 0
+            #     for k in range(n_input):
+            #         grad += g[0][j][k] * g[0][j][k]
+            #     g_total = math.sqrt(grad)
+            #     # print("Im here ==================================")
+
+            #     if (g_total > threshold):
+            #         new_pointsX = []
+            #         for k in range(len(decision)):
+            #             tmp = []
+            #             for h in range(n_input):
+            #                 if (decision[k][h]==True):
+            #                     tmp.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
+            #                 else:
+            #                     tmp.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
+            #             # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
+            #             new_pointsX.append(tmp)
+            #         new_pointsX.append(train_set_X[j])
+            #         new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+
+            #         original_y = new_pointsY[-1]
+            #         distances = [x for x in new_pointsY]
+            #         distances = distances[:-1]
+            #         # ans = 0
+            #         if (original_y < 0.5):
+            #             ans = max(distances)
+            #         else:
+            #             ans = min(distances)
+            #         new = new_pointsX[distances.index(ans)]
+
+###########################################
+# decide new points dimension by dimension
             for j in range(len(train_set_X)):
                 grad = 0
                 for k in range(n_input):
                     grad += g[0][j][k] * g[0][j][k]
                 g_total = math.sqrt(grad)
                 # print("Im here ==================================")
-
-                if (g_total > threshold):
-                    new_pointsX = []
-                    for k in range(len(decision)):
-                        tmp = []
+                new = []
+                if (g_total > threshold):    
+                    for k in range(n_input):
+                        tmp1 = []
+                        tmp2 = []
                         for h in range(n_input):
-                            if (decision[k][h]==True):
-                                tmp.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
+                            if h==k:
+                                tmp1.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
+                                tmp2.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
                             else:
-                                tmp.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
-                        # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
-                        new_pointsX.append(tmp)
-                    new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+                                tmp1.append(train_set_X[j][h])
+                                tmp2.append(train_set_X[j][h])
 
-                    original_y = new_pointsY[-1]
-                    distances = [x for x in new_pointsY]
-                    distances = distances[:-1]
-                    # ans = 0
-                    if (original_y < 0.5):
-                        ans = max(distances)
-                    else:
-                        ans = min(distances)
-                    new = new_pointsX[distances.index(ans)]
+                        new_pointsX = [tmp1, tmp2, train_set_X[j]]
+                        new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+                       
+                        original_y = new_pointsY[-1]
+                        distances = [x for x in new_pointsY]
+                        distances = distances[:-1]
+                        # ans = 0
+                        if (original_y < 0.5):
+                            ans = max(distances)
+                        else:
+                            ans = min(distances)
+                        one_position = new_pointsX[distances.index(ans)]
+                        if (one_position==tmp1):
+                            new.append(tmp1[k])
+                        else:
+                            new.append(tmp2[k])
+
+#############################################
 
                     if (new not in train_set_X):
                         new_train_set_X.append(new)

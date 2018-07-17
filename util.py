@@ -74,6 +74,7 @@ def multilayer_perceptron(x, weights, biases):
 
 def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next):
     # read training data
+    # train_path = "./dataset/train[-1]_[-1]_[2, -4, -3, 5]_[-1]_[-4, -2, 3]_[4, 0, -5]_[3, 5]_[2, 1, -1]_[2, -1]_8624.csv"
     with open(train_path, 'r+') as csvfile:
         with open('./dataset/train_next.csv', 'w+') as file:
             i = 0
@@ -90,6 +91,7 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
         file.close()
 
     # read testing data
+    # test_path = "./dataset/test[-1]_[-1]_[2, -4, -3, 5]_[-1]_[-4, -2, 3]_[4, 0, -5]_[3, 5]_[2, 1, -1]_[2, -1]_8624.csv"
     with open(test_path, 'r+') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:
