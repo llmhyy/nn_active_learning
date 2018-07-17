@@ -7,7 +7,7 @@ import data_point_generation
 import xlwt
 
 category = formula.POLYNOMIAL
-number = 50
+number = 5
 
 formulas = fg.generate_formula(category, number)
 formula_list = formulas.get(category)
@@ -79,6 +79,8 @@ for f in formula_list:
         mid_list = mal.generate_accuracy(train_data_file, test_data_file,f,category)
     except:
         continue
+    
+     
 
     index += 1
     print("********************Final result here: ")

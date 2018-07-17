@@ -17,7 +17,7 @@ step = 3
 def generate_accuracy(train_data_file, test_data_file,formu,category):
 
     # Parameters
-    learning_rate = 0.1
+    learning_rate = 1
     training_epochs = 100
 
     pointsNumber = 10
@@ -212,7 +212,7 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             train_y = sess.run(logits, feed_dict={X: train_set_X})
             test_y = sess.run(logits, feed_dict={X: test_set_X})
 
-            print("new train size", len(train_set_X), len(train_set_Y))
+            print("new train size after mid point", len(train_set_X), len(train_set_Y))
             train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
             test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
             train_acc_list.append(train_acc)
@@ -224,25 +224,27 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             label_1=[]
             label_0_gradient=[]
             label_1_gradient=[]
-
+            label_flag=0
             label_selected=[]
             label_length_selected=0
             label_0, label_1,label_0_gradient,label_1_gradient = util.data_partition_gradient(train_set_X, train_set_Y,g[0])
             length_0=len(label_0)+0.0
             length_1=len(label_1)+0.0
             length_added=0
-            if length_0/length_1<0.5:
+            if length_0/length_1<0.7:
                 label_selected=label_0
                 gradient_selected=label_0_gradient
                 length_added=length_1-length_0
-            elif length_1/length_0<0.5:
+                label_flag=0
+            elif length_1/length_0<0.7:
                 label_selected=label_1
                 gradient_selected=label_1_gradient
                 length_added=length_0-length_1
+                label_flag=1
             else:
                 continue                 
 
-            
+            print ("label 0",length_0,"label 1",length_1)
             gradient_list = []
             decision = decide_gradient(len(label_selected[0]))
             for j in range(len(label_selected)):
@@ -289,6 +291,7 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                 gradient_list.append(return_value)
 
             newX=br.balancingPoint(label_selected,gradient_list,length_added)
+            counter=0
             for point in newX:
                 if category == formula.POLYHEDRON:
                     flag = testing_function.polycircleModel(formu[0], formu[1], point)
@@ -296,17 +299,20 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                     flag= testing_function.polynomialModel(formu[:-1],point,formu[-1])
 
                 if (flag):
-                    
+                    if label_flag==0:
+                        counter+=1
                     train_set_X.append(point)
                     train_set_Y.append([0])
 
                 else:
-                    
+                    if label_flag==1:
+                        counter+=1                    
                     train_set_X.append(point)
                     train_set_Y.append([1])                
 
-
-
+            boundary_remaining_accuracy=(counter+0.0)/len(newX)
+            print ("boundary remaining accuracy",boundary_remaining_accuracy)
+            print ("new training size after boundary remaining",len(train_set_X),len(train_set_Y))
 
 
     result.append(train_acc_list)
