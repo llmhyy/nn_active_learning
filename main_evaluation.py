@@ -77,6 +77,8 @@ for f in formula_list:
         mid_list = mal.generate_accuracy(train_data_file, test_data_file,f,category)
     except:
         continue
+    
+     
 
     index += 1
     print("********************Final result here: ")

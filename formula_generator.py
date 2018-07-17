@@ -18,6 +18,7 @@ def generate_polynomial():
     #TODO variable number is up to 10
     y=random.randint(-10000,10000)
     variableNumber=random.randint(1,10)
+    variableNumber=2
     coefficientList=[]
     for i in range(variableNumber):
         powerNumber=random.randint(1,4)

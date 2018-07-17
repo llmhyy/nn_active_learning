@@ -8,7 +8,8 @@ def balancingPoint(points,gradient,length_added):
 	
 	outputX=[]
 	iter=0
-	while iter<length_added:
+	flag=False
+	while True:
 		for i in range(len(points)):
 			g_total = 0
 			grad = 0
@@ -22,8 +23,13 @@ def balancingPoint(points,gradient,length_added):
 				tmpList.append(tmpValue)
 			outputX.append(tmpList)
 			iter+=1
+			if (iter==length_added):
+				flag=True
+				break
+		if (flag==True):
+			break
 	
-	print (outputX)
+	print ("points added \n",outputX)
 	return outputX
 
 # label_0=[[1,2]]
