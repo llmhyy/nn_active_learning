@@ -75,10 +75,9 @@ for f in formula_list:
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
     gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category)
     #TODO mid_list should contain a set of mid_train_acc and mid_test_acc
-    try:
-        mid_list = mal.generate_accuracy(train_data_file, test_data_file,f,category)
-    except:
-        continue
+   
+    mid_list = mal.generate_accuracy(train_data_file, test_data_file,f,category)
+   
     
      
 

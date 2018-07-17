@@ -206,31 +206,34 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                                 train_set_X.append(middlepoint)
                                 train_set_Y.append([1])
 
-            for epoch in range(training_epochs):
-                _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
 
-            train_y = sess.run(logits, feed_dict={X: train_set_X})
-            test_y = sess.run(logits, feed_dict={X: test_set_X})
-
-            print("new train size after mid point", len(train_set_X), len(train_set_Y))
-            train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
-            test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
-            train_acc_list.append(train_acc)
-            test_acc_list.append(test_acc)
-            #boundary remaining
-            g=sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-            # print(g)
-            label_0=[]
-            label_1=[]
-            label_0_gradient=[]
-            label_1_gradient=[]
-            label_flag=0
-            label_selected=[]
-            label_length_selected=0
-            label_0, label_1,label_0_gradient,label_1_gradient = util.data_partition_gradient(train_set_X, train_set_Y,g[0])
+            label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0=len(label_0)+0.0
             length_1=len(label_1)+0.0
+            
+                            
+
+            print ("label 0",length_0,"label 1",length_1)
+            if (length_0/length_1>0.7 and length_0/length_1<1) or (length_1/length_0 >0.7 and length_1/length_0<1):
+                for epoch in range(training_epochs):
+                    _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
+
+                train_y = sess.run(logits, feed_dict={X: train_set_X})
+                test_y = sess.run(logits, feed_dict={X: test_set_X})
+
+                print("new train size after mid point", len(train_set_X), len(train_set_Y))
+                train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
+                test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
+                train_acc_list.append(train_acc)
+                test_acc_list.append(test_acc)
+                continue
+
+            label_selected=[]
+            gradient_selected=[]
             length_added=0
+            label_flag=0
+            g=sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+            label_0, label_1,label_0_gradient,label_1_gradient = util.data_partition_gradient(train_set_X, train_set_Y,g[0])
             if length_0/length_1<0.7:
                 label_selected=label_0
                 gradient_selected=label_0_gradient
@@ -241,10 +244,13 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                 gradient_selected=label_1_gradient
                 length_added=length_0-length_1
                 label_flag=1
-            else:
-                continue                 
+            
+            #boundary remaining
+            # print(g)
+            
+                            
 
-            print ("label 0",length_0,"label 1",length_1)
+            
             gradient_list = []
             decision = decide_gradient(len(label_selected[0]))
             for j in range(len(label_selected)):
@@ -313,7 +319,17 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             boundary_remaining_accuracy=(counter+0.0)/len(newX)
             print ("boundary remaining accuracy",boundary_remaining_accuracy)
             print ("new training size after boundary remaining",len(train_set_X),len(train_set_Y))
+            for epoch in range(training_epochs):
+                    _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
 
+            train_y = sess.run(logits, feed_dict={X: train_set_X})
+            test_y = sess.run(logits, feed_dict={X: test_set_X})
+
+            print("new train size after mid point", len(train_set_X), len(train_set_Y))
+            train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
+            test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
+            train_acc_list.append(train_acc)
+            test_acc_list.append(test_acc)
 
     result.append(train_acc_list)
     result.append(test_acc_list)
