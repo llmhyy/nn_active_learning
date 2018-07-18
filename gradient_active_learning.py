@@ -206,15 +206,11 @@ def generate_accuracy(train_path, test_path, formula, catagory):
                 new = []
                 if (g_total > threshold):    
                     for k in range(n_input):
-                        tmp1 = []
-                        tmp2 = []
-                        for h in range(n_input):
-                            if h==k:
-                                tmp1.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
-                                tmp2.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
-                            else:
-                                tmp1.append(train_set_X[j][h])
-                                tmp2.append(train_set_X[j][h])
+
+                        tmp1 = [x for x in train_set_X[j]]
+                        tmp1[k] = tmp1[k] + g[0][j][h] * (step / g_total)
+                        tmp2 = [x for x in train_set_X[j]]
+                        tmp2[k] = tmp2[k] - g[0][j][h] * (step / g_total)
 
                         new_pointsX = [tmp1, tmp2, train_set_X[j]]
                         new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
