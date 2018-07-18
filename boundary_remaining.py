@@ -2,13 +2,18 @@
 
 import math
 import random
+import testing_function
+import formula
 
 
-def balancingPoint(points,gradient,length_added):
+def balancingPoint(inflag, points, gradient, length_added, formu, category):
 	
+	times = 100
 	outputX=[]
 	iter=0
 	flag=False
+	count = 0
+	wrong = 0
 	while True:
 		for i in range(len(points)):
 			g_total = 0
@@ -18,10 +23,32 @@ def balancingPoint(points,gradient,length_added):
 			g_total = math.sqrt(grad)
 			tmpList=[]
 			step=random.random()*5
+
 			for j in range(len(points[i])):
 				tmpValue=points[i][j]+gradient[i][j]*(step/g_total)
 				tmpList.append(tmpValue)
+
+			if category == formula.POLYHEDRON:
+				pointflag = testing_function.polycircleModel(formu[0], formu[1], tmpList)
+			elif category == formula.POLYNOMIAL:
+				pointflag = testing_function.polynomialModel(formu[:-1],tmpList,formu[-1])
+			count += 1
+			if inflag==1 and pointflag:
+				times += 1
+				wrong += 1
+				if times>100:
+					flag = True
+					break
+				continue
+			if inflag==0 and not pointflag:
+				times += 1
+				wrong += 1
+				if times>100:
+					flag = True
+					break
+				continue
 			outputX.append(tmpList)
+
 			iter+=1
 			if (iter==length_added):
 				flag=True
@@ -30,6 +57,7 @@ def balancingPoint(points,gradient,length_added):
 			break
 	
 	print ("points added \n",outputX)
+	print ("Boundary remaining accuracy: ", float((count-wrong)/count))
 	return outputX
 
 # label_0=[[1,2]]
