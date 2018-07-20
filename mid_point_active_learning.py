@@ -17,7 +17,7 @@ step = 3
 def generate_accuracy(train_data_file, test_data_file,formu,category):
 
     # Parameters
-    learning_rate = 1
+    learning_rate = 0.1
     training_epochs = 100
 
     pointsNumber = 10
@@ -248,7 +248,7 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                 label_flag=1
             else:
                 continue                 
-            print ("label 0",length_0,"label 1",length_1)
+            
 
 ################################################################
 # get all gradients for the unbalanced label points     
@@ -301,9 +301,20 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                 gradient_list.append(return_value)
 
 ################################################################                
+            count=0.0
+            point_distance_list=[]
+            for p in range(len(train_set_X)-1):
+                for q in range(p,len(train_set_X)):
+                    distance=0
+                    for d in range(n_input):
 
-            newX=br.balancingPoint(label_flag, label_selected,gradient_list,length_added, formu, category)
-            counter=0
+                        distance += (train_set_X[p][d] - train_set_X[q][d]) * (train_set_X[p][d] - train_set_X[q][d])
+                    distance=math.sqrt(distance)
+                    point_distance_list.append(distance)
+            std_dev=np.std(point_distance_list)
+            print ("standard deviation",std_dev)
+            newX=br.balancingPoint(label_flag, label_selected,gradient_list,length_added, formu, category,std_dev)
+            
             for point in newX:
                 if category == formula.POLYHEDRON:
                     flag = testing_function.polycircleModel(formu[0], formu[1], point)
@@ -311,19 +322,16 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                     flag= testing_function.polynomialModel(formu[:-1],point,formu[-1])
 
                 if (flag):
-                    if label_flag==0:
-                        counter+=1
+                    
                     train_set_X.append(point)
                     train_set_Y.append([0])
 
                 else:
-                    if label_flag==1:
-                        counter+=1                    
+                                   
                     train_set_X.append(point)
                     train_set_Y.append([1])                
 
-            boundary_remaining_accuracy=(counter+0.0)/len(newX)
-            print ("boundary remaining accuracy",boundary_remaining_accuracy)
+           
             print ("new training size after boundary remaining",len(train_set_X),len(train_set_Y))
             for epoch in range(training_epochs):
                     _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})

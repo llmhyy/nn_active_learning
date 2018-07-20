@@ -15,7 +15,7 @@ import formula_generator
 
 def generate_accuracy(train_path, test_path):
 
-    learning_rate = 1
+    learning_rate = 0.1
     training_epochs = 100
     display_step = 1
 
