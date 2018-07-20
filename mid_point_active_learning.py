@@ -269,6 +269,9 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                         tmpg.append(1)
                         gradient_list.append(tmpg)
                     continue
+
+#############################################################
+
                 new_pointsX = []
                 for k in range(len(decision)):
                     tmp = []
@@ -291,6 +294,39 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                 else:
                     ans = max(distances)
                 direction = decision[distances.index(ans)]
+
+####################################################
+                new = []    
+                n_input =len(label_selected[0])
+                for k in range(n_input):
+                    tmp1 = []
+                    tmp2 = []
+                    for h in range(n_input):
+                        if h==k:
+                            tmp1.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
+                            tmp2.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
+                        else:
+                            tmp1.append(train_set_X[j][h])
+                            tmp2.append(train_set_X[j][h])
+
+                    new_pointsX = [tmp1, tmp2, train_set_X[j]]
+                    new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+                   
+                    original_y = new_pointsY[-1]
+                    distances = [x for x in new_pointsY]
+                    distances = distances[:-1]
+                    # ans = 0
+                    if (original_y < 0.5):
+                        ans = max(distances)
+                    else:
+                        ans = min(distances)
+                    one_position = new_pointsX[distances.index(ans)]
+                    if (one_position==tmp1):
+                        new.append(tmp1[k])
+                    else:
+                        new.append(tmp2[k])
+# continue working on this part
+#######################################################
 
                 return_value = []
                 for k in range(len(direction)):
