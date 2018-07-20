@@ -109,6 +109,9 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
         print("*******", i, "th loop:")
         print("training set size", len(train_set_X))
         to_be_appended_points_number = 10
+
+        #TODO add a to_be_randomed_points_number = 10
+
         with tf.Session() as sess:
             sess.run(init)
             label_0 = []
