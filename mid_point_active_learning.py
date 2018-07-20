@@ -251,7 +251,8 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
             print ("label 0",length_0,"label 1",length_1)
 
 ################################################################
-# get all gradients for the unbalanced label points     
+# get all gradients for the unbalanced label points    
+# and deal with gradient=0 case
 
             #boundary remaining
             # print(g)
@@ -271,7 +272,7 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                     continue
 
 #############################################################
-
+# calculate all directions
                 new_pointsX = []
                 for k in range(len(decision)):
                     tmp = []
@@ -295,21 +296,27 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                     ans = max(distances)
                 direction = decision[distances.index(ans)]
 
-####################################################
-                new = []    
+                return_value = []
+                for k in range(len(direction)):
+                    if direction[k]==True:
+                        return_value.append(-gradient_selected[j][k])
+                    else:
+                        return_value.append(gradient_selected[j][k])
+                gradient_list.append(return_value)
+
+################################################################   
+# get directions dimension by dimension
+
+                direction = []    
                 n_input =len(label_selected[0])
                 for k in range(n_input):
-                    tmp1 = []
-                    tmp2 = []
-                    for h in range(n_input):
-                        if h==k:
-                            tmp1.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
-                            tmp2.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
-                        else:
-                            tmp1.append(train_set_X[j][h])
-                            tmp2.append(train_set_X[j][h])
 
-                    new_pointsX = [tmp1, tmp2, train_set_X[j]]
+                    tmp1 = [x for x in label_selected[j]]
+                    tmp1[k] = tmp1[k] + gradient_selected[j][k] * (step / g_total)
+                    tmp2 = [x for x in label_selected[j]]
+                    tmp2[k] = tmp2[k] - gradient_selected[j][k] * (step / g_total)
+
+                    new_pointsX = [tmp1, tmp2, label_selected[j]]
                     new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
                    
                     original_y = new_pointsY[-1]
@@ -322,21 +329,12 @@ def generate_accuracy(train_data_file, test_data_file,formu,category):
                         ans = min(distances)
                     one_position = new_pointsX[distances.index(ans)]
                     if (one_position==tmp1):
-                        new.append(tmp1[k])
+                        direction.append(tmp1[k] - label_selected[j])
                     else:
-                        new.append(tmp2[k])
-# continue working on this part
-#######################################################
-
-                return_value = []
-                for k in range(len(direction)):
-                    if direction[k]==True:
-                        return_value.append(-gradient_selected[j][k])
-                    else:
-                        return_value.append(gradient_selected[j][k])
-                gradient_list.append(return_value)
-
-################################################################                
+                        direction.append(tmp2[k] - label_selected[j])
+                gradient_list.append(direction)
+                
+##############################################################             
 
             newX=br.balancingPoint(label_flag, label_selected,gradient_list,length_added, formu, category)
             counter=0
