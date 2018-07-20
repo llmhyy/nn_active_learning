@@ -1,7 +1,10 @@
 import csv
+import math
 
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
+
+
 # from matplotlib import pyplot as plt
 
 
@@ -32,7 +35,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
     # plt.show()
 
 
-def calculateAccuracy(y, set_Y, b):
+def calculate_accuracy(y, set_Y, b):
     test_correct = []
     test_wrong = []
     train_correct = []
@@ -56,11 +59,10 @@ def calculateAccuracy(y, set_Y, b):
     return result
 
 
-
 # Create model
 def multilayer_perceptron(x, weights, biases):
     # Hidden fully connected layer with 256 neurons
-    x0=tf.nn.batch_normalization(x,mean=0.01, variance=1,offset=0,scale=1,variance_epsilon=0.001)
+    x0 = tf.nn.batch_normalization(x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
     layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
     # layer1_out = tf.sigmoid(layer_1)
 
@@ -71,6 +73,7 @@ def multilayer_perceptron(x, weights, biases):
     # Output fully connected layer with a neuron for each class
     out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
     return tf.nn.sigmoid(out_layer)
+
 
 def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next):
     # read training data
@@ -108,11 +111,11 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
         train_path = './dataset/train_next.csv'
     # read training data
     if read_next:
-        train_path='./dataset/train_next.csv'
+        train_path = './dataset/train_next.csv'
     with open(train_path, 'r+') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:
-            if(len(row)==0):
+            if (len(row) == 0):
                 continue
             l = [float(x) for x in row]
             # print(l)
@@ -122,81 +125,106 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
             else:
                 train_set_Y.append([0])
 
+
 def quickSort(alist):
-   quickSortHelper(alist,0,len(alist)-1)
-
-def quickSortHelper(alist,first,last):
-   if first<last:
-
-       splitpoint = partition(alist,first,last)
-
-       quickSortHelper(alist,first,splitpoint-1)
-       quickSortHelper(alist,splitpoint+1,last)
+    quickSortHelper(alist, 0, len(alist) - 1)
 
 
-def partition(alist,first,last):
-   pivotvalue = alist[first]
+def quickSortHelper(alist, first, last):
+    if first < last:
+        splitpoint = partition(alist, first, last)
 
-   leftmark = first+1
-   rightmark = last
-
-   done = False
-   while not done:
-
-       while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
-           leftmark = leftmark + 1
-
-       while alist[rightmark] >= pivotvalue and rightmark >= leftmark:
-           rightmark = rightmark -1
-
-       if rightmark < leftmark:
-           done = True
-       else:
-           temp = alist[leftmark]
-           alist[leftmark] = alist[rightmark]
-           alist[rightmark] = temp
-
-   temp = alist[first]
-   alist[first] = alist[rightmark]
-   alist[rightmark] = temp
+        quickSortHelper(alist, first, splitpoint - 1)
+        quickSortHelper(alist, splitpoint + 1, last)
 
 
-   return rightmark
+def partition(alist, first, last):
+    pivotvalue = alist[first]
+
+    leftmark = first + 1
+    rightmark = last
+
+    done = False
+    while not done:
+
+        while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
+            leftmark = leftmark + 1
+
+        while alist[rightmark] >= pivotvalue and rightmark >= leftmark:
+            rightmark = rightmark - 1
+
+        if rightmark < leftmark:
+            done = True
+        else:
+            temp = alist[leftmark]
+            alist[leftmark] = alist[rightmark]
+            alist[rightmark] = temp
+
+    temp = alist[first]
+    alist[first] = alist[rightmark]
+    alist[rightmark] = temp
+
+    return rightmark
+
+
+def calculate_distance(m, n):
+    distance = 0
+    for d in range(len(m)):
+        distance += (m[d] - n[d]) * (m[d] - n[d])
+    distance = math.sqrt(distance)
+    return distance
+
+
+def calculate_std_dev(label_selected, train_set_X):
+    dimension = len(label_selected[0])
+    point_distance_list = []
+    for p in range(len(train_set_X) - 1):
+        for q in range(p + 1, len(train_set_X)):
+            distance = 0
+            for d in range(dimension):
+                distance += (train_set_X[p][d] - train_set_X[q][d]) * (train_set_X[p][d] - train_set_X[q][d])
+            distance = math.sqrt(distance)
+            point_distance_list.append(distance)
+    std_dev = np.std(point_distance_list)
+    return std_dev
 
 
 def data_partition(train_set_X, train_set_Y):
-    label_0=[]
-    label_1=[]
+    label_0 = []
+    label_1 = []
     for i in range(len(train_set_X)):
-        if(train_set_Y[i][0]==0):
+        if (train_set_Y[i][0] == 0):
             label_0.append(train_set_X[i])
-        elif(train_set_Y[i][0]==1):
-            label_1.append(train_set_X[i]) 
-    return label_0,label_1
+        elif (train_set_Y[i][0] == 1):
+            label_1.append(train_set_X[i])
+    return label_0, label_1
 
-def addPoints(number,distanceList,selectedList,pointer):
-    pivot=0
-    while pivot<number:
-        if distanceList[pointer] in selectedList:
-            pointer+=1
 
+def add_distance_values(number, distance_list, selected_list, pointer):
+    pivot = 0
+    while pivot < number:
+        if distance_list[pointer] in selected_list:
+            pointer += 1
         # add large points
-        
         else:
-            selectedList.append(distanceList[pointer])
-            pivot+=1
-            pointer+=1
+            selected_list.append(distance_list[pointer])
+            pivot += 1
+            pointer += 1
 
-def data_partition_gradient(train_set_X, train_set_Y,gradient):
-    label_0=[]
-    label_0_gradient=[]
-    label_1=[]
-    label_1_gradient=[]
+
+def data_partition_gradient(train_set_X, train_set_Y, gradient):
+    label_0 = []
+    label_0_gradient = []
+    label_1 = []
+    label_1_gradient = []
     for i in range(len(train_set_X)):
-        if(train_set_Y[i][0]==0):
+        if (train_set_Y[i][0] == 0):
             label_0.append(train_set_X[i])
             label_0_gradient.append(gradient[i])
-        elif(train_set_Y[i][0]==1):
-            label_1.append(train_set_X[i]) 
+        elif (train_set_Y[i][0] == 1):
+            label_1.append(train_set_X[i])
             label_1_gradient.append(gradient[i])
-    return label_0,label_1,label_0_gradient,label_1_gradient
+    return label_0, label_1, label_0_gradient, label_1_gradient
+
+
+

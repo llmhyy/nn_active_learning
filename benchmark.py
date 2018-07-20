@@ -15,6 +15,8 @@ import formula_generator
 
 def generate_accuracy(train_path, test_path):
 
+    print("=========BENCH_MARK===========")
+
     learning_rate = 0.1
     training_epochs = 100
     display_step = 1
@@ -114,8 +116,8 @@ def generate_accuracy(train_path, test_path):
 
         # print(len(train_y))
         # print(len(train_set_Y))
-        train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
-        test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
+        train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
+        test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
         return train_acc, test_acc
 

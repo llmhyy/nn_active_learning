@@ -36,7 +36,7 @@ def randomPolynomial(formu):
                 
                 xList.append(random.randint(-10,10))  
             
-            flag=tf.polynomialModel(coefficientList,xList,y)
+            flag=tf.polynomial_model(coefficientList, xList, y)
             
             optList = []
             if (flag):
@@ -79,7 +79,7 @@ def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
                     for i in range(dim):
                         generated_point.append(random.uniform(-1000, 1000))
 
-                flag = tf.polycircleModel(formu[0], formu[1], generated_point)
+                flag = tf.polycircle_model(formu[0], formu[1], generated_point)
 
                 if (flag):
                     data_point.append(0.0)
@@ -114,7 +114,7 @@ def PolyhedronPoint(formu, dimension, number, path, catagory):
                 i = list(i)
                 for d in range(len(i)):
                     i[d] += formu[0][j][d]          
-                flag = tf.polycircleModel(formu[0], formu[1], i)
+                flag = tf.polycircle_model(formu[0], formu[1], i)
                 if (flag):
                     i.insert(0, 0.0)
                 else:
@@ -135,9 +135,9 @@ def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagor
             i = list(i)
 
             if catagory==formula.POLYHEDRON:
-                flag = tf.polycircleModel(formu[0], formu[1], i)
+                flag = tf.polycircle_model(formu[0], formu[1], i)
             else:
-                flag = tf.polynomialModel(formu[:-1],i,formu[-1])
+                flag = tf.polynomial_model(formu[:-1], i, formu[-1])
 
             if (flag):
                 i.insert(0, 0.0)

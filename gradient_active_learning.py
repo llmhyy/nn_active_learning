@@ -7,12 +7,13 @@ import formula as f
 import numpy as np
 import tensorflow as tf
 import xlwt
-from gradient import decide_gradient
 
 import testing_function
 import util
 
 def generate_accuracy(train_path, test_path, formula, catagory):
+    print("=========GRADIENT===========")
+
     # Parameters
     learning_rate = 0.1
     training_epochs = 100
@@ -125,8 +126,8 @@ def generate_accuracy(train_path, test_path, formula, catagory):
             ##print(len(train_y))
             ##print(len(train_set_Y))
 
-            train_acc = util.calculateAccuracy(train_y, train_set_Y, False)
-            test_acc = util.calculateAccuracy(test_y, test_set_Y, False)
+            train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
+            test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
@@ -163,7 +164,7 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 #################################
 # decide new points
 
-            # decision = decide_gradient(n_input)
+            # decision = combination(n_input)
             # for j in range(len(train_set_X)):
             #     grad = 0
             #     for k in range(n_input):
@@ -235,9 +236,9 @@ def generate_accuracy(train_path, test_path, formula, catagory):
                         new_train_set_X.append(new)
                         haha = new
                         if catagory==f.POLYHEDRON:
-                            flag = testing_function.polycircleModel(formula[0], formula[1], new)
+                            flag = testing_function.polycircle_model(formula[0], formula[1], new)
                         else:
-                            flag = testing_function.polynomialModel(formula[:-1], new, formula[-1])
+                            flag = testing_function.polynomial_model(formula[:-1], new, formula[-1])
                         if (flag):
                             new_train_set_Y.append([0])
                         else:
@@ -263,10 +264,10 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
             #         	smallGradient_total+=1
             #         	if(newY==0):
-            #         		if(polynomialModel(tmpX1,tmpX2)):
+            #         		if(polynomial_model(tmpX1,tmpX2)):
             #         			smallGradient_Unchanged+=1.0
             #         	elif(newY==1):
-            #         		if(not polynomialModel(tmpX1,tmpX2)):
+            #         		if(not polynomial_model(tmpX1,tmpX2)):
             #         			smallGradient_Unchanged+=1.0
 
             #         # ##large gradient test
@@ -276,10 +277,10 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
             #         	largeGradient_total+=1
             #         	if(newY==0):
-            #         		if(polynomialModel(tmpX1,tmpX2)):
+            #         		if(polynomial_model(tmpX1,tmpX2)):
             #         			largeGradient_Unchanged+=1.0
             #         	elif(newY==1):
-            #         		if(not polynomialModel(tmpX1,tmpX2)):
+            #         		if(not polynomial_model(tmpX1,tmpX2)):
             #         			largeGradient_Unchanged+=1.0
 
             # # print("generated data points:")

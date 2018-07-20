@@ -1,5 +1,5 @@
 import math
-
+import formula
 
 def logModel(x1, x2):
     if (x2 > math.log(x1)):
@@ -15,7 +15,7 @@ def circleModel(x1, x2):
         return False
 
 
-def polynomialModel(coefficientList,x,y):
+def polynomial_model(coefficientList, x, y):
 
     variableNum=len(coefficientList)
     output=0
@@ -31,12 +31,24 @@ def polynomialModel(coefficientList,x,y):
     else:
         return False
 
-def polycircleModel(center, radius, x):  
+def polycircle_model(center, radius, x):
     # center format:[[0,1,3],[1,1,1]], radius format: [10,25], x format: [1,2,3]
     for i in range(len(center)):
-        pointradius = 0
+        point_radius = 0
         for j in range(len(x)):
-            pointradius += (x[j]-center[i][j])*(x[j]-center[i][j])
-        if (pointradius < radius[i]*radius[i]):
+            point_radius += (x[j]-center[i][j])*(x[j]-center[i][j])
+        if (point_radius < radius[i]*radius[i]):
             return True
     return False
+
+
+def test_label(middle_point, formu):
+    category = formu.get_category()
+    form = formu.get_list()
+    flag = True
+    if category == formula.POLYHEDRON:
+        flag = polycircle_model(form[0], form[1], middle_point)
+    elif category == formula.POLYNOMIAL:
+        flag = polynomial_model(form[:-1], middle_point, form[-1])
+
+    return flag

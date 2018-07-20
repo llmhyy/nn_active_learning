@@ -67,14 +67,14 @@ for f in formula_list:
     print (f)
     # f = [[-1,4,2,5],[ -2,5,1,0],-1748]
     #TODO each foumla write its generated data into files with the formula name
-    train_data_file, test_data_file = data_point_generation.generate_data_points(f, category)
+    train_data_file, test_data_file = data_point_generation.generate_data_points(f.get_form(), category)
 
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
     gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category)
     #TODO mid_list should contain a set of mid_train_acc and mid_test_acc
     try:
-        mid_list = mal.generate_accuracy(train_data_file, test_data_file,f,category)
+        mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category)
     except:
         continue
 
