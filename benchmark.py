@@ -125,7 +125,7 @@ def generate_accuracy(train_path, test_path):
         # result.append([epoch, "th Testing accuracy", test_acc])
         # result.append(["\n"])
 
-        #predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+        # predicted = tf.cast(logits > 0.5, dtype=tf.float32)
         # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
 
         # for i, row in enumerate(result):

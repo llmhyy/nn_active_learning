@@ -148,6 +148,9 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
 
+            predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
+
     result.append(train_acc_list)
     result.append(test_acc_list)
     return result
