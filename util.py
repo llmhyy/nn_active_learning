@@ -79,17 +79,19 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
     # read training data
     # train_path = "./dataset/train[-1]_[-1]_[2, -4, -3, 5]_[-1]_[-4, -2, 3]_[4, 0, -5]_[3, 5]_[2, 1, -1]_[2, -1]_8624.csv"
     with open(train_path, 'r+') as csvfile:
-        with open('./dataset/train_next.csv', 'w+') as file:
+        with open('./dataset/train_next.csv', 'w',newline='') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
+
                 if (i < 140 or i > 160):
                     i += 1
                     continue
                 else:
+
                     i += 1
-                writer.writerow(row)
+                    writer.writerow(row)
                 # writer.writerow([1-float(row[0]),float(row[1])+0.01,float(row[2])+0.01])
         file.close()
 
@@ -107,8 +109,7 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
             else:
                 test_set_Y.append([0])
 
-    if read_next:
-        train_path = './dataset/train_next.csv'
+
     # read training data
     if read_next:
         train_path = './dataset/train_next.csv'

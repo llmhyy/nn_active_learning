@@ -29,7 +29,7 @@ def randomPolynomial(formu):
         
         for k in range(700):
 
-            #TODO coefficient and xList should comes from formu
+
             xList = []
             variableNum=len(coefficientList)
             for i in range(variableNum):

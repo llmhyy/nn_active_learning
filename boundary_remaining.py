@@ -5,7 +5,7 @@ import math
 import gradient_combination
 import testing_function
 import util
-
+import random
 
 def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y):
     label_selected = []
@@ -15,6 +15,8 @@ def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, trai
     # compare if data is unbalanced
     label_flag = 0
     g = sess.run(new_grads, feed_dict={X: train_set_X})
+    # print(train_set_X)
+    # print ("grad",g[0])
     label_0, label_1, label_0_gradient, label_1_gradient \
         = util.data_partition_gradient(train_set_X, train_set_Y, g[0])
 
@@ -76,15 +78,20 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
         if gradient_length == 0:
             tmpg = []
             for d in range(dimension):
-                tmpg.append(1)
-                gradient_list.append(tmpg)
+                randomPower=random.randint(1,2)
+                sigh=(-1)**randomPower
+                randomNumber=1*sigh
+                randomNumber=1
+                tmpg.append(randomNumber)
+            gradient_list.append(tmpg)
+            print("random direction",tmpg)
             continue
 
         #############################################################
 
         # TODO decision_direction should return a direction towards boudary
         direction = decision_direction(X, decision_options, gradient_length,
-                                       gradient_selected, j, label_selected, logits, sess)
+                                       gradient_selected, j, label_selected, logits, sess,inverse=True)
 
         # TODO calculate your own direction based on the above direction
 
@@ -136,7 +143,7 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
 #     return n_input
 
 
-def decision_direction(X, decision_options, gradient_length, gradient_selected, j, label_selected, logits, sess):
+def decision_direction(X, decision_options, gradient_length, gradient_selected, j, label_selected, logits, sess,inverse):
     step = 1
 
     new_pointsX = []
@@ -157,9 +164,15 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
 
     ans = 0
     if (original_y < 0.5):
-        ans = min(values)
+        if inverse==True:
+            ans = min(values)
+        else:
+            ans = max(values)
     else:
-        ans = max(values)
+        if inverse==True:
+            ans = max(values)
+        else:
+            ans = min(values)
     direction = decision_options[values.index(ans)]
     return direction
 
@@ -213,7 +226,7 @@ def balancing_points(inflag, points, gradient, length_added, formu, std_dev):
                 break
         if (flag == True):
             break
-    print(count, wrong)
+
     print("points added \n", outputX)
     print("Boundary remaining accuracy: ", float((count - wrong) / count))
     return outputX
