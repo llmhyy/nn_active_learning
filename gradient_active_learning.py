@@ -6,10 +6,58 @@ import random
 import formula as f
 import numpy as np
 import tensorflow as tf
-import xlwt
+import boundary_remaining as br
+import gradient_combination
 
 import testing_function
 import util
+
+def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, pointsRatio, decision):
+    new_train_set_X = []
+    new_train_set_Y = []
+
+    gradientList = g[0].tolist()
+
+    g_list = []
+
+    dimension = len(train_set_X[0])
+    input_size = len(train_set_X)
+
+    # print (type(gradientList))
+    for i in range(input_size):
+        grad = 0
+        for j in range(dimension):
+            grad += g[0][i][j] * g[0][i][j]
+        g_list.append(math.sqrt(grad))
+    util.quickSort(g_list)
+
+    threshold = g_list[int(-len(gradientList) * pointsRatio)]
+
+    print(threshold)
+    for j in range(input_size):
+        grad = 0
+        new = br.decide_cross_boundry_point(sess, g, X, logits, train_set_X, j, threshold, decision)
+
+        if (len(new)!=0):
+            if (new not in train_set_X):
+                print("ready to add new points: ", new)
+                new_train_set_X.append(new)
+
+                flag = testing_function.test_label(new, formu)
+                if (flag):
+                    new_train_set_Y.append([0])
+                else:
+                    new_train_set_Y.append([1])
+
+    train_set_X = train_set_X + new_train_set_X
+    train_set_Y = train_set_Y + new_train_set_Y
+
+    return train_set_X, train_set_Y
+
+def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
+    return (length_0 / length_1 > balance_ratio_threshold and length_0 / length_1 < 1) \
+           or \
+           (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 < 1)
 
 def generate_accuracy(train_path, test_path, formula, catagory):
     print("=========GRADIENT===========")
@@ -17,6 +65,7 @@ def generate_accuracy(train_path, test_path, formula, catagory):
     # Parameters
     learning_rate = 0.1
     training_epochs = 100
+    balance_ratio_threshold = 0.7
     display_step = 1
     changing_rate = [1000]
     step = 8
@@ -68,7 +117,6 @@ def generate_accuracy(train_path, test_path, formula, catagory):
     # Initializing the variables
     init = tf.global_variables_initializer()
 
-    grads = tf.gradients(loss_op, weights["out"])
     newgrads = tf.gradients(logits, X)
 
     y = None
@@ -77,15 +125,7 @@ def generate_accuracy(train_path, test_path, formula, catagory):
     test_acc_list = []
     result = []
 
-    test_list = []
-    for i in range(20):
-        test_list.append([0, i])
-
-    wb = xlwt.Workbook()
-    ws = wb.add_sheet("farcircle_gradient")
-
-    # result.append(["Active learning using gradients"])
-    # result.append(model)
+    decision = gradient_combination.combination(n_input)
 
     for i in range(active_learning_iteration):
         print("*******", i, "th loop:")
@@ -93,13 +133,27 @@ def generate_accuracy(train_path, test_path, formula, catagory):
         # ten times training
         with tf.Session() as sess:
             sess.run(init)
-            # h1 = sess.run(weights["h1"])
-            # out = sess.run(weights["out"])
-            #
-            # print("h1", h1)
-            # print("out", out)
+            label_0 = []
+            label_1 = []
+
+            label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
+            print(len(label_0), len(label_1))
+            if (len(label_1) == 0 or len(label_0) == 0):
+                raise Exception("Cannot be classified")
 
             g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
+
+            print(g)
+
+            train_set_X, train_set_Y = append_large_gradient(sess, g, X, logits, formula, train_set_X, train_set_Y, catagory, pointsRatio, decision)
+
+            length_0 = len(label_0) + 0.0
+            length_1 = len(label_1) + 0.0
+
+            print("label 0 length", length_0, "label 1 length", length_1)
+
+            if (not is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
+                br.apply_boundary_remaining(sess, newgrads, X, Y, length_0, length_1, logits, formula, train_set_X, train_set_Y)
             ##print(g)
             smallGradient_Unchanged = 0.0
             smallGradient_total = 0.0
@@ -111,20 +165,9 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
             ##print(g)
             ##print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
-
-            g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-            # test_g = sess.run(newgrads, feed_dict={X: test_list})
-            # test_new_y = sess.run(logits, feed_dict={X: test_list})
-
-            # for i in range(len(test_list)):
-            #     print("data point ", test_list[i], " gradient ", test_g[0][i], " label ", test_new_y[i])
-
             # print(g)
             train_y = sess.run(logits, feed_dict={X: train_set_X})
             test_y = sess.run(logits, feed_dict={X: test_set_X})
-
-            ##print(len(train_y))
-            ##print(len(train_set_Y))
 
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
             test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
@@ -132,118 +175,46 @@ def generate_accuracy(train_path, test_path, formula, catagory):
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
 
-            # predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
+            predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
 
-            new_train_set_X = []
-            new_train_set_Y = []
-
-            gradientList = g[0].tolist()
-
-            g_list = []
-
-            # print (type(gradientList))
-            for i in range(len(g[0])):
-                grad = 0
-                for j in range(n_input):
-                    grad += g[0][i][j] * g[0][i][j]
-                g_list.append(math.sqrt(grad))
-            util.quickSort(g_list)
-
-            threshold = g_list[int(-len(gradientList) * pointsRatio)]
-            # threshold = math.sqrt(threshold[0]*threshold[0]+threshold[1]*threshold[1]+threshold[2]*threshold[2]+threshold[3]*threshold[3])
-            print(threshold)
-
-            smallGradient_Unchanged = 0
-            smallGradient_total = 0
-            largeGradient_Unchanged = 0
-            largeGradient_total = 0
-
-            # print("boundary points")
-
-#################################
-# decide new points
-
-            # decision = combination(n_input)
+###########################################
+# decide new points dimension by dimension
             # for j in range(len(train_set_X)):
             #     grad = 0
             #     for k in range(n_input):
             #         grad += g[0][j][k] * g[0][j][k]
             #     g_total = math.sqrt(grad)
             #     # print("Im here ==================================")
+            #     new = []
+            #     if (g_total > threshold):    
+            #         for k in range(n_input):
 
-            #     if (g_total > threshold):
-            #         new_pointsX = []
-            #         for k in range(len(decision)):
-            #             tmp = []
-            #             for h in range(n_input):
-            #                 if (decision[k][h]==True):
-            #                     tmp.append(train_set_X[j][h] - g[0][i][h] * (step / g_total))
-            #                 else:
-            #                     tmp.append(train_set_X[j][h] + g[0][i][h] * (step / g_total))
-            #             # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
-            #             new_pointsX.append(tmp)
-            #         new_pointsX.append(train_set_X[j])
-            #         new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+            #             tmp1 = [x for x in train_set_X[j]]
+            #             tmp1[k] = tmp1[k] + g[0][j][k] * (step / g_total)
+            #             tmp2 = [x for x in train_set_X[j]]
+            #             tmp2[k] = tmp2[k] - g[0][j][k] * (step / g_total)
 
-            #         original_y = new_pointsY[-1]
-            #         distances = [x for x in new_pointsY]
-            #         distances = distances[:-1]
-            #         # ans = 0
-            #         if (original_y < 0.5):
-            #             ans = max(distances)
-            #         else:
-            #             ans = min(distances)
-            #         new = new_pointsX[distances.index(ans)]
-
-###########################################
-# decide new points dimension by dimension
-            for j in range(len(train_set_X)):
-                grad = 0
-                for k in range(n_input):
-                    grad += g[0][j][k] * g[0][j][k]
-                g_total = math.sqrt(grad)
-                # print("Im here ==================================")
-                new = []
-                if (g_total > threshold):    
-                    for k in range(n_input):
-
-                        tmp1 = [x for x in train_set_X[j]]
-                        tmp1[k] = tmp1[k] + g[0][j][k] * (step / g_total)
-                        tmp2 = [x for x in train_set_X[j]]
-                        tmp2[k] = tmp2[k] - g[0][j][k] * (step / g_total)
-
-                        new_pointsX = [tmp1, tmp2, train_set_X[j]]
-                        new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+            #             new_pointsX = [tmp1, tmp2, train_set_X[j]]
+            #             new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
                        
-                        original_y = new_pointsY[-1]
-                        distances = [x for x in new_pointsY]
-                        distances = distances[:-1]
-                        # ans = 0
-                        if (original_y < 0.5):
-                            ans = max(distances)
-                        else:
-                            ans = min(distances)
-                        one_position = new_pointsX[distances.index(ans)]
-                        if (one_position==tmp1):
-                            new.append(tmp1[k])
-                        else:
-                            new.append(tmp2[k])
+            #             original_y = new_pointsY[-1]
+            #             distances = [x for x in new_pointsY]
+            #             distances = distances[:-1]
+            #             # ans = 0
+            #             if (original_y < 0.5):
+            #                 ans = max(distances)
+            #             else:
+            #                 ans = min(distances)
+            #             one_position = new_pointsX[distances.index(ans)]
+            #             if (one_position==tmp1):
+            #                 new.append(tmp1[k])
+            #             else:
+            #                 new.append(tmp2[k])
 
 #############################################
 
-                    if (new not in train_set_X):
-                        new_train_set_X.append(new)
-                        haha = new
-                        if catagory==f.POLYHEDRON:
-                            flag = testing_function.polycircle_model(formula[0], formula[1], new)
-                        else:
-                            flag = testing_function.polynomial_model(formula[:-1], new, formula[-1])
-                        if (flag):
-                            new_train_set_Y.append([0])
-                        else:
-                            new_train_set_Y.append([1])
-
+                    
                 ##boundary remaining test
                 ##small gradient test
             #         X1=train_set_X[j][0]
@@ -290,21 +261,7 @@ def generate_accuracy(train_path, test_path, formula, catagory):
             #     print ("Small gradients", smallGradient_Unchanged/smallGradient_total)
             # if (largeGradient_total != 0):
             #     print ("Large gradients", largeGradient_Unchanged/largeGradient_total)
-            train_set_X = train_set_X + new_train_set_X
-            train_set_Y = train_set_Y + new_train_set_Y
-
             # print(train_set_X)
-    # for i, row in enumerate(result):
-    #     for j, col in enumerate(row):
-    #         if (i == 1):
-    #             if (type(model[0]) != list):
-    #                 ws.write(i, j, str(col) + "x^" + str(len(model) - j))
-    #             else:
-    #                 ws.write(i, j, str(col))
-    #         else:
-    #             ws.write(i, j, col)
-
-    # wb.save("train_results.xls")
 
     # print(smallGradient_total)
     # print (smallGradient_Unchanged)

@@ -96,9 +96,6 @@ def generate_accuracy(train_path, test_path):
         print("h1", h1)
         print("out", out)
 
-        g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-        ##print(g)
-
         ##global gradients                                                        Y: train_set_Y}
         # Training cycle
         for epoch in range(training_epochs):

@@ -90,7 +90,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
         'out': tf.Variable(tf.random_normal([n_classes]))
     }
 
-    # Construct model
+    # Cofnstruct model
     logits = util.multilayer_perceptron(X, weights, biases)
 
     # Define loss and optimizer
@@ -119,7 +119,6 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             print(len(label_0), len(label_1))
-
             if (len(label_1) == 0 or len(label_0) == 0):
                 raise Exception("Cannot be classified")
 

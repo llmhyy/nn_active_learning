@@ -1,6 +1,7 @@
 # TODO move the code here
 
 import math
+import random
 
 import gradient_combination
 import testing_function
@@ -111,8 +112,8 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
 #         tmp2 = []
 #         for h in range(n_input):
 #             if h == k:
-#                 tmp1.append(train_set_X[j][h] - g[0][i][h] * (step / gradient_length))
-#                 tmp2.append(train_set_X[j][h] + g[0][i][h] * (step / gradient_length))
+#                 tmp1.append(train_set_X[j][h] - g[0][j][h] * (step / gradient_length))
+#                 tmp2.append(train_set_X[j][h] + g[0][j][h] * (step / gradient_length))
 #             else:
 #                 tmp1.append(train_set_X[j][h])
 #                 tmp2.append(train_set_X[j][h])
@@ -156,11 +157,16 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
     values = values[:-1]
 
     ans = 0
+    # ans_gradient = 0
     if (original_y < 0.5):
         ans = min(values)
+        # ans_gradient = max(values)
     else:
         ans = max(values)
+        # ans_gradient = min(values)
+
     direction = decision_options[values.index(ans)]
+    # point_gradient = new_pointsX[values.index(ans_gradient)]
     return direction
 
 
@@ -224,3 +230,42 @@ def balancing_points(inflag, points, gradient, length_added, formu, std_dev):
 # gra0=[[0.1,0.2]]
 # gra1=[]
 # balancing_points(label_0,label_1,gra0,gra1)
+
+def decide_cross_boundry_point(sess, g, X, logits, train_set_X, j, threshold, decision):
+    step = random.uniform(2, 4)
+    grad = 0
+
+    dimension = len(train_set_X[0])
+
+    for k in range(dimension):
+        grad += g[0][j][k] * g[0][j][k]
+    g_total = math.sqrt(grad)
+    # print("Im here ==================================")
+
+    new = []
+    if (g_total > threshold):
+        new_pointsX = []
+        for k in range(len(decision)):
+            tmp = []
+            for h in range(dimension):
+                if (decision[k][h]==True):
+                    tmp.append(train_set_X[j][h] - g[0][j][h] * (step / g_total))
+                else:
+                    tmp.append(train_set_X[j][h] + g[0][j][h] * (step / g_total))
+            # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
+            new_pointsX.append(tmp)
+        new_pointsX.append(train_set_X[j])
+        new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+
+        original_y = new_pointsY[-1]
+        distances = [x for x in new_pointsY]
+        distances = distances[:-1]
+        # ans = 0
+        if (original_y < 0.5):
+            ans = max(distances)
+        else:
+            ans = min(distances)
+        new = new_pointsX[distances.index(ans)]
+        print("origin point: ", train_set_X[j])
+        print("new point: ", new)
+    return new
