@@ -3,7 +3,9 @@ import math
 
 import numpy as np
 import tensorflow as tf
-
+import formula
+import random
+import testing_function
 
 from matplotlib import pyplot as plt
 
@@ -79,17 +81,19 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
     # read training data
     # train_path = "./dataset/train[-1]_[-1]_[2, -4, -3, 5]_[-1]_[-4, -2, 3]_[4, 0, -5]_[3, 5]_[2, 1, -1]_[2, -1]_8624.csv"
     with open(train_path, 'r+') as csvfile:
-        with open('./dataset/train_next.csv', 'w+') as file:
+        with open('./dataset/train_next.csv', 'w') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
+
                 if (i < 140 or i > 160):
                     i += 1
                     continue
                 else:
+
                     i += 1
-                writer.writerow(row)
+                    writer.writerow(row)
                 # writer.writerow([1-float(row[0]),float(row[1])+0.01,float(row[2])+0.01])
         file.close()
 
@@ -107,8 +111,7 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
             else:
                 test_set_Y.append([0])
 
-    if read_next:
-        train_path = './dataset/train_next.csv'
+
     # read training data
     if read_next:
         train_path = './dataset/train_next.csv'
@@ -226,5 +229,64 @@ def data_partition_gradient(train_set_X, train_set_Y, gradient):
             label_1_gradient.append(gradient[i])
     return label_0, label_1, label_0_gradient, label_1_gradient
 
+def append_random_points(formu, train_set_X, train_set_Y,to_be_appended_random_points_number):
+    category = formu.get_category()
+    if (category == formula.POLYNOMIAL):
+        newPointsX,newPointsY=generate_polynomial_points(formu,to_be_appended_random_points_number)
+        train_set_X = train_set_X + newPointsX
+        train_set_Y = train_set_Y + newPointsY
+    elif (category == formula.POLYHEDRON):
+        newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number)
+        train_set_X = train_set_X + newPointsX
+        train_set_Y = train_set_Y + newPointsY   
+    print("new points X", newPointsX)
+    print("new points Y", newPointsY)
+    return train_set_X,train_set_Y
 
+def generate_polynomial_points(formu,to_be_appended_random_points_number):
+    formu = formu.get_list()
+    coefficientList = formu[:-1]
+    y = formu[-1]
+    outputX=[]
+    outputY=[]
+    for i in range(to_be_appended_random_points_number):
+        xList = []
+        variableNum = len(coefficientList)
+        for j in range(variableNum):
+            xList.append(random.randint(-10, 10))
 
+        flag = testing_function.polynomial_model(coefficientList, xList, y)
+        outputX.append(xList)
+
+        if (flag):
+            outputY.append([0])
+
+        else:
+            outputY.append([1])
+
+    return outputX,outputY
+
+def generate_polyhedron_points(formu, to_be_appended_random_points_number):
+    formu = formu.get_list()
+    dim = len(formu[0][0])
+    outputX = []
+    outputY = []
+    for i in range(to_be_appended_random_points_number):
+        generated_point = []
+        k = random.randint(2,3)
+        if k%2==0:
+            center = random.randint(0,len(formu[0])-1)
+            for i in range(dim):
+                generated_point.append(random.uniform(int(formu[0][center][i])-10, int(formu[0][center][i])+10))
+        else:
+            for i in range(dim):
+                generated_point.append(random.uniform(-10, 10))
+        flag = testing_function.polycircle_model(formu[0], formu[1], generated_point)
+        outputX.append(generated_point)
+
+        if (flag):
+            outputY.append([0])
+
+        else:
+            outputY.append([1])
+    return outputX, outputY

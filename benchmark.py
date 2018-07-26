@@ -21,7 +21,6 @@ def generate_accuracy(train_path, test_path):
     training_epochs = 100
     display_step = 1
 
-    train_set = []
     test_set_X = []
     test_set_Y = []
     train_set_X = []
@@ -68,8 +67,6 @@ def generate_accuracy(train_path, test_path):
     # Initializing the variables
     init = tf.global_variables_initializer()
 
-    grads = tf.gradients(loss_op, weights["out"])
-    newgrads = tf.gradients(logits, X)
 
     result = []
 
@@ -86,7 +83,8 @@ def generate_accuracy(train_path, test_path):
     # result.append(model)
 
     y = None
-
+    train_acc = 0
+    test_acc = 0
     with tf.Session() as sess:
         sess.run(init)
 
@@ -95,6 +93,8 @@ def generate_accuracy(train_path, test_path):
 
         print("h1", h1)
         print("out", out)
+        #g = sess.run(newgrads, feed_dict={X: train_set_X})
+        ##print(g)
 
         ##global gradients                                                        Y: train_set_Y}
         # Training cycle
@@ -102,21 +102,15 @@ def generate_accuracy(train_path, test_path):
             _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:100],
                                                             Y: train_set_Y[:100]})
 
-            g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-            ##print(g)
             print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
         print("Optimization Finished!")
-        # print(len(train_set_Y))
+
         train_y = sess.run(logits, feed_dict={X: train_set_X})
         test_y = sess.run(logits, feed_dict={X: test_set_X})
 
-        # print(len(train_y))
-        # print(len(train_set_Y))
         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
         test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
-
-        return train_acc, test_acc
 
         # result.append([epoch, "th Training accuracy", train_acc])
         # result.append([epoch, "th Testing accuracy", test_acc])
@@ -136,3 +130,5 @@ def generate_accuracy(train_path, test_path):
         #             ws.write(i, j, col)
         #
         # wb.save("near_circle.xls")
+    tf.reset_default_graph()
+    return train_acc, test_acc

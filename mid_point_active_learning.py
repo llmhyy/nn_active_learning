@@ -11,6 +11,7 @@ import formula
 import testing_function
 import util
 
+
 step = 3
 
 
@@ -41,7 +42,6 @@ def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
            or \
            (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 < 1)
 
-
 def generate_accuracy(train_data_file, test_data_file, formu, category):
     print("=========MID_POINT===========")
 
@@ -53,6 +53,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
     boundary_remaining_trial_iteration = 100
 
     to_be_appended_points_number = 10
+    to_be_appended_random_points_number=5
     active_learning_iteration = 10
     threhold = 5
     test_set_X = []
@@ -62,6 +63,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
 
     util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_data_file, test_data_file, read_next=True)
     # Network Parameters
+
     n_hidden_1 = 10  # 1st layer number of neurons
     n_hidden_2 = 10  # 2nd layer number of neurons
     n_input = len(train_set_X[0])  # MNIST data input (img shape: 28*28)
@@ -101,14 +103,12 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
     train_op = optimizer.minimize(loss_op)
     # Initializing the variables
     init = tf.global_variables_initializer()
-
     new_grads = tf.gradients(logits, X)
     y = None
 
     for i in range(active_learning_iteration):
         print("*******", i, "th loop:")
         print("training set size", len(train_set_X))
-        to_be_appended_points_number = 10
 
         #TODO add a to_be_randomed_points_number = 10
 
@@ -128,7 +128,8 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
 
             append_mid_points(distance_list, formu, point_pair_list, to_be_appended_points_number,
                               train_set_X, train_set_Y)
-
+            print("new train size after mid point", len(train_set_X), len(train_set_Y))
+            train_set_X,train_set_Y=util.append_random_points(formu, train_set_X, train_set_Y,to_be_appended_random_points_number)
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
@@ -144,7 +145,6 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
             train_y = sess.run(logits, feed_dict={X: train_set_X})
             test_y = sess.run(logits, feed_dict={X: test_set_X})
 
-            print("new train size after mid point", len(train_set_X), len(train_set_Y))
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
             test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
             train_acc_list.append(train_acc)
@@ -155,6 +155,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
 
     result.append(train_acc_list)
     result.append(test_acc_list)
+    tf.reset_default_graph()
     return result
 
 

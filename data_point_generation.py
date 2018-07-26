@@ -28,8 +28,6 @@ def randomPolynomial(formu):
         train = csv.writer(csvfile)
         
         for k in range(700):
-
-            #TODO coefficient and xList should comes from formu
             xList = []
             variableNum=len(coefficientList)
             for i in range(variableNum):
@@ -77,7 +75,7 @@ def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
                         generated_point.append(random.uniform(int(formu[0][center][i])-10, int(formu[0][center][i])+10))
                 else:
                     for i in range(dim):
-                        generated_point.append(random.uniform(-1000, 1000))
+                        generated_point.append(random.uniform(-10, 10))
 
                 flag = tf.polycircle_model(formu[0], formu[1], generated_point)
 
@@ -85,7 +83,7 @@ def randomCircle(formu):  # [[[12,0],[-12,0]],[4,4]]
                     data_point.append(0.0)
                     data_point += generated_point
 
-                    train.writerow(data_point)
+                    train.writerow(data_point)                                                              
                 else:
                     data_point.append(1.0) 
                     data_point += generated_point

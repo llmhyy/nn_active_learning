@@ -72,6 +72,8 @@ def generate_accuracy(train_path, test_path, formula, catagory):
     pointsRatio = 0.25
     active_learning_iteration = 10
 
+    to_be_appended_random_points_number=5
+
     train_set = []
     test_set_X = []
     test_set_Y = []
@@ -143,10 +145,10 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
             g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
 
-            print(g)
+            # print(g)
 
             train_set_X, train_set_Y = append_large_gradient(sess, g, X, logits, formula, train_set_X, train_set_Y, catagory, pointsRatio, decision)
-
+            train_set_X, train_set_Y = util.append_random_points(formula, train_set_X, train_set_Y, to_be_appended_random_points_number)
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
@@ -273,4 +275,5 @@ def generate_accuracy(train_path, test_path, formula, catagory):
 
     result.append(train_acc_list)
     result.append(test_acc_list)
+    tf.reset_default_graph()
     return result
