@@ -17,7 +17,7 @@ def generate_accuracy(train_path, test_path):
 
     print("=========BENCH_MARK===========")
 
-    learning_rate = 0.1
+    learning_rate = 0.01
     training_epochs = 100
     display_step = 1
 
@@ -98,9 +98,12 @@ def generate_accuracy(train_path, test_path):
 
         ##global gradients                                                        Y: train_set_Y}
         # Training cycle
+
+        data_size = 100
+
         for epoch in range(training_epochs):
-            _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:100],
-                                                            Y: train_set_Y[:100]})
+            _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:data_size],
+                                                            Y: train_set_Y[:data_size]})
 
             print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
@@ -116,8 +119,8 @@ def generate_accuracy(train_path, test_path):
         # result.append([epoch, "th Testing accuracy", test_acc])
         # result.append(["\n"])
 
-        # predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
+        predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X[:data_size], train_set_Y[:data_size])
 
         # for i, row in enumerate(result):
         #     for j, col in enumerate(row):

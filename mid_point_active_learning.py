@@ -1,16 +1,13 @@
 from __future__ import print_function
 
-import math
 import random
 
 import numpy as np
 import tensorflow as tf
 
 import boundary_remaining as br
-import formula
 import testing_function
 import util
-
 
 step = 3
 
@@ -42,6 +39,7 @@ def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
            or \
            (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 < 1)
 
+
 def generate_accuracy(train_data_file, test_data_file, formu, category):
     print("=========MID_POINT===========")
 
@@ -53,7 +51,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
     boundary_remaining_trial_iteration = 100
 
     to_be_appended_points_number = 10
-    to_be_appended_random_points_number=5
+    to_be_appended_random_points_number = 5
     active_learning_iteration = 10
     threhold = 5
     test_set_X = []
@@ -110,7 +108,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
         print("*******", i, "th loop:")
         print("training set size", len(train_set_X))
 
-        #TODO add a to_be_randomed_points_number = 10
+        # TODO add a to_be_randomed_points_number = 10
 
         with tf.Session() as sess:
             sess.run(init)
@@ -129,7 +127,8 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
             append_mid_points(distance_list, formu, point_pair_list, to_be_appended_points_number,
                               train_set_X, train_set_Y)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
-            train_set_X,train_set_Y=util.append_random_points(formu, train_set_X, train_set_Y,to_be_appended_random_points_number)
+            train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
+                                                                 to_be_appended_random_points_number)
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
@@ -137,7 +136,8 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
             print("label 0 length", length_0, "label 1 length", length_1)
 
             if (not is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1, logits, formu, train_set_X, train_set_Y)
+                br.apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1, logits, formu, train_set_X,
+                                            train_set_Y)
 
             for epoch in range(training_epochs):
                 _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
@@ -151,7 +151,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
             test_acc_list.append(test_acc)
 
             predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X, train_set_Y)
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X: x}), train_set_X, train_set_Y)
 
     result.append(train_acc_list)
     result.append(test_acc_list)

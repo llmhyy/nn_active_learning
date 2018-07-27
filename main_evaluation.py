@@ -9,6 +9,9 @@ import xlwt
 category = formula.POLYHEDRON
 number = 30
 
+upper_bound = 1000
+lower_bound = -1000
+
 formulas = fg.generate_formula(category, number)
 formula_list = formulas.get(category)
 
@@ -67,7 +70,7 @@ for f in formula_list:
     print (f.get_list())
     # f = [[-1,4,2,5],[ -2,5,1,0],-1748]
     #TODO each foumla write its generated data into files with the formula name
-    train_data_file, test_data_file = data_point_generation.generate_data_points(f.get_list(), category)
+    train_data_file, test_data_file = data_point_generation.generate_data_points(f.get_list(), category, lower_bound, upper_bound)
 
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc

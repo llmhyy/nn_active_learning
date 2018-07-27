@@ -17,7 +17,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
     # Set min and max values and give it some padding
     x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
     y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
-    h = 10
+    h = 1
     # Generate a grid of points with distance h between them
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
     # Predict the function value for the whole gid
@@ -37,13 +37,13 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
     plt.show()
 
 
-def calculate_accuracy(y, set_Y, b):
+def calculate_accuracy(y, set_Y, print_data_details):
     test_correct = []
     test_wrong = []
     train_correct = []
     train_wrong = []
     for i in range(len(set_Y)):
-        if (b):
+        if (print_data_details):
             print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
 
         if y[i][0] > 0.5 and set_Y[i][0] == 1:
@@ -102,6 +102,9 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
     with open(test_path, 'r+') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:
+            if len(row) == 0:
+                continue
+
             # print(row)
             l = [float(x) for x in row]
             # print(l)

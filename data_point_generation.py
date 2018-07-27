@@ -7,35 +7,35 @@ import formula
 import testing_function as tf
 
 
-def generate_data_points(formu, category):
+def generate_data_points(formu, category, lower_bound, upper_bound):
     if (category == formula.POLYHEDRON):
-        trainpath, testpath = random_polyhedron(formu)
+        trainpath, testpath = random_polyhedron(formu, lower_bound, upper_bound)
     elif (category == formula.POLYNOMIAL):
-        trainpath, testpath = random_polynomial(formu)
+        trainpath, testpath = generate_random_points_for_polynomial(formu, lower_bound, upper_bound)
     return trainpath, testpath
 
 
 # TODO coefficient and xList should comes from formu
-def random_polynomial(formu):
-    trainName = "train" + "_".join(str(x) for x in formu) + ".csv"
-    testName = "test" + "_".join(str(x) for x in formu) + ".csv"
+def generate_random_points_for_polynomial(formu, lower_bound, upper_bound):
+    train_name = "train" + "_".join(str(x) for x in formu) + ".csv"
+    test_name = "test" + "_".join(str(x) for x in formu) + ".csv"
 
-    train_path = "./dataset/" + trainName
-    test_path = "./dataset/" + testName
+    train_path = "./dataset/" + train_name
+    test_path = "./dataset/" + test_name
 
-    coefficientList = formu[:-1]
+    coefficient_list = formu[:-1]
     y = formu[-1]
-    with open(train_path, 'wb') as csvfile:
+    with open(train_path, 'w') as csvfile:
 
         train = csv.writer(csvfile)
 
         for k in range(700):
             xList = []
-            variableNum = len(coefficientList)
-            for i in range(variableNum):
-                xList.append(random.randint(-10, 10))
+            variable_num = len(coefficient_list)
+            for i in range(variable_num):
+                xList.append(random.randint(lower_bound, upper_bound))
 
-            flag = tf.polynomial_model(coefficientList, xList, y)
+            flag = tf.polynomial_model(coefficient_list, xList, y)
 
             optList = []
             if (flag):
@@ -47,24 +47,25 @@ def random_polynomial(formu):
                 optList += xList
                 train.writerow(optList)
 
-    testingPoint(formu, variableNum, 1000, -10, 10, test_path, formula.POLYNOMIAL)
+    testing_point(formu, variable_num, 1000, lower_bound, upper_bound, test_path, formula.POLYNOMIAL)
     return train_path, test_path
 
 
 # generate random data points for a circle formula
-def random_polyhedron(formu):  # [[[12,0],[-12,0]],[4,4]]
+#TODO use upper_bound, lower_bound parameter
+def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,4]]
     number = random.randint(1, 20)
     dim = len(formu[0][0])
     print(dim)
 
-    trainname = "train" + "_".join(str(x) for x in formu[1]) + ".csv"
-    testname = "test" + "_".join(str(x) for x in formu[1]) + ".csv"
+    train_name = "train" + "_".join(str(x) for x in formu[1]) + ".csv"
+    test_name = "test" + "_".join(str(x) for x in formu[1]) + ".csv"
 
-    train_path = "./dataset/" + trainname
-    test_path = "./dataset/" + testname
+    train_path = "./dataset/" + train_name
+    test_path = "./dataset/" + test_name
 
-    with open(train_path, 'wb') as csvfile:
-        with open(test_path, 'wb') as csvfile2:
+    with open(train_path, 'w') as csvfile:
+        with open(test_path, 'w') as csvfile2:
             train = csv.writer(csvfile)
             test = csv.writer(csvfile2)
 
@@ -92,12 +93,12 @@ def random_polyhedron(formu):  # [[[12,0],[-12,0]],[4,4]]
                     data_point += generated_point
 
                     train.writerow(data_point)
-            PolyhedronPoint(formu, dim, 4000, test_path, formula.POLYHEDRON)
+            polyhedron_point(formu, dim, 4000, test_path, formula.POLYHEDRON)
     return train_path, test_path
 
 
-def PolyhedronPoint(formu, dimension, number, path, catagory):
-    with open(path, 'wb') as csvfile:
+def polyhedron_point(formu, dimension, number, path, catagory):
+    with open(path, 'w') as csvfile:
         test = csv.writer(csvfile)
         numberOfPoint = int(round(math.pow(int(number / len(formu[0])), (1.0 / dimension))))
         # numberOfPoint = 300
@@ -124,13 +125,13 @@ def PolyhedronPoint(formu, dimension, number, path, catagory):
                 test.writerow(i)
 
 
-def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagory):
-    with open(path, 'wb') as csvfile:
+def testing_point(formu, dimension, number, lower_bound, large_bound, path, catagory):
+    with open(path, 'w') as csvfile:
         numberOfPoint = int(round(math.pow(number, (1.0 / dimension))))
-        step = (largebound - lowerbound) / float(numberOfPoint)
+        step = (large_bound - lower_bound) / float(numberOfPoint)
         pointList = []
         for i in range(numberOfPoint):
-            pointList.append(lowerbound + i * step)
+            pointList.append(lower_bound + i * step)
 
         output = list(product(pointList, repeat=dimension))
         test = csv.writer(csvfile)
@@ -143,10 +144,10 @@ def testingPoint(formu, dimension, number, lowerbound, largebound, path, catagor
                 flag = tf.polynomial_model(formu[:-1], i, formu[-1])
 
             if (flag):
-                i.insert(0, 0.0)
-            else:
                 i.insert(0, 1.0)
+            else:
+                i.insert(0, 0.0)
             test.writerow(i)
 
-# testingPoint(2, 4000, -1.5, 1.5)
-# random_polynomial([[1,2],[3],[4,5,6]])
+# testing_point(2, 4000, -1.5, 1.5)
+# generate_random_points_for_polynomial([[1,2],[3],[4,5,6]])
