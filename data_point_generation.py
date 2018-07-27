@@ -39,11 +39,11 @@ def random_polynomial(formu):
 
             optList = []
             if (flag):
-                optList.append(0.0)
+                optList.append(1.0)
                 optList += xList
                 train.writerow(optList)
             else:
-                optList.append(1.0)
+                optList.append(0.0)
                 optList += xList
                 train.writerow(optList)
 
