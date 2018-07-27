@@ -65,6 +65,7 @@ def calculate_accuracy(y, set_Y, print_data_details):
 def multilayer_perceptron(x, weights, biases):
     # Hidden fully connected layer with 256 neurons
     x0 = tf.nn.batch_normalization(x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+    # x0 = x
     layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
     # layer1_out = tf.sigmoid(layer_1)
 
@@ -74,7 +75,7 @@ def multilayer_perceptron(x, weights, biases):
 
     # Output fully connected layer with a neuron for each class
     out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
-    return tf.nn.sigmoid(out_layer)
+    return out_layer
 
 
 def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next):

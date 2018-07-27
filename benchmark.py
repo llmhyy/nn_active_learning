@@ -17,8 +17,8 @@ def generate_accuracy(train_path, test_path):
 
     print("=========BENCH_MARK===========")
 
-    learning_rate = 0.1
-    training_epochs = 100
+    learning_rate = 0.001
+    training_epochs = 10
     display_step = 1
 
     test_set_X = []
@@ -33,11 +33,6 @@ def generate_accuracy(train_path, test_path):
     n_hidden_2 = 10  # 2nd layer number of neurons
     n_input = len(train_set_X[0]) # MNIST data input (img shape: 28*28)
     n_classes = 1  # MNIST total classes (0-9 digits)
-
-    random_seed = 0
-    random.seed(random_seed)
-    np.random.seed(random_seed)
-    tf.set_random_seed(random_seed)
 
     # tf Graph input
     X = tf.placeholder("float", [None, n_input])
@@ -72,7 +67,10 @@ def generate_accuracy(train_path, test_path):
     y = None
     train_acc = 0
     test_acc = 0
-    with tf.Session() as sess:
+    config = tf.ConfigProto(
+        device_count={'GPU': 0}
+    )
+    with tf.Session(config=config) as sess:
         sess.run(init)
 
         h1 = sess.run(weights["h1"])
@@ -88,11 +86,14 @@ def generate_accuracy(train_path, test_path):
 
         data_size = 100
 
+        print("x:", train_set_X[:data_size])
+
         for epoch in range(training_epochs):
-            _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X[:data_size],
+            _, c, predicted_y = sess.run([train_op, loss_op, logits], feed_dict={X: train_set_X[:data_size],
                                                             Y: train_set_Y[:data_size]})
             g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-            print(g)
+            # print("gradients", g)
+            # print("predicted_y", predicted_y)
             print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
 
         print("Optimization Finished!")
@@ -107,8 +108,8 @@ def generate_accuracy(train_path, test_path):
         # result.append([epoch, "th Testing accuracy", test_acc])
         # result.append(["\n"])
 
-        # predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X[:data_size], train_set_Y[:data_size])
+        predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X[:data_size], train_set_Y[:data_size])
 
         # for i, row in enumerate(result):
         #     for j, col in enumerate(row):

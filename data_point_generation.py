@@ -17,14 +17,14 @@ def generate_data_points(formu, category, lower_bound, upper_bound):
 
 # TODO coefficient and xList should comes from formu
 def generate_random_points_for_polynomial(formu, lower_bound, upper_bound):
-    train_name = "train" + "_".join(str(x) for x in formu) + ".csv"
-    test_name = "test" + "_".join(str(x) for x in formu) + ".csv"
+    train_name = "train" + "_".join(str(x) for x in formu.get_list()) + ".csv"
+    test_name = "test" + "_".join(str(x) for x in formu.get_list()) + ".csv"
 
     train_path = "./dataset/" + train_name
     test_path = "./dataset/" + test_name
 
-    coefficient_list = formu[:-1]
-    y = formu[-1]
+    coefficient_list = formu.get_list()[:-1]
+    y = formu.get_list()[-1]
     with open(train_path, 'w') as csvfile:
 
         train = csv.writer(csvfile)
@@ -139,9 +139,9 @@ def testing_point(formu, dimension, number, lower_bound, large_bound, path, cata
             i = list(i)
 
             if catagory == formula.POLYHEDRON:
-                flag = tf.polycircle_model(formu[0], formu[1], i)
+                flag = tf.polycircle_model(formu.get_list()[0], formu.get_list()[1], i)
             else:
-                flag = tf.polynomial_model(formu[:-1], i, formu[-1])
+                flag = tf.polynomial_model(formu.get_list()[:-1], i, formu.get_list()[-1])
 
             if (flag):
                 i.insert(0, 1.0)
