@@ -1,12 +1,12 @@
 # TODO move the code here
 
 import math
-import random
 
 import gradient_combination
 import testing_function
 import util
 import random
+import tensorflow as tf
 
 def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y):
     label_selected = []
@@ -267,7 +267,10 @@ def decide_cross_boundry_point(sess, g, X, logits, train_set_X, j, threshold, de
             # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
             new_pointsX.append(tmp)
         new_pointsX.append(train_set_X[j])
-        new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+
+        prediction = tf.sigmoid(logits)
+
+        new_pointsY = sess.run(prediction, feed_dict={X: new_pointsX})
 
         original_y = new_pointsY[-1]
         distances = [x for x in new_pointsY]
