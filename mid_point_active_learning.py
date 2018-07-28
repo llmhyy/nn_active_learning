@@ -73,24 +73,12 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
             label_1 = []
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
-            print(len(label_0), len(label_1))
-            if (len(label_1) == 0 or len(label_0) == 0):
-                raise Exception("Cannot be classified")
-
-            distance_list, point_pair_list = filter_distant_point_pair(label_0, label_1, threshold)
-
-            util.quickSort(distance_list)
-
-            append_mid_points(distance_list, formu, point_pair_list, to_be_appended_points_number,
-                              train_set_X, train_set_Y)
-            print("new train size after mid point", len(train_set_X), len(train_set_Y))
-            # train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
-            #                                                      to_be_appended_random_points_number)
-            label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
-            print("label 0 length", length_0, "label 1 length", length_1)
+            print(length_0, length_1)
+            if (length_0 == 0 or length_1 == 0):
+                raise Exception("Cannot be classified")
 
             if (not is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
                 br.apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits, formu, train_set_X,
@@ -109,6 +97,19 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
 
             predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
             util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X, train_set_Y)
+
+            distance_list, point_pair_list = filter_distant_point_pair(label_0, label_1, threshold)
+            util.quickSort(distance_list)
+            append_mid_points(distance_list, formu, point_pair_list, to_be_appended_points_number,
+                              train_set_X, train_set_Y)
+            print("new train size after mid point", len(train_set_X), len(train_set_Y))
+            # train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
+            #                                                      to_be_appended_random_points_number)
+            label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
+            length_0 = len(label_0) + 0.0
+            length_1 = len(label_1) + 0.0
+
+            print("label 0 length", length_0, "label 1 length", length_1)
 
     result.append(train_acc_list)
     result.append(test_acc_list)

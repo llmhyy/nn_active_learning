@@ -33,8 +33,8 @@ formula_list = formulas.get(category)
 
 f = formula_list[0]
 
-upper_bound = 1000
 lower_bound = -1000
+upper_bound = 1000
 
 learning_rate = 0.01
 training_epochs = 100
@@ -47,7 +47,7 @@ test_data_file = "dataset/test[1]_[1]_0.csv"
 
 # ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs)
 # TODO gra_list should contain a set of gra_train_acc and gra_test_acc
-gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs)
+gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
 # TODO mid_list should contain a set of mid_train_acc and mid_test_acc
-# mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs)
+# mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
 print("********************Final result here: ")

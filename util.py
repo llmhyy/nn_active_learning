@@ -1,16 +1,12 @@
 import csv
 import math
+import random
 
 import numpy as np
-import tensorflow as tf
-import formula
-import random
-import testing_function
-
 from matplotlib import pyplot as plt
 
-
-
+import formula
+import testing_function
 
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
@@ -38,6 +34,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
     y = Y.reshape(len(Y))
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     plt.show()
+    plt.savefig('test.png')
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
@@ -119,6 +116,7 @@ def preprocess(train_path, test_path, read_next):
                 train_set_Y.append([0])
 
     return train_set_X, train_set_Y, test_set_X, test_set_Y
+
 
 def quickSort(alist):
     quickSortHelper(alist, 0, len(alist) - 1)
@@ -220,55 +218,59 @@ def data_partition_gradient(train_set_X, train_set_Y, gradient):
             label_1_gradient.append(gradient[i])
     return label_0, label_1, label_0_gradient, label_1_gradient
 
-def append_random_points(formu, train_set_X, train_set_Y,to_be_appended_random_points_number):
+
+def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_points_number, lower_bound, upper_bound):
     category = formu.get_category()
     if (category == formula.POLYNOMIAL):
-        newPointsX,newPointsY=generate_polynomial_points(formu,to_be_appended_random_points_number)
+        newPointsX, newPointsY = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
         train_set_X = train_set_X + newPointsX
         train_set_Y = train_set_Y + newPointsY
     elif (category == formula.POLYHEDRON):
-        newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number)
+        newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
         train_set_X = train_set_X + newPointsX
-        train_set_Y = train_set_Y + newPointsY   
+        train_set_Y = train_set_Y + newPointsY
     print("new points X", newPointsX)
     print("new points Y", newPointsY)
-    return train_set_X,train_set_Y
+    return train_set_X, train_set_Y
 
-def generate_polynomial_points(formu,to_be_appended_random_points_number):
+
+def generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):
     formu = formu.get_list()
     coefficientList = formu[:-1]
     y = formu[-1]
-    outputX=[]
-    outputY=[]
+    outputX = []
+    outputY = []
     for i in range(to_be_appended_random_points_number):
         xList = []
         variableNum = len(coefficientList)
         for j in range(variableNum):
-            xList.append(random.randint(-10, 10))
+            xList.append(random.randint(lower_bound, upper_bound))
 
         flag = testing_function.polynomial_model(coefficientList, xList, y)
         outputX.append(xList)
 
         if (flag):
+            outputY.append([1])
+        else:
             outputY.append([0])
 
-        else:
-            outputY.append([1])
+    return outputX, outputY
 
-    return outputX,outputY
 
-def generate_polyhedron_points(formu, to_be_appended_random_points_number):
+
+# TODO use lower and upper bound to generate data points
+def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):
     formu = formu.get_list()
     dim = len(formu[0][0])
     outputX = []
     outputY = []
     for i in range(to_be_appended_random_points_number):
         generated_point = []
-        k = random.randint(2,3)
-        if k%2==0:
-            center = random.randint(0,len(formu[0])-1)
+        k = random.randint(2, 3)
+        if k % 2 == 0:
+            center = random.randint(0, len(formu[0]) - 1)
             for i in range(dim):
-                generated_point.append(random.uniform(int(formu[0][center][i])-10, int(formu[0][center][i])+10))
+                generated_point.append(random.uniform(int(formu[0][center][i]) - 10, int(formu[0][center][i]) + 10))
         else:
             for i in range(dim):
                 generated_point.append(random.uniform(-10, 10))
