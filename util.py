@@ -10,6 +10,9 @@ import testing_function
 from matplotlib import pyplot as plt
 
 
+
+
+
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
     X = np.array(train_set_X)
     Y = np.array(train_set_Y)
@@ -61,41 +64,25 @@ def calculate_accuracy(y, set_Y, print_data_details):
     return result
 
 
-# Create model
-def multilayer_perceptron(x, weights, biases):
-    # Hidden fully connected layer with 256 neurons
-    x0 = tf.nn.batch_normalization(x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
-    # x0 = x
-    layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
-    # layer1_out = tf.sigmoid(layer_1)
+def preprocess(train_path, test_path, read_next):
+    test_set_X = []
+    test_set_Y = []
+    train_set_X = []
+    train_set_Y = []
 
-    # Hidden fully connected layer with 256 neurons
-    # layer_2 = tf.nn.relu(tf.add(tf.matmul(layer_1, weights['h2']), biases['b2']))
-    # layer2_out = tf.sigmoid(layer_2)
-
-    # Output fully connected layer with a neuron for each class
-    out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
-    return out_layer
-
-
-def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next):
     # read training data
-    # train_path = "./dataset/train[-1]_[-1]_[2, -4, -3, 5]_[-1]_[-4, -2, 3]_[4, 0, -5]_[3, 5]_[2, 1, -1]_[2, -1]_8624.csv"
     with open(train_path, 'r+') as csvfile:
         with open('./dataset/train_next.csv', 'w') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-
                 if (i < 140 or i > 160):
                     i += 1
                     continue
                 else:
-
                     i += 1
                     writer.writerow(row)
-                # writer.writerow([1-float(row[0]),float(row[1])+0.01,float(row[2])+0.01])
         file.close()
 
     # read testing data
@@ -115,7 +102,6 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
             else:
                 test_set_Y.append([0])
 
-
     # read training data
     if read_next:
         train_path = './dataset/train_next.csv'
@@ -132,6 +118,7 @@ def preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, tes
             else:
                 train_set_Y.append([0])
 
+    return train_set_X, train_set_Y, test_set_X, test_set_Y
 
 def quickSort(alist):
     quickSortHelper(alist, 0, len(alist) - 1)

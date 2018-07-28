@@ -8,8 +8,7 @@ import tensorflow as tf
 import boundary_remaining as br
 import testing_function
 import util
-
-step = 3
+import network_structure as ns
 
 
 def filter_distant_point_pair(label_0, label_1, threshold):
@@ -40,68 +39,26 @@ def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
            (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 < 1)
 
 
-def generate_accuracy(train_data_file, test_data_file, formu, category):
+def generate_accuracy(train_data_file, test_data_file, formu, category, learning_rate, training_epochs):
     print("=========MID_POINT===========")
-
-    # Parameters
-    learning_rate = 0.1
-    training_epochs = 100
-
     balance_ratio_threshold = 0.7
     boundary_remaining_trial_iteration = 100
 
     to_be_appended_points_number = 10
     to_be_appended_random_points_number = 5
     active_learning_iteration = 10
-    threhold = 5
-    test_set_X = []
-    test_set_Y = []
-    train_set_X = []
-    train_set_Y = []
+    threshold = 5
 
-    util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_data_file, test_data_file, read_next=True)
-    # Network Parameters
 
-    n_hidden_1 = 10  # 1st layer number of neurons
-    n_hidden_2 = 10  # 2nd layer number of neurons
-    n_input = len(train_set_X[0])  # MNIST data input (img shape: 28*28)
-    n_classes = 1  # MNIST total classes (0-9 digits)
+    train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_data_file, test_data_file, read_next=True)
 
-    random_seed = 0
-    random.seed(random_seed)
-    np.random.seed(random_seed)
-    tf.set_random_seed(random_seed)
+    net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
     train_acc_list = []
     test_acc_list = []
     result = []
 
-    # tf Graph input
-    X = tf.placeholder("float", [None, n_input])
-    Y = tf.placeholder("float", [None, n_classes])
-    weights = {
-        'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)),
-        'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)),
-        'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes], mean=0))
-    }
-    biases = {
-        'b1': tf.Variable(tf.random_normal([n_hidden_1])),
-        'b2': tf.Variable(tf.random_normal([n_hidden_2])),
-        'out': tf.Variable(tf.random_normal([n_classes]))
-    }
-
-    # Cofnstruct model
-    logits = util.multilayer_perceptron(X, weights, biases)
-
-    # Define loss and optimizer
-    loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=Y))
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
-    # optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
-    # Initializing the variables
-    train_op = optimizer.minimize(loss_op)
-    # Initializing the variables
-    init = tf.global_variables_initializer()
-    new_grads = tf.gradients(logits, X)
+    new_grads = tf.gradients(net_stru.logits, net_stru.X)
     y = None
 
     for i in range(active_learning_iteration):
@@ -111,7 +68,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
         # TODO add a to_be_randomed_points_number = 10
 
         with tf.Session() as sess:
-            sess.run(init)
+            sess.run(net_stru.init)
             label_0 = []
             label_1 = []
 
@@ -120,15 +77,15 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
             if (len(label_1) == 0 or len(label_0) == 0):
                 raise Exception("Cannot be classified")
 
-            distance_list, point_pair_list = filter_distant_point_pair(label_0, label_1, threhold)
+            distance_list, point_pair_list = filter_distant_point_pair(label_0, label_1, threshold)
 
             util.quickSort(distance_list)
 
             append_mid_points(distance_list, formu, point_pair_list, to_be_appended_points_number,
                               train_set_X, train_set_Y)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
-            train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
-                                                                 to_be_appended_random_points_number)
+            # train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
+            #                                                      to_be_appended_random_points_number)
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
@@ -136,22 +93,22 @@ def generate_accuracy(train_data_file, test_data_file, formu, category):
             print("label 0 length", length_0, "label 1 length", length_1)
 
             if (not is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1, logits, formu, train_set_X,
+                br.apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits, formu, train_set_X,
                                             train_set_Y)
 
             for epoch in range(training_epochs):
-                _, c = sess.run([train_op, loss_op], feed_dict={X: train_set_X, Y: train_set_Y})
+                _, c = sess.run([net_stru.train_op, net_stru.loss_op], feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
 
-            train_y = sess.run(logits, feed_dict={X: train_set_X})
-            test_y = sess.run(logits, feed_dict={X: test_set_X})
+            train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
+            test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
 
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
             test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
 
-            predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X: x}), train_set_X, train_set_Y)
+            predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X, train_set_Y)
 
     result.append(train_acc_list)
     result.append(test_acc_list)
@@ -200,8 +157,8 @@ def append_mid_points(distance_list, formu, point_pair_list, to_be_appended_poin
                 if (label):
                     if (middle_point not in train_set_X):
                         train_set_X.append(middle_point)
-                        train_set_Y.append([0])
+                        train_set_Y.append([1])
                 else:
                     if (middle_point not in train_set_X):
                         train_set_X.append(middle_point)
-                        train_set_Y.append([1])
+                        train_set_Y.append([0])

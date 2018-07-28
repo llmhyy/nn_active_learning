@@ -58,10 +58,10 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1, logits, 
         print(k, label)
         if (label):
             train_set_X.append(k)
-            train_set_Y.append([0])
+            train_set_Y.append([1])
         else:
             train_set_X.append(k)
-            train_set_Y.append([1])
+            train_set_Y.append([0])
 
     print("new training size after boundary remaining", len(train_set_X), len(train_set_Y))
 

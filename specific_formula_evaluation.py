@@ -15,6 +15,7 @@ random.seed(random_seed)
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
 
+
 def generate_specific_formula():
     formulas = formula.Formulas()
     # formu = formula.Formula([[[3,5], [-6,2]], [1,4]], formula.POLYHEDRON)
@@ -35,19 +36,18 @@ f = formula_list[0]
 upper_bound = 1000
 lower_bound = -1000
 
-train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
-# train_data_file = "dataset/train[1]_[3]_-6.csv"
-# test_data_file = "dataset/test[1]_[3]_-6.csv"
+learning_rate = 0.01
+training_epochs = 100
+
+# train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
+train_data_file = "dataset/train[1]_[1]_0.csv"
+test_data_file = "dataset/test[1]_[1]_0.csv"
 
 # train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
 
-ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file)
-# ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file)
+# ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs)
 # TODO gra_list should contain a set of gra_train_acc and gra_test_acc
-# gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category)
+gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs)
 # TODO mid_list should contain a set of mid_train_acc and mid_test_acc
-#ben_train_acc, ben_test_acc =benchmark.generate_accuracy(train_data_file,test_data_file)
-# mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category)
-# mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category)
-#ben_train_acc, ben_test_acc =benchmark.generate_accuracy(train_data_file,test_data_file)
+# mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs)
 print("********************Final result here: ")

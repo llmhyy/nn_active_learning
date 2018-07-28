@@ -1,126 +1,49 @@
 from __future__ import print_function
 
-import random 
-
-import numpy as np
 import tensorflow as tf
-#from matplotlib import pyplot as plt
 
 import util
-import formula
-import formula_generator
+import network_structure as ns
 
 
 # Parameters
 
-def generate_accuracy(train_path, test_path):
+def generate_accuracy(train_path, test_path, learning_rate, training_epochs):
 
     print("=========BENCH_MARK===========")
+    # learning_rate = 0.001
+    # training_epochs = 10
 
-    learning_rate = 0.001
-    training_epochs = 10
-    display_step = 1
+    train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=False)
 
-    test_set_X = []
-    test_set_Y = []
-    train_set_X = []
-    train_set_Y = []
+    net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
-    util.preprocess(train_set_X, train_set_Y, test_set_X, test_set_Y, train_path, test_path, read_next=False)
-
-    # Network Parameters
-    n_hidden_1 = 10  # 1st layer number of neurons
-    n_hidden_2 = 10  # 2nd layer number of neurons
-    n_input = len(train_set_X[0]) # MNIST data input (img shape: 28*28)
-    n_classes = 1  # MNIST total classes (0-9 digits)
-
-    # tf Graph input
-    X = tf.placeholder("float", [None, n_input])
-    Y = tf.placeholder("float", [None, n_classes])
-
-    # Store layers weight & bias
-    weights = {
-        'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)),
-        'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)),
-        'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes], mean=0))
-    }
-    biases = {
-        'b1': tf.Variable(tf.random_normal([n_hidden_1])),
-        'b2': tf.Variable(tf.random_normal([n_hidden_2])),
-        'out': tf.Variable(tf.random_normal([n_classes]))
-    }
-
-    # Construct model
-    logits = util.multilayer_perceptron(X, weights, biases)
-
-    # Define loss and optimizer
-    loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=Y))
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
-    # optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
-    # Initializing the variables
-    train_op = optimizer.minimize(loss_op)
-    # Initializing the variables
-    init = tf.global_variables_initializer()
-
-    newgrads = tf.gradients(loss_op, weights["h1"])
+    # newgrads = tf.gradients(loss_op, weights["h1"])
 
     y = None
     train_acc = 0
     test_acc = 0
-    config = tf.ConfigProto(
-        device_count={'GPU': 0}
-    )
-    with tf.Session(config=config) as sess:
-        sess.run(init)
 
-        h1 = sess.run(weights["h1"])
-        out = sess.run(weights["out"])
+    with tf.Session() as sess:
+        sess.run(net_stru.init)
 
-        print("h1", h1)
-        print("out", out)
-        g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-        print(g)
+        data_size = len(train_set_X)
 
-        ##global gradients                                                        Y: train_set_Y}
-        # Training cycle
-
-        data_size = 100
-
-        print("x:", train_set_X[:data_size])
+        # print("x:", train_set_X[:data_size])
 
         for epoch in range(training_epochs):
-            _, c, predicted_y = sess.run([train_op, loss_op, logits], feed_dict={X: train_set_X[:data_size],
-                                                            Y: train_set_Y[:data_size]})
-            g = sess.run(newgrads, feed_dict={X: train_set_X, Y: train_set_Y})
-            # print("gradients", g)
-            # print("predicted_y", predicted_y)
-            print("Epoch:", '%04d' % (epoch + 1), "cost={:.9f}".format(c))
-
+            _, c, predicted_y = sess.run([net_stru.train_op, net_stru.loss_op, net_stru.logits],
+                                         feed_dict={net_stru.X: train_set_X[:data_size], net_stru.Y: train_set_Y[:data_size]})
         print("Optimization Finished!")
 
-        train_y = sess.run(logits, feed_dict={X: train_set_X})
-        test_y = sess.run(logits, feed_dict={X: test_set_X})
+        train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
+        test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
 
         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
         test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
-        # result.append([epoch, "th Training accuracy", train_acc])
-        # result.append([epoch, "th Testing accuracy", test_acc])
-        # result.append(["\n"])
+        # predicted = tf.cast(logits > 0.5, dtype=tf.float32)
+        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X[:data_size], train_set_Y[:data_size])
 
-        predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X[:data_size], train_set_Y[:data_size])
-
-        # for i, row in enumerate(result):
-        #     for j, col in enumerate(row):
-        #         if (i==1):
-        #             if(type(model[0])!=list):
-        #                 ws.write(i, j, str(col)+"x^"+ str(len(model)-j))
-        #             else:
-        #                 ws.write(i, j, str(col))
-        #         else:
-        #             ws.write(i, j, col)
-        #
-        # wb.save("near_circle.xls")
     tf.reset_default_graph()
     return train_acc, test_acc
