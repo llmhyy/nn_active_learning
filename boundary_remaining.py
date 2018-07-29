@@ -1,12 +1,14 @@
 # TODO move the code here
 
 import math
+import random
+
+import tensorflow as tf
 
 import gradient_combination
 import testing_function
 import util
-import random
-import tensorflow as tf
+
 
 def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y):
     label_selected = []
@@ -35,23 +37,22 @@ def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, trai
     return label_selected, gradient_selected, to_be_added_number
 
 
-def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1, logits, formu, train_set_X, train_set_Y):
-    points, preliminary_gradients, to_be_added_number = \
+def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
+                             logits, formu, train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number):
+    points_in_less_side, preliminary_gradients_in_less_side, to_be_added_number = \
         initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y)
 
-    ################################################################
-    # get all gradients for the unbalanced label points
+    if to_be_added_number > to_be_appended_boundary_remaining_points_number:
+        to_be_added_number = to_be_appended_boundary_remaining_points_number
 
-    # boundary remaining
-    # print(g)
     gradients = decide_all_gradients_for_boundary_remaining(
-        X, preliminary_gradients, points, logits, sess)
+        X, preliminary_gradients_in_less_side, points_in_less_side, logits, sess)
 
-    std_dev = util.calculate_std_dev(points, train_set_X)
+    std_dev = util.calculate_std_dev(train_set_X)
     print("standard deviation", std_dev)
 
     bias_direction = length_0 > length_1
-    newX = balancing_points(bias_direction, points, gradients, to_be_added_number, formu, std_dev)
+    newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev)
 
     for k in newX:
         label = testing_function.test_label(k, formu)
@@ -80,19 +81,19 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
         if gradient_length == 0:
             tmpg = []
             for d in range(dimension):
-                randomPower=random.randint(1,2)
-                sigh=(-1)**randomPower
-                randomNumber=(random.randint(1, 10))*sigh
+                randomPower = random.randint(1, 2)
+                sigh = (-1) ** randomPower
+                randomNumber = (random.randint(1, 10)) * sigh
                 tmpg.append(randomNumber)
             gradient_list.append(tmpg)
-            print("random direction",tmpg)
+            print("random direction", tmpg)
             continue
 
         #############################################################
 
         # TODO decision_direction should return a direction towards boudary
         direction = decision_direction(X, decision_options, gradient_length,
-                                       gradient_selected, j, label_selected, logits, sess,inverse=True)
+                                       gradient_selected, j, label_selected, logits, sess, inverse=True)
 
         # TODO calculate your own direction based on the above direction
 
@@ -144,7 +145,8 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
 #     return n_input
 
 
-def decision_direction(X, decision_options, gradient_length, gradient_selected, j, label_selected, logits, sess,inverse):
+def decision_direction(X, decision_options, gradient_length, gradient_selected, j, label_selected, logits, sess,
+                       inverse):
     step = 1
 
     new_pointsX = []
@@ -165,13 +167,13 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
 
     ans = 0
     # ans_gradient = 0
-    if (original_y < 0.5):
-        if inverse==True:
+    if (original_y < 0):
+        if inverse == True:
             ans = min(values)
         else:
             ans = max(values)
     else:
-        if inverse==True:
+        if inverse == True:
             ans = max(values)
         else:
             ans = min(values)
@@ -180,61 +182,50 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
     return direction
 
 
-def balancing_points(inflag, points, gradient, length_added, formu, std_dev):
-    print("inflag: ", inflag)
-    times = 0
-    outputX = []
-    iter = 0
-    flag = False
-    count = 0.0
+def balancing_points(is_label_0_side, points_in_less_side, gradients, length_added, formu, std_dev):
+    add_points = []
+    break_loop = False
+    trial_count = 0.0
     wrong = 0.0
     step = std_dev + random.uniform(0, 1)
+
+    balancing_threshold = 100
+
     while True:
-        for i in range(len(points)):
-            g_total = 0
-            grad = 0
-            for k in range(len(points[0])):
-                grad += gradient[i][k] * gradient[i][k]
-            g_total = math.sqrt(grad)
-            tmpList = []
-
-            for j in range(len(points[i])):
-                tmpValue = points[i][j] + gradient[i][j] * (step / g_total)
-                tmpList.append(tmpValue)
-
-            point_label = testing_function.test_label(tmpList, formu)
-            print (point_label)
-            count += 1
-
-            if inflag == True and point_label:
-                times += 1
-                wrong += 1
-                if times > 100:
-                    flag = True
-                    break
-                continue
-            if inflag == False and not point_label:
-                times += 1
-                wrong += 1
-                if times > 100:
-                    flag = True
-                    break
-                continue
-            outputX.append(tmpList)
-            times += 1
-            if times > 100:
-                flag = True
+        for i in range(len(points_in_less_side)):
+            trial_count += 1
+            if trial_count > balancing_threshold:
+                break_loop = True
                 break
-            iter += 1
-            if (iter == length_added):
-                flag = True
+
+            gradient_length = util.calculate_vector_size(points_in_less_side[i])
+            tmp_point = []
+            for j in range(len(points_in_less_side[i])):
+                tmp_value = points_in_less_side[i][j] + gradients[i][j] * (step / gradient_length)
+                tmp_point.append(tmp_value)
+
+            point_label = testing_function.test_label(tmp_point, formu)
+
+            if is_label_0_side and point_label:
+                wrong += 1
+
+            if not is_label_0_side and not point_label:
+                wrong += 1
+
+            add_points.append(tmp_point)
+
+            # success = trial_count - wrong
+            if (trial_count == length_added):
+                break_loop = True
                 break
-        if (flag == True):
+
+        if (break_loop):
             break
 
-    print("points added \n", outputX)
-    print("Boundary remaining accuracy: ", float((count - wrong) / count))
-    return outputX
+    print("points added \n", add_points)
+    print("Boundary remaining accuracy: ", float((trial_count - wrong) / trial_count))
+    return add_points
+
 
 # label_0=[[1,2]]
 # label_1=[[1,2],[3,4],[5,6],[7,8],[9,10]]
@@ -243,44 +234,36 @@ def balancing_points(inflag, points, gradient, length_added, formu, std_dev):
 # gra1=[]
 # balancing_points(label_0,label_1,gra0,gra1)
 
-def decide_cross_boundry_point(sess, g, X, logits, train_set_X, j, threshold, decision):
-    step = random.uniform(2, 4)
+def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, logits, train_sample, decision_combination,
+                                moving_step):
+    # step = random.uniform(2, 4)
     grad = 0
 
-    dimension = len(train_set_X[0])
+    dimension = len(train_sample)
 
-    for k in range(dimension):
-        grad += g[0][j][k] * g[0][j][k]
-    g_total = math.sqrt(grad)
-    # print("Im here ==================================")
+    new_pointsX = []
+    for k in range(len(decision_combination)):
+        tmp = []
+        for h in range(dimension):
+            if (decision_combination[k][h] == True):
+                tmp.append(train_sample[h] - moving_step * (gradient_sample[h] / gradient_size))
+            else:
+                tmp.append(train_sample[h] + moving_step * (gradient_sample[h] / gradient_size))
+        # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
+        new_pointsX.append(tmp)
 
-    new = []
-    if (g_total > threshold):
-        new_pointsX = []
-        for k in range(len(decision)):
-            tmp = []
-            for h in range(dimension):
-                if (decision[k][h]==True):
-                    tmp.append(train_set_X[j][h] - g[0][j][h] * (step / g_total))
-                else:
-                    tmp.append(train_set_X[j][h] + g[0][j][h] * (step / g_total))
-            # tmp[k].append(train_set_X[j][k] + g[0][j][k] * (step / g_total))
-            new_pointsX.append(tmp)
-        new_pointsX.append(train_set_X[j])
+    new_pointsX.append(train_sample)
 
-        prediction = tf.sigmoid(logits)
+    # prediction = tf.sigmoid(logits)
 
-        new_pointsY = sess.run(prediction, feed_dict={X: new_pointsX})
-
-        original_y = new_pointsY[-1]
-        distances = [x for x in new_pointsY]
-        distances = distances[:-1]
-        # ans = 0
-        if (original_y < 0.5):
-            ans = max(distances)
-        else:
-            ans = min(distances)
-        new = new_pointsX[distances.index(ans)]
-        # print("origin point: ", train_set_X[j])
-        # print("new point: ", new)
+    new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+    original_y = new_pointsY[-1]
+    values = [x for x in new_pointsY]
+    values = values[:-1]
+    # ans = 0
+    if (original_y < 0):
+        ans = max(values)
+    else:
+        ans = min(values)
+    new = new_pointsX[values.index(ans)]
     return new

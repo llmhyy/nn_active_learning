@@ -26,6 +26,7 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs):
         sess.run(net_stru.init)
 
         data_size = len(train_set_X)
+        data_size = 30
 
         # print("x:", train_set_X[:data_size])
 
@@ -40,8 +41,8 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs):
         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
         test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
-        # predicted = tf.cast(logits > 0.5, dtype=tf.float32)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={X:x}), train_set_X[:data_size], train_set_Y[:data_size])
+        predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X:x}), train_set_X[:data_size], train_set_Y[:data_size], -1)
 
     tf.reset_default_graph()
     return train_acc, test_acc

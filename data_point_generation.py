@@ -25,7 +25,7 @@ def generate_random_points_for_polynomial(formu, lower_bound, upper_bound):
 
     coefficient_list = formu.get_list()[:-1]
     y = formu.get_list()[-1]
-    with open(train_path, 'w') as csvfile:
+    with open(train_path, 'w', newline='') as csvfile:
 
         train = csv.writer(csvfile)
 
@@ -126,7 +126,7 @@ def polyhedron_point(formu, dimension, number, path, catagory):
 
 
 def testing_point(formu, dimension, number, lower_bound, large_bound, path, catagory):
-    with open(path, 'w') as csvfile:
+    with open(path, 'w', newline='') as csvfile:
         numberOfPoint = int(round(math.pow(number, (1.0 / dimension))))
         step = (large_bound - lower_bound) / float(numberOfPoint)
         pointList = []

@@ -42,13 +42,13 @@ def polycircle_model(center, radius, x):
     return False
 
 
-def test_label(middle_point, formu):
+def test_label(point, formu):
     category = formu.get_category()
     form = formu.get_list()
     flag = True
     if category == formula.POLYHEDRON:
-        flag = polycircle_model(form[0], form[1], middle_point)
+        flag = polycircle_model(form[0], form[1], point)
     elif category == formula.POLYNOMIAL:
-        flag = polynomial_model(form[:-1], middle_point, form[-1])
+        flag = polynomial_model(form[:-1], point, form[-1])
 
     return flag

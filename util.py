@@ -9,14 +9,14 @@ import formula
 import testing_function
 
 
-def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
+def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
     X = np.array(train_set_X)
     Y = np.array(train_set_Y)
 
     # Set min and max values and give it some padding
     x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
     y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
-    h = 1
+    h = 10
     # Generate a grid of points with distance h between them
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
     # Predict the function value for the whole gid
@@ -33,8 +33,9 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y):
     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
-    plt.show()
-    plt.savefig('test.png')
+    # plt.show()
+    file_name = 'test' + str(iteration) + '.png'
+    plt.savefig(file_name)
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
@@ -69,12 +70,12 @@ def preprocess(train_path, test_path, read_next):
 
     # read training data
     with open(train_path, 'r+') as csvfile:
-        with open('./dataset/train_next.csv', 'w') as file:
+        with open('./dataset/train_next.csv', 'w', newline='') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 140 or i > 160):
+                if (i < 141 or i > 160):
                     i += 1
                     continue
                 else:
@@ -116,6 +117,15 @@ def preprocess(train_path, test_path, read_next):
                 train_set_Y.append([0])
 
     return train_set_X, train_set_Y, test_set_X, test_set_Y
+
+
+def calculate_vector_size(vector):
+    dimension = len(vector)
+    s = 0
+    for j in range(dimension):
+        s += vector[j] * vector[j]
+
+    return math.sqrt(s)
 
 
 def quickSort(alist):
@@ -167,8 +177,9 @@ def calculate_distance(m, n):
     return distance
 
 
-def calculate_std_dev(label_selected, train_set_X):
-    dimension = len(label_selected[0])
+def calculate_std_dev(train_set_X):
+
+    dimension = len(train_set_X[0])
     point_distance_list = []
     for p in range(len(train_set_X) - 1):
         for q in range(p + 1, len(train_set_X)):
@@ -232,6 +243,12 @@ def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_
     print("new points X", newPointsX)
     print("new points Y", newPointsY)
     return train_set_X, train_set_Y
+
+
+def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
+    return (length_0 / length_1 > balance_ratio_threshold and length_0 / length_1 <= 1) \
+           or \
+           (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 <= 1)
 
 
 def generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):

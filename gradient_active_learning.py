@@ -1,7 +1,5 @@
 from __future__ import print_function
 
-import math
-
 import tensorflow as tf
 
 import boundary_remaining as br
@@ -11,31 +9,43 @@ import testing_function
 import util
 
 
-def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, pointsRatio, decision):
+def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, to_be_appended_gradient_points_number,
+                          decision_combination):
     new_train_set_X = []
     new_train_set_Y = []
 
     gradientList = g[0].tolist()
 
-    g_list = []
+    gradient_size_list = []
 
     dimension = len(train_set_X[0])
     input_size = len(train_set_X)
 
     # print (type(gradientList))
     for i in range(input_size):
-        grad = 0
-        for j in range(dimension):
-            grad += g[0][i][j] * g[0][i][j]
-        g_list.append(math.sqrt(grad))
-    util.quickSort(g_list)
+        size = util.calculate_vector_size(g[0][i])
+        gradient_size_list.append(size)
 
-    threshold = g_list[int(-len(gradientList) * pointsRatio)]
+    gradient_size_list.sort()
 
-    print(threshold)
+    index = len(gradient_size_list) - to_be_appended_gradient_points_number
+    if(to_be_appended_gradient_points_number > len(gradient_size_list)):
+        index = 0
+
+    size_threshold = gradient_size_list[index]
+    moving_step = util.calculate_std_dev(train_set_X)
     for j in range(input_size):
-        grad = 0
-        new = br.decide_cross_boundry_point(sess, g, X, logits, train_set_X, j, threshold, decision)
+        size = util.calculate_vector_size(g[0][j])
+        if size < size_threshold:
+            continue
+
+        value = sess.run(logits, feed_dict={X:[train_set_X[j]]})
+        print(train_set_X[j], " ", value, " ", g[0][j])
+        new = br.decide_cross_boundary_point(sess, g[0][j], size, X, logits,
+                                             train_set_X[j], decision_combination, moving_step)
+
+        new_value = sess.run(logits, feed_dict={X:[new]})
+        print(new, " ", new_value, " ", g[0][j])
 
         if (len(new) != 0):
             if (new not in train_set_X):
@@ -54,26 +64,19 @@ def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, c
     return train_set_X, train_set_Y
 
 
-def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
-    return (length_0 / length_1 > balance_ratio_threshold and length_0 / length_1 < 1) \
-           or \
-           (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 < 1)
-
-
-def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, upper_bound, lower_bound):
+def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, upper_bound,
+                      lower_bound):
     print("=========GRADIENT===========")
 
     # Parameters
     # learning_rate = 0.1
     # training_epochs = 100
     balance_ratio_threshold = 0.7
-    display_step = 1
-    changing_rate = [1000]
-    step = 8
-    points_ratio = 0.25
     active_learning_iteration = 5
 
-    to_be_appended_random_points_number = 5
+    to_be_appended_random_points_number = 6
+    to_be_appended_gradient_points_number = 6
+    to_be_appended_boundary_remaining_points_number = 6
 
     train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
@@ -106,9 +109,13 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
-            if (not is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits, formula,
-                                            train_set_X, train_set_Y)
+            if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
+                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
+                                            formula,
+                                            train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number)
+                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+                                        train_set_Y, 10+i)
+                print(0)
 
             for epoch in range(training_epochs):
                 _, c = sess.run([net_stru.train_op, net_stru.loss_op],
@@ -124,15 +131,24 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             test_acc_list.append(test_acc)
 
             util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-                                        train_set_Y)
+                                        train_set_Y, i)
 
-            g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
+            g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
             # print(g)
 
             train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru.X, net_stru.logits, formula, train_set_X,
-                                                             train_set_Y, category, points_ratio, decision)
+                                                             train_set_Y, category, to_be_appended_gradient_points_number, decision)
+
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+                                        train_set_Y, 20+i)
+
             train_set_X, train_set_Y = util.append_random_points(formula, train_set_X, train_set_Y,
-                                                                 to_be_appended_random_points_number, upper_bound, lower_bound)
+                                                                 to_be_appended_random_points_number, upper_bound,
+                                                                 lower_bound)
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+                                        train_set_Y, 30+i)
+
+            label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
