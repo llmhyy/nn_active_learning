@@ -77,7 +77,8 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
                 raise Exception("Cannot be classified")
 
             if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits, formu, train_set_X,
+                br.\
+                    apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits, formu, train_set_X,
                                             train_set_Y, to_be_appended_boundary_remaining_points_number)
 
             for epoch in range(training_epochs):

@@ -209,13 +209,14 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
             if is_label_1_side and not point_label:
                 wrong += 1
                 step=step/2.0
-                trial_count,wrong,points_added,flag=handleWrongPoint(points_in_less_side[i],gradients[i],step,trial_count,wrong,is_label_1_side,formu,balancing_threshold)
+                trial_count,wrong,points_added,break_loop=handleWrongPoint(points_in_less_side[i],gradients[i],step,trial_count,wrong,is_label_1_side,formu,balancing_threshold)
                 add_points=add_points+points_added
                 continue
             if not is_label_1_side and point_label:
                 wrong += 1
                 step=step/2.0
-                trial_count,wrong,points_added, flag = handleWrongPoint(points_in_less_side[i], gradients[i],step,trial_count,wrong,is_label_1_side,formu,balancing_threshold)
+                trial_count,wrong,points_added, break_loop = \
+                    handleWrongPoint(points_in_less_side[i], gradients[i],step,trial_count,wrong,is_label_1_side,formu,balancing_threshold)
                 add_points=add_points+points_added
                 continue
             add_points.append(tmp_point)
@@ -281,9 +282,10 @@ def handleWrongPoint(point, gradient, step, trial_count, wrong, is_label_1_side,
     return_list=[]
     correct_point=[]
     wrong_point=[]
+    break_loop=False
     while True:
         if trial_count>= balancing_threshold:
-            flag=True
+            break_loop=True
             break
         gradient_length = util.calculate_vector_size(gradient)
         tmp_point = []
@@ -307,6 +309,7 @@ def handleWrongPoint(point, gradient, step, trial_count, wrong, is_label_1_side,
 
         correct_point=tmp_point
         break
-    return_list=correct_point+wrong_point
-    return trial_count,wrong,return_list,flag
+    return_list.append(correct_point)
+    return_list.append(wrong_point)
+    return trial_count,wrong,return_list,break_loop
 
