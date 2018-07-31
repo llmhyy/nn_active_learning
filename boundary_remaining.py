@@ -9,7 +9,6 @@ import gradient_combination
 import testing_function
 import util
 
-
 def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y):
     label_selected = []
     gradient_selected = []
@@ -104,13 +103,28 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
 
         return_value = []
         for k in range(len(direction)):
-            if direction[k] == True:
+            if direction[k]:
                 return_value.append(-gradient_selected[j][k])
             else:
                 return_value.append(gradient_selected[j][k])
-        gradient_list.append(return_value)
-    return gradient_list
 
+        random_direction = []
+        dimension = len(direction)
+
+        for i in range(dimension - 1):
+            random_direction.append(random.uniform(-5, 5))
+
+        dot_product = 0
+        for i in range(dimension - 1):
+            dot_product += return_value[i] * random_direction[i]
+
+        lower_bound = -dot_product/return_value[-1]
+        last_direction = random.uniform(lower_bound, lower_bound + 10)
+
+        random_direction.append(last_direction)
+
+        gradient_list.append(random_direction)
+    return gradient_list
 
 # def decide_direction_2n0(X, gradient_length, j, label_selected, logits, sess, step, train_set_X):
 #     new = []
@@ -178,6 +192,7 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
         else:
             ans = min(values)
     direction = decision_options[values.index(ans)]
+
     # point_gradient = new_pointsX[values.index(ans_gradient)]
     return direction
 
