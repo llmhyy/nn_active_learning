@@ -49,6 +49,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
 
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
+
     train_acc_list = []
     test_acc_list = []
     result = []
