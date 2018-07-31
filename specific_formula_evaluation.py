@@ -39,7 +39,7 @@ upper_bound = 1000
 learning_rate = 0.01
 training_epochs = 100
 
-train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
+# train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
 train_data_file = "dataset/train[1]_[1]_0.csv"
 test_data_file = "dataset/test[1]_[1]_0.csv"
 
