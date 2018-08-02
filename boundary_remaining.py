@@ -3,8 +3,6 @@
 import math
 import random
 
-import tensorflow as tf
-
 import gradient_combination
 import testing_function
 import util
@@ -48,15 +46,16 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
     gradients = decide_all_gradients_for_boundary_remaining(
         X, preliminary_gradients_in_less_side, points_in_less_side, logits, sess)
 
+    print("Gradients: ", gradients)
     std_dev = util.calculate_std_dev(train_set_X)
     print("standard deviation", std_dev)
 
     bias_direction = length_0 > length_1
     newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev)
+    print("Boundary remaining pointssss: ", newX)
 
     for k in newX:
         label = testing_function.test_label(k, formu)
-        print(k, label)
         if (label):
             train_set_X.append(k)
             train_set_Y.append([1])
@@ -104,11 +103,28 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
 
         return_value = []
         for k in range(len(direction)):
-            if direction[k] == True:
+            if direction[k]:
                 return_value.append(-gradient_selected[j][k])
             else:
                 return_value.append(gradient_selected[j][k])
-        gradient_list.append(return_value)
+        # print("Standard direction: ", return_value)
+        random_direction = []
+        dimension = len(direction)
+
+        for i in range(dimension - 1):
+            # print("Random_value: ", random.uniform(-10, 10))
+            random_value = random.uniform(-5, 5)
+            random_direction.append(random_value)
+        dot_product = 0
+        for i in range(dimension - 1):
+            dot_product += return_value[i] * random_direction[i]
+
+        lower_bound = -dot_product / return_value[-1]
+        last_direction = random.uniform(lower_bound, lower_bound + 10)
+
+        random_direction.append(last_direction)
+        # print("Random direction: ", random_direction)
+        gradient_list.append(random_direction)
     return gradient_list
 
 
@@ -178,6 +194,7 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
         else:
             ans = min(values)
     direction = decision_options[values.index(ans)]
+
     # point_gradient = new_pointsX[values.index(ans_gradient)]
     return direction
 
@@ -187,7 +204,7 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
     break_loop = False
     trial_count = 0.0
     wrong = 0.0
-    step =  random.uniform(0, std_dev/2)
+    step = random.uniform(0, std_dev / 2)
 
     balancing_threshold = 100
 
@@ -208,16 +225,21 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
 
             if is_label_1_side and not point_label:
                 wrong += 1
-                step=step/2.0
-                trial_count,wrong,points_added,break_loop=handleWrongPoint(points_in_less_side[i],gradients[i],step,trial_count,wrong,is_label_1_side,formu,balancing_threshold)
-                add_points=add_points+points_added
+                step = step / 2.0
+                trial_count, wrong, points_added, break_loop = handle_wrong_point(points_in_less_side[i], gradients[i],
+                                                                                  step, trial_count, wrong,
+                                                                                  is_label_1_side, formu,
+                                                                                  balancing_threshold)
+                add_points = add_points + points_added
                 continue
             if not is_label_1_side and point_label:
                 wrong += 1
-                step=step/2.0
-                trial_count,wrong,points_added, break_loop = \
-                    handleWrongPoint(points_in_less_side[i], gradients[i],step,trial_count,wrong,is_label_1_side,formu,balancing_threshold)
-                add_points=add_points+points_added
+                step = step / 2.0
+                trial_count, wrong, points_added, break_loop = handle_wrong_point(points_in_less_side[i], gradients[i],
+                                                                                  step, trial_count, wrong,
+                                                                                  is_label_1_side, formu,
+                                                                                  balancing_threshold)
+                add_points = add_points + points_added
                 continue
             add_points.append(tmp_point)
 
@@ -276,40 +298,39 @@ def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, logits,
     return new
 
 
-
-def handleWrongPoint(point, gradient, step, trial_count, wrong, is_label_1_side, formu, balancing_threshold):
-    print ("handling wrong point")
-    return_list=[]
-    correct_point=[]
-    wrong_point=[]
-    break_loop=False
+def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_side, formu, balancing_threshold):
+    print("handling wrong point")
+    return_list = []
+    correct_point = []
+    wrong_point = []
+    flag = False
     while True:
-        if trial_count>= balancing_threshold:
-            break_loop=True
+        if trial_count >= balancing_threshold:
+            flag = True
             break
         gradient_length = util.calculate_vector_size(gradient)
         tmp_point = []
         for j in range(len(point)):
-            direction_step=step/gradient_length
+            direction_step = step / gradient_length
             tmp_value = point[j] + gradient[j] * direction_step
             tmp_point.append(tmp_value)
 
         point_label = testing_function.test_label(tmp_point, formu)
-        trial_count+=1
+        trial_count += 1
         if is_label_1_side and not point_label:
-            wrong+=1
-            wrong_point=tmp_point
-            step=step/2.0
+            wrong += 1
+            wrong_point = tmp_point
+            step = step / 2.0
             continue
         if not is_label_1_side and point_label:
-            wrong+=1
-            wrong_point=tmp_point
-            step=step/2
+            wrong += 1
+            wrong_point = tmp_point
+            step = step / 2
             continue
 
-        correct_point=tmp_point
+        correct_point = tmp_point
         break
+
     return_list.append(correct_point)
     return_list.append(wrong_point)
-    return trial_count,wrong,return_list,break_loop
-
+    return trial_count, wrong, return_list, flag
