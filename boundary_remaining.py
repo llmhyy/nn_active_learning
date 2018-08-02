@@ -46,13 +46,10 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
     gradients = decide_all_gradients_for_boundary_remaining(
         X, preliminary_gradients_in_less_side, points_in_less_side, logits, sess)
 
-    print("Gradients: ", gradients)
     std_dev = util.calculate_std_dev(train_set_X)
-    print("standard deviation", std_dev)
 
     bias_direction = length_0 > length_1
     newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev)
-    print("Boundary remaining pointssss: ", newX)
 
     for k in newX:
         label = testing_function.test_label(k, formu)
@@ -63,7 +60,7 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
             train_set_X.append(k)
             train_set_Y.append([0])
 
-    print("new training size after boundary remaining", len(train_set_X), len(train_set_Y))
+    print("new training size after boundary remaining", "X: ", len(train_set_X), "Y: ", len(train_set_Y))
 
 
 def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_selected, logits, sess):
@@ -85,7 +82,6 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
                 randomNumber = (random.randint(1, 10)) * sigh
                 tmpg.append(randomNumber)
             gradient_list.append(tmpg)
-            print("random direction", tmpg)
             continue
 
         #############################################################
@@ -251,7 +247,7 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
         if (break_loop):
             break
 
-    print("points added \n", add_points)
+    print("Boundry remaining points added ", len(add_points), "\n", add_points)
     print("Boundary remaining accuracy: ", float((trial_count - wrong) / trial_count))
     return add_points
 
@@ -332,5 +328,6 @@ def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_sid
         break
 
     return_list.append(correct_point)
-    return_list.append(wrong_point)
+    if (wrong_point != []):
+        return_list.append(wrong_point)
     return trial_count, wrong, return_list, flag

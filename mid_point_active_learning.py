@@ -91,8 +91,8 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
 
-            predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X, train_set_Y, i)
+            # predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
+            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X, train_set_Y, i)
 
             distance_list, point_pair_list = filter_distant_point_pair(label_0, label_1, threshold)
             util.quickSort(distance_list)
