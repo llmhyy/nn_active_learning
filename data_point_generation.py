@@ -55,11 +55,12 @@ def generate_random_points_for_polynomial(formu, lower_bound, upper_bound):
 #TODO use upper_bound, lower_bound parameter
 def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,4]]
     number = random.randint(1, 20)
-    dim = len(formu[0][0])
+    formu_list = formu.get_list()
+    dim = len(formu_list[0][0])
     print(dim)
 
-    train_name = "train" + "_".join(str(x) for x in formu[1]) + ".csv"
-    test_name = "test" + "_".join(str(x) for x in formu[1]) + ".csv"
+    train_name = "train" + "_".join(str(x) for x in formu_list[1]) + ".csv"
+    test_name = "test" + "_".join(str(x) for x in formu_list[1]) + ".csv"
 
     train_path = "./dataset/" + train_name
     test_path = "./dataset/" + test_name
@@ -73,15 +74,15 @@ def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,
                 data_point = []
                 generated_point = []
                 if k % 3 == 0:
-                    center = random.randint(0, len(formu[0]) - 1)
+                    center = random.randint(0, len(formu_list[0]) - 1)
                     for i in range(dim):
                         generated_point.append(
-                            random.uniform(int(formu[0][center][i]) - 10, int(formu[0][center][i]) + 10))
+                            random.uniform(int(formu_list[0][center][i]) - 10, int(formu_list[0][center][i]) + 10))
                 else:
                     for i in range(dim):
                         generated_point.append(random.uniform(-10, 10))
 
-                flag = tf.polycircle_model(formu[0], formu[1], generated_point)
+                flag = tf.polycircle_model(formu_list[0], formu_list[1], generated_point)
 
                 if (flag):
                     data_point.append(0.0)
@@ -93,7 +94,8 @@ def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,
                     data_point += generated_point
 
                     train.writerow(data_point)
-            polyhedron_point(formu, dim, 4000, test_path, formula.POLYHEDRON)
+            # polyhedron_point(formu, dim, 4000, test_path, formula.POLYHEDRON)
+            testing_point(formu, dim, 1000, lower_bound, upper_bound, test_path, formula.POLYHEDRON)
     return train_path, test_path
 
 

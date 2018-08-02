@@ -75,7 +75,7 @@ def preprocess(train_path, test_path, read_next):
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 141 or i > 160):
+                if (i < 141 or i > 180):
                     i += 1
                     continue
                 else:

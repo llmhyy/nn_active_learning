@@ -38,9 +38,9 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
     balance_ratio_threshold = 0.7
     boundary_remaining_trial_iteration = 100
 
-    to_be_appended_points_number = 6
-    to_be_appended_boundary_remaining_points_number = 6
-    to_be_appended_random_points_number = 6
+    to_be_appended_points_number = 5
+    to_be_appended_boundary_remaining_points_number = 5
+    to_be_appended_random_points_number = 5
     active_learning_iteration = 5
     threshold = 5
 

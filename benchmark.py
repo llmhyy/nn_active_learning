@@ -26,7 +26,7 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs):
         sess.run(net_stru.init)
 
         data_size = len(train_set_X)
-        data_size = 30
+        data_size =30
 
         # print("x:", train_set_X[:data_size])
 
