@@ -64,8 +64,7 @@ def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, c
     return train_set_X, train_set_Y
 
 
-def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, upper_bound,
-                      lower_bound):
+def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, lower_bound, upper_bound):
     print("=========GRADIENT===========")
 
     # Parameters
@@ -129,8 +128,8 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
 
-            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-            #                             train_set_Y, i)
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+                                        train_set_Y, lower_bound, upper_bound, i)
 
             g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
             # print(g)

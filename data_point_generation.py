@@ -85,12 +85,12 @@ def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,
                 flag = tf.polycircle_model(formu_list[0], formu_list[1], generated_point)
 
                 if (flag):
-                    data_point.append(0.0)
+                    data_point.append(1.0)
                     data_point += generated_point
 
                     train.writerow(data_point)
                 else:
-                    data_point.append(1.0)
+                    data_point.append(0.0)
                     data_point += generated_point
 
                     train.writerow(data_point)

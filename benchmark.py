@@ -6,7 +6,7 @@ import util
 import network_structure as ns
 
 
-def generate_accuracy(train_path, test_path, learning_rate, training_epochs):
+def generate_accuracy(train_path, test_path, learning_rate, training_epochs, lower_bound, upper_bound,):
 
     print("=========BENCH_MARK===========")
     # learning_rate = 0.001
@@ -41,8 +41,9 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs):
         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
         test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
-        # predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X:x}), train_set_X[:data_size], train_set_Y[:data_size], -1)
+        predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X:x}), train_set_X[:data_size], train_set_Y[:data_size],
+                                    lower_bound, upper_bound, -1)
 
     tf.reset_default_graph()
     return train_acc, test_acc

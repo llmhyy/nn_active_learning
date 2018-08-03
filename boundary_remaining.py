@@ -327,7 +327,10 @@ def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_sid
         correct_point = tmp_point
         break
 
-    return_list.append(correct_point)
+    if (correct_point != []):
+        return_list.append(correct_point)
+
     if (wrong_point != []):
         return_list.append(wrong_point)
+
     return trial_count, wrong, return_list, flag
