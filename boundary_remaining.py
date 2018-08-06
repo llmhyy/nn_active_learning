@@ -268,25 +268,26 @@ def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, logits,
 
     new_pointsX = []
 
+    if gradient_size == 0:
+        random_grad = []
+        tmp = []
+        for d in range(dimension):
+            randomPower = random.randint(1, 2)
+            sign = (-1) ** randomPower
+            randomNumber = (random.uniform(1, 10)) * sign
+            random_grad.append(randomNumber)
+        size = util.calculate_vector_size(random_grad)
+
+        for d in range(dimension):
+            randomPower = random.randint(1, 2)
+            sign = (-1) ** randomPower
+            tmp.append(train_sample[d] + sign * moving_step * (gradient_sample[d] / size))
+        print("grad is 0")
+        return tmp
+
     for k in range(len(decision_combination)):
         tmp = []
-        if gradient_size == 0:
-            random_grad = []
-
-            for d in range(dimension):
-                randomPower = random.randint(1, 2)
-                sign = (-1) ** randomPower
-                randomNumber = (random.uniform(1, 10)) * sign
-                random_grad.append(randomNumber)
-            size = util.calculate_vector_size(random_grad)
-
-            for d in range(dimension):
-                randomPower = random.randint(1, 2)
-                sign = (-1) ** randomPower
-                tmp.append(train_sample[d] + sign * moving_step * (gradient_sample[d] / size))
-            new_pointsX.append(tmp)
-            print("grad is 0")
-            continue
+        
         for h in range(dimension):
             if (decision_combination[k][h] == True):
                 tmp.append(train_sample[h] - moving_step * (gradient_sample[h] / gradient_size))
