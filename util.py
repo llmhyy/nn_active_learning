@@ -3,7 +3,7 @@ import math
 import random
 
 import numpy as np
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 import formula
 import testing_function
@@ -30,12 +30,12 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
     Z = pred_func(list)
     Z = Z.reshape(xx.shape)
     # Plot the contour and training examples
-    plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
+    # plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
-    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
+    # plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
     file_name = 'test' + str(iteration) + '.png'
-    plt.savefig(file_name)
+    # plt.savefig(file_name)
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
@@ -240,8 +240,8 @@ def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_
         newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
         train_set_X = train_set_X + newPointsX
         train_set_Y = train_set_Y + newPointsY
-    print("new points X", newPointsX)
-    print("new points Y", newPointsY)
+    print("New random points X", newPointsX)
+    print("New random points Y", newPointsY)
     return train_set_X, train_set_Y
 
 
