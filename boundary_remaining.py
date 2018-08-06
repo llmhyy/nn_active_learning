@@ -56,11 +56,12 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
         if (label):
             train_set_X.append(k)
             train_set_Y.append([1])
+            print ("added point: ",k,label)
         else:
             train_set_X.append(k)
             train_set_Y.append([0])
+            print ("added point: ",k,label)
 
-    print("new training size after boundary remaining", "X: ", len(train_set_X), "Y: ", len(train_set_Y))
 
 
 def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_selected, logits, sess):
@@ -200,8 +201,8 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
     break_loop = False
     trial_count = 0.0
     wrong = 0.0
-    step = random.uniform(0, std_dev / 2)
-
+    step = random.uniform(std_dev/2.0, std_dev)
+    print ("moving step: ",step)
     balancing_threshold = 100
 
     while True:
@@ -240,14 +241,15 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
             add_points.append(tmp_point)
 
             success = trial_count - wrong
-            if (success == length_added):
+            print ("success",success)
+            if (success >= length_added):
                 break_loop = True
                 break
 
         if (break_loop):
             break
 
-    print("Boundry remaining points added ", len(add_points), "\n", add_points)
+    print("Boundry remaining points added ", len(add_points))
     print("Boundary remaining accuracy: ", float((trial_count - wrong) / trial_count))
     return add_points
 
@@ -295,6 +297,7 @@ def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, logits,
 
 
 def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_side, formu, balancing_threshold):
+
     print("handling wrong point")
     return_list = []
     correct_point = []
@@ -326,8 +329,10 @@ def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_sid
 
         correct_point = tmp_point
         break
+    if correct_point!=[]:
 
-    return_list.append(correct_point)
+        return_list.append(correct_point)
     if (wrong_point != []):
         return_list.append(wrong_point)
+    print ("one time handle wrong point added",return_list)
     return trial_count, wrong, return_list, flag

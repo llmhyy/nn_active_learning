@@ -3,7 +3,7 @@ import math
 import random
 
 import numpy as np
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 
 import formula
 import testing_function
@@ -30,12 +30,12 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
     Z = pred_func(list)
     Z = Z.reshape(xx.shape)
     # Plot the contour and training examples
-    # plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
+    plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
-    # plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
     file_name = 'test' + str(iteration) + '.png'
-    # plt.savefig(file_name)
+    plt.savefig(file_name)
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
@@ -75,7 +75,7 @@ def preprocess(train_path, test_path, read_next):
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 141 or i > 160):
+                if (i < 0 or i > 20):
                     i += 1
                     continue
                 else:
@@ -295,8 +295,8 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
         outputX.append(generated_point)
 
         if (flag):
-            outputY.append([0])
+            outputY.append([1])
 
         else:
-            outputY.append([1])
+            outputY.append([0])
     return outputX, outputY

@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 
 
-random_seed = 10
+random_seed = 1
 random.seed(random_seed)
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
@@ -19,7 +19,7 @@ tf.set_random_seed(random_seed)
 def generate_specific_formula():
     formulas = formula.Formulas()
     # formu = formula.Formula([[[3,5], [-6,2]], [1,4]], formula.POLYHEDRON)
-    formu = formula.Formula([[1], [-5], 6], formula.POLYNOMIAL)
+    formu = formula.Formula([[-2,-1,5], [3,-4,3,1], 0], formula.POLYNOMIAL)
     formulas.put(formu.get_category(), formu)
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
@@ -40,9 +40,9 @@ learning_rate = 0.01
 training_epochs = 100
 
 # train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
-train_data_file = "dataset/train[1]_[-5]_6.csv"
-test_data_file = "dataset/test[1]_[-5]_6.csv"
-
+train_data_file = "dataset/train[-2, -1, 5]_[3, -4, 3, 1]_0.csv"
+test_data_file = "dataset/test[-2, -1, 5]_[3, -4, 3, 1]_0.csv"
+print (f.get_list())
 # train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
 
 # ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs)
@@ -50,4 +50,5 @@ test_data_file = "dataset/test[1]_[-5]_6.csv"
 # gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
 # TODO mid_list should contain a set of mid_train_acc and mid_test_acc
 mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
+
 print("********************Final result here: ")
