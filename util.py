@@ -104,7 +104,7 @@ def preprocess(train_path, test_path, read_next):
 
     # read training data
     with open(train_path, 'r+') as csvfile:
-        with open('./dataset/train_next.csv', 'w', newline='') as file:
+        with open('./dataset/train_next.csv', 'w') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)

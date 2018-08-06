@@ -132,7 +132,7 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                                         train_set_Y, lower_bound, upper_bound, i)
 
             g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
-            # print(g)
+            print(g)
 
             train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru.X, net_stru.logits, formula, train_set_X,
                                                              train_set_Y, category, to_be_appended_gradient_points_number, decision)

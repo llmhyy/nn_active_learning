@@ -128,7 +128,7 @@ def polyhedron_point(formu, dimension, number, path, catagory):
 
 
 def testing_point(formu, dimension, number, lower_bound, large_bound, path, catagory):
-    with open(path, 'w', newline='') as csvfile:
+    with open(path, 'w') as csvfile:
         numberOfPoint = int(round(math.pow(number, (1.0 / dimension))))
         step = (large_bound - lower_bound) / float(numberOfPoint)
         pointList = []
