@@ -64,8 +64,7 @@ def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, c
     return train_set_X, train_set_Y
 
 
-def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, upper_bound,
-                      lower_bound):
+def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, lower_bound, upper_bound):
     print("=========GRADIENT===========")
 
     # Parameters
@@ -74,9 +73,9 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
     balance_ratio_threshold = 0.7
     active_learning_iteration = 5
 
-    to_be_appended_random_points_number = 3
-    to_be_appended_gradient_points_number = 3
-    to_be_appended_boundary_remaining_points_number = 3
+    to_be_appended_random_points_number = 6
+    to_be_appended_gradient_points_number = 6
+    to_be_appended_boundary_remaining_points_number = 6
 
     train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
@@ -133,7 +132,7 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                                         train_set_Y, i)
 
             g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
-            # print(g)
+            print(g)
 
             train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru.X, net_stru.logits, formula, train_set_X,
                                                              train_set_Y, category, to_be_appended_gradient_points_number, decision)

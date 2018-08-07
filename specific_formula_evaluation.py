@@ -10,7 +10,7 @@ import numpy as np
 import tensorflow as tf
 
 
-random_seed = 1
+random_seed = 10
 random.seed(random_seed)
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)

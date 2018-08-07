@@ -38,10 +38,10 @@ def generate_polynomial(category):
 def generate_polyhedron(category):
     # TODO variable number is up to 10
     # generate center point and radius and number of circles
-    num_of_center = random.randint(1, 10)
-    num_of_dimension = random.randint(2, 10)
-    num_of_center = 1
-    num_of_dimension = 2
+    num_of_center = random.randint(3, 5)
+    num_of_dimension = random.randint(3, 5)
+    # num_of_center = 1
+    # num_of_dimension = 2
     centers = []
     radiuses = []
     for i in range(num_of_center):

@@ -9,13 +9,18 @@ import formula
 import testing_function
 
 
-def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
+def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
+
+    # Set min and max values and give it some padding
+    x_min = lower_bound
+    y_min = lower_bound
+
+    x_max = upper_bound
+    y_max = upper_bound
+
     X = np.array(train_set_X)
     Y = np.array(train_set_Y)
 
-    # Set min and max values and give it some padding
-    x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
-    y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
     h = 10
     # Generate a grid of points with distance h between them
     xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
@@ -33,9 +38,38 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
-    # plt.show()
+    plt.show()
     file_name = 'test' + str(iteration) + '.png'
     plt.savefig(file_name)
+
+
+# def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
+#     X = np.array(train_set_X)
+#     Y = np.array(train_set_Y)
+#
+#     # Set min and max values and give it some padding
+#     x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
+#     y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
+#     h = 10
+#     # Generate a grid of points with distance h between them
+#     xx, yy = np.meshgrid(np.arange(x_min, x_max, h), np.arange(y_min, y_max, h))
+#     # Predict the function value for the whole gid
+#     kx = xx.ravel()
+#     ky = yy.ravel()
+#
+#     list = []
+#     for i in range(len(kx)):
+#         list.append([kx[i], ky[i]])
+#
+#     Z = pred_func(list)
+#     Z = Z.reshape(xx.shape)
+#     # Plot the contour and training examples
+#     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
+#     y = Y.reshape(len(Y))
+#     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
+#     plt.show()
+#     file_name = 'test' + str(iteration) + '.png'
+#     plt.savefig(file_name)
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
@@ -70,12 +104,12 @@ def preprocess(train_path, test_path, read_next):
 
     # read training data
     with open(train_path, 'r+') as csvfile:
-        with open('./dataset/train_next.csv', 'w', newline='') as file:
+        with open('./dataset/train_next.csv', 'w') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 0 or i > 20):
+                if (i < 141 or i > 180):
                     i += 1
                     continue
                 else:
@@ -281,22 +315,25 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
     dim = len(formu[0][0])
     outputX = []
     outputY = []
+
     for i in range(to_be_appended_random_points_number):
         generated_point = []
-        k = random.randint(2, 3)
-        if k % 2 == 0:
-            center = random.randint(0, len(formu[0]) - 1)
-            for i in range(dim):
-                generated_point.append(random.uniform(int(formu[0][center][i]) - 10, int(formu[0][center][i]) + 10))
-        else:
-            for i in range(dim):
-                generated_point.append(random.uniform(-10, 10))
+        for j in range(dim):
+            generated_point.append(random.uniform(lower_bound, upper_bound))
+
+        # k = random.randint(2, 3)
+        # if k % 2 == 0:
+        #     center = random.randint(0, len(formu[0]) - 1)
+        #     for i in range(dim):
+        #         generated_point.append(random.uniform(int(formu[0][center][i]) - 10, int(formu[0][center][i]) + 10))
+        # else:
+        #     for i in range(dim):
+        #         generated_point.append(random.uniform(-10, 10))
         flag = testing_function.polycircle_model(formu[0], formu[1], generated_point)
         outputX.append(generated_point)
 
         if (flag):
             outputY.append([1])
-
         else:
             outputY.append([0])
     return outputX, outputY
