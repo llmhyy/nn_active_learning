@@ -6,7 +6,7 @@ import util
 import network_structure as ns
 
 
-def generate_accuracy(train_path, test_path, learning_rate, training_epochs, lower_bound, upper_bound,):
+def generate_accuracy(train_path, test_path, learning_rate, training_epochs, lower_bound, upper_bound):
 
     print("=========BENCH_MARK===========")
     # learning_rate = 0.001

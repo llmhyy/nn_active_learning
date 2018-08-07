@@ -141,8 +141,8 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             #                             train_set_Y, 20+i)
 
             train_set_X, train_set_Y = util.append_random_points(formula, train_set_X, train_set_Y,
-                                                                 to_be_appended_random_points_number, upper_bound,
-                                                                 lower_bound)
+                                                                 to_be_appended_random_points_number, lower_bound,
+                                                                 upper_bound)
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
             #                             train_set_Y, 30+i)
 

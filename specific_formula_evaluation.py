@@ -19,7 +19,7 @@ tf.set_random_seed(random_seed)
 def generate_specific_formula():
     formulas = formula.Formulas()
     # formu = formula.Formula([[[3,5], [-6,2]], [1,4]], formula.POLYHEDRON)
-    formu = formula.Formula([[[-489, 402], [119, -496], [992, -70]], [100, 100, 100]], formula.POLYHEDRON)
+    formu = formula.Formula([[[6, 9]], [3]], formula.POLYHEDRON)
     formulas.put(formu.get_category(), formu)
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 

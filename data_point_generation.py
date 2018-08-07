@@ -77,10 +77,10 @@ def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,
                     center = random.randint(0, len(formu_list[0]) - 1)
                     for i in range(dim):
                         generated_point.append(
-                            random.uniform(int(formu_list[0][center][i]) - 10, int(formu_list[0][center][i]) + 10))
+                            random.uniform(int(formu_list[0][center][i]) - 300, int(formu_list[0][center][i]) + 300))
                 else:
                     for i in range(dim):
-                        generated_point.append(random.uniform(-10, 10))
+                        generated_point.append(random.uniform(-1000, 1000))
 
                 flag = tf.polycircle_model(formu_list[0], formu_list[1], generated_point)
 

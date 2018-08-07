@@ -39,16 +39,16 @@ def generate_polyhedron(category):
     # generate center point and radius and number of circles
     num_of_center = random.randint(3, 5)
     num_of_dimension = random.randint(3, 5)
-    # num_of_center = 1
-    # num_of_dimension = 2
+    num_of_center = 1
+    num_of_dimension = 2
     centers = []
     radiuses = []
     for i in range(num_of_center):
         center = []
         for j in range(num_of_dimension):
-            center_coordinate = random.randint(-10, 10)
+            center_coordinate = random.randint(-1000, 1000)
             center.append(center_coordinate)
-        radius = random.randint(1, 3)
+        radius = random.randint(400, 600)
         centers.append(center)
         radiuses.append(radius)
     formula_ = [centers, radiuses]
