@@ -20,7 +20,6 @@ def generate_polynomial(category):
     # TODO variable number is up to 10
     y = random.randint(-10, 10)
     variableNumber = random.randint(3, 5)
-
     coefficientList = []
     for i in range(variableNumber):
         powerNumber = random.randint(1, 4)

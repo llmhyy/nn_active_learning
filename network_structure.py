@@ -7,8 +7,8 @@ class NNStructure():
         self.learning_rate = learning_rate
 
         # Network Parameters
-        n_hidden_1 = 10  # 1st layer number of neurons
-        n_hidden_2 = 10  # 2nd layer number of neurons
+        n_hidden_1 = 1280  # 1st layer number of neurons
+        n_hidden_2 = 1280  # 2nd layer number of neurons
         n_input = len(data_size) # MNIST data input (img shape: 28*28)
         n_classes = 1  # MNIST total classes (0-9 digits)
 
@@ -20,7 +20,7 @@ class NNStructure():
         self.weights = {
             'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)),
             'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)),
-            'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes], mean=0))
+            'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes], mean=0))
         }
         self.biases = {
             'b1': tf.Variable(tf.random_normal([n_hidden_1])),
@@ -48,15 +48,15 @@ class NNStructure():
         # x0 = x
         layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
 
-        layer_1 = tf.nn.batch_normalization(layer_1, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+        # layer_1 = tf.nn.batch_normalization(layer_1, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
         # layer1_out = tf.sigmoid(layer_1)
 
         # Hidden fully connected layer with 256 neurons
-        layer_2 = tf.nn.relu(tf.add(tf.matmul(layer_1, weights['h2']), biases['b2']))
-
-        layer_2 = tf.nn.batch_normalization(layer_2, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+        # layer_2 = tf.nn.relu(tf.add(tf.matmul(layer_1, weights['h2']), biases['b2']))
+        #
+        # layer_2 = tf.nn.batch_normalization(layer_2, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
         # layer2_out = tf.sigmoid(layer_2)
 
         # Output fully connected layer with a neuron for each class
-        out_layer = tf.matmul(layer_2, weights['out']) + biases['out']
+        out_layer = tf.matmul(layer_1, weights['out']) + biases['out']
         return out_layer
