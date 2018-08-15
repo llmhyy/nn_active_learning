@@ -38,7 +38,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
-    plt.show()
+    # plt.show()
     file_name = 'test' + str(iteration) + '.png'
     plt.savefig(file_name)
 
@@ -81,11 +81,11 @@ def calculate_accuracy(y, set_Y, print_data_details):
         if (print_data_details):
             print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
 
-        if y[i][0] > 0.5 and set_Y[i][0] == 1:
+        if y[i][0] > 0 and set_Y[i][0] == 1:
             test_correct.append(y[i])
-        elif y[i][0] > 0.5 and set_Y[i][0] == 0:
+        elif y[i][0] > 0 and set_Y[i][0] == 0:
             test_wrong.append(y[i])
-        elif y[i][0] <= 0.5 and set_Y[i][0] == 0:
+        elif y[i][0] <= 0 and set_Y[i][0] == 0:
             test_correct.append(y[i])
         else:
             test_wrong.append(y[i])
@@ -109,7 +109,7 @@ def preprocess(train_path, test_path, read_next):
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 141 or i > 180):
+                if (i < 0 or i > 20):
                     i += 1
                     continue
                 else:

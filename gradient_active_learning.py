@@ -145,8 +145,6 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
     train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
-    saver = tf.train.Saver()
-
     newgrads = tf.gradients(net_stru.logits, net_stru.X)
 
     y = None
@@ -154,19 +152,20 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
     train_acc_list = []
     test_acc_list = []
     result = []
+    train_acc_max=0
 
     decision = gradient_combination.combination(len(train_set_X[0]))
-
-    predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
-
+    save_path="model_saved/gradient_model"
+    predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
+    saver=tf.train.Saver()
     for i in range(active_learning_iteration):
         print("*******", i, "th loop:")
         print("training set size", len(train_set_X))
         # ten times training
         with tf.Session() as sess:
             sess.run(net_stru.init)
-
-            # print("*******", sess.run(net_stru.weights))
+            label_0 = []
+            label_1 = []
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             print(len(label_0), len(label_1))
@@ -218,17 +217,27 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
             test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
+            ## save model
+            if len(train_acc_list)==0:
+                saver.save(sess,save_path)
+                train_acc_max=train_acc
+
+            else:
+                if train_acc>= train_acc_max:
+                    saver.save(sess,save_path)
+                    train_acc_max=train_acc
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
+            #
+            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+            #                             train_set_Y, i)
 
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru_.X: x}), train_set_X,
-                                        train_set_Y, lower_bound, upper_bound, i)
-
-            g = sess.run(newgrads, feed_dict={net_stru_.X: train_set_X})
+            g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
+            print(g)
 
             train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru_.X, net_stru_.logits, formula, train_set_X,
                                                              train_set_Y, category, to_be_appended_gradient_points_number, decision)
-
+            #
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
             #                             train_set_Y, 20+i)
 
@@ -335,8 +344,19 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
 
     # print ("small gradient unchanged rate: ",smallGradient_Unchanged/smallGradient_total)
     # print ("large gradient unchanged rate: ", largeGradient_Unchanged/largeGradient_total)
+    with tf.Session() as sess:
+        saver.restore(sess, save_path)
+        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+        #                             train_set_Y, lower_bound,upper_bound,-1)
+        print("weights final:", sess.run(net_stru.weights))
+        train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
+        test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
 
+        train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
+        test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+        train_acc_list.append(train_acc)
+        test_acc_list.append(test_acc)
     result.append(train_acc_list)
     result.append(test_acc_list)
-    tf.reset_default_graph()
+    # tf.reset_default_graph()
     return result
