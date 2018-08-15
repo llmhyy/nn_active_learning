@@ -2,11 +2,76 @@ from __future__ import print_function
 
 import tensorflow as tf
 
+import numpy as np
+import random
 import boundary_remaining as br
 import gradient_combination
 import network_structure as ns
 import testing_function
 import util
+
+
+def partition_data(label_0, label_1, parts_num):
+    result_X = []
+    result_Y = []
+    tmpx0 = []
+    tmpx1 = []
+    tmpy0 = []
+    tmpy1 = []
+
+    if len(label_1) < len(label_0):
+        tmpx1 = label_1
+        tmpy1 = [[1] for j in tmpx1]
+    else:
+        tmpx0 = label_0
+        tmpy0 = [[0] for j in tmpx0]
+
+    for i in range(parts_num):
+        if len(label_1) < len(label_0):
+            tmpx0 = random.sample(label_0, len(label_1))
+            tmpy0 = [[0] for j in tmpx0]
+        else:
+            tmpx1 = random.sample(label_1, len(label_0))
+            tmpy1 = [[1] for j in tmpx1]
+        tmpX = tmpx0 + tmpx1
+        tmpY = tmpy0 + tmpy1
+
+        result_X.append(tmpX)
+        result_Y.append(tmpY)
+
+    return result_X, result_Y
+
+
+def calculate_average(weights, biases, weight_tags, bias_tags):
+    weights_dict = {}
+    biases_dict = {}
+
+    for tag in weight_tags:
+        tag = str(tag)
+        ave_value = []
+        for h in range(len(weights[0][tag])):
+            ave_h1_single = []
+            for k in range(len(weights[0][tag][0])):
+                tmp_value = 0
+                for weight in weights:
+                    tmp_value += weight[tag][h][k]
+                tmp_value = tmp_value / len(weights)
+                ave_h1_single.append(tmp_value)
+            ave_value.append(ave_h1_single)
+        weights_dict[tag] = tf.convert_to_tensor(ave_value)
+
+    for tag in bias_tags:
+        tag = str(tag)
+        ave_h1_single = []
+        for h in range(len(biases[0][tag])):
+            tmp_value = 0
+            for bias in biases:
+                tmp_value += bias[tag][h]
+            tmp_value = tmp_value / len(biases)
+            ave_h1_single.append(tmp_value)
+        biases_dict[tag] = tf.convert_to_tensor(ave_h1_single)
+
+    return weights_dict, biases_dict
 
 
 def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, to_be_appended_gradient_points_number,
@@ -64,7 +129,7 @@ def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, c
     return train_set_X, train_set_Y
 
 
-def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, lower_bound, upper_bound):
+def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num):
     print("=========GRADIENT===========")
 
     # Parameters
@@ -79,6 +144,8 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
 
     train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
+
+    saver = tf.train.Saver()
 
     newgrads = tf.gradients(net_stru.logits, net_stru.X)
 
@@ -98,8 +165,8 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
         # ten times training
         with tf.Session() as sess:
             sess.run(net_stru.init)
-            label_0 = []
-            label_1 = []
+
+            # print("*******", sess.run(net_stru.weights))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             print(len(label_0), len(label_1))
@@ -115,12 +182,38 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                 #                         train_set_Y, 10+i)
 
-            for epoch in range(training_epochs):
-                _, c = sess.run([net_stru.train_op, net_stru.loss_op],
-                                feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
+            all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
+            # print(all_data_X, all_data_Y)
 
-            train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
-            test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
+            all_weights_dict = []
+            all_biases_dict = []
+            for parts in range(parts_num):
+                sess.run(net_stru.init)
+                for epoch in range(training_epochs):
+                    _, c = sess.run([net_stru.train_op, net_stru.loss_op],
+                                    feed_dict={net_stru.X: all_data_X[parts], net_stru.Y: all_data_Y[parts]})
+                print("weights:", sess.run(net_stru.weights))
+                all_weights_dict.append(sess.run(net_stru.weights))
+                all_biases_dict.append(sess.run(net_stru.biases))
+
+            weight_tags = list(all_weights_dict[0].keys())
+            bias_tag = list(all_biases_dict[0].keys())
+
+            weights, biases = calculate_average(all_weights_dict, all_biases_dict, weight_tags, bias_tag)
+
+            print("weights average:", sess.run(weights["h1"]))
+            print ("bias average:",biases)
+
+            # print(len(weights["out"]), len(biases["out"]))
+            #
+            # print(type(all_weights_dict[0]["h1"]))
+            net_stru_ = ns.NNStructureFixedVar(train_set_X[0], learning_rate, weights, biases)
+            # with tf.Session as session:
+            #     session.run(net_stru_.init)
+            print("llllllllllllllllllll")
+            sess.run(net_stru_.init)
+            train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
+            test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
             test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
@@ -128,13 +221,12 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
 
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru_.X: x}), train_set_X,
                                         train_set_Y, lower_bound, upper_bound, i)
 
-            g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
-            print(g)
+            g = sess.run(newgrads, feed_dict={net_stru_.X: train_set_X})
 
-            train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru.X, net_stru.logits, formula, train_set_X,
+            train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru_.X, net_stru_.logits, formula, train_set_X,
                                                              train_set_Y, category, to_be_appended_gradient_points_number, decision)
 
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,

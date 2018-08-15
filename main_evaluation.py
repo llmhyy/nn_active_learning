@@ -6,7 +6,7 @@ import mid_point_active_learning as mal
 import data_point_generation
 import xlwt
 
-category = formula.POLYNOMIAL
+category = formula.POLYHEDRON
 number = 100
 
 upper_bound = 1000
@@ -76,15 +76,15 @@ for f in formula_list:
 
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
-    try:
-        gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
-    except:
-        continue
+    # try:
+    #     gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
+    # except:
+    #     continue
     #TODO mid_list should contain a set of mid_train_acc and mid_test_acc
-    try:
-        mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
-    except:
-        continue
+    # try:
+    mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
+    # except:
+    #     continue
     index += 1
     print("********************Final result here: ")
     # print(ben_train_acc, ben_test_acc, gra_list, mid_list)

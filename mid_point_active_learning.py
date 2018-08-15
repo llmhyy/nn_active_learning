@@ -85,15 +85,15 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
                 br.\
                     apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits, formu, train_set_X,
                                             train_set_Y, to_be_appended_boundary_remaining_points_number)
-                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-                                        train_set_Y, 10+i)
+                # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+                #                         train_set_Y, lower_bound, upper_bound, 10+i)
                 print("new training size after boundary remaining", "X: ", len(train_set_X))
             for epoch in range(training_epochs):
                 _, c = sess.run([net_stru.train_op, net_stru.loss_op], feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
                 # print ("loss: ",c)
 
             util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-                                        train_set_Y, i)
+                                        train_set_Y, lower_bound, upper_bound, i)
             train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
             test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
 
@@ -111,14 +111,14 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
                               train_set_X, train_set_Y)
 
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-                                        train_set_Y, 20+i)
+            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+            #                             train_set_Y, lower_bound, upper_bound, 20+i)
 
             train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
                                                                  to_be_appended_random_points_number, lower_bound, upper_bound)
             print ("size after random points:",len(train_set_X))
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-                                        train_set_Y, 30+i)
+            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+            #                             train_set_Y, lower_bound, upper_bound, 30+i)
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0

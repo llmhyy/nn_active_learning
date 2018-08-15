@@ -13,8 +13,8 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
     # training_epochs = 10
 
     train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=False)
-
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
+    saver = tf.train.Saver()
 
     # newgrads = tf.gradients(loss_op, weights["h1"])
 
@@ -33,6 +33,7 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
         for epoch in range(training_epochs):
             _, c, predicted_y = sess.run([net_stru.train_op, net_stru.loss_op, net_stru.logits],
                                          feed_dict={net_stru.X: train_set_X[:data_size], net_stru.Y: train_set_Y[:data_size]})
+            saver.save(sess, './models/benchmark.ckpt', global_step=3)
         print("Optimization Finished!")
 
         train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
