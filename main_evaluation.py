@@ -6,8 +6,8 @@ import mid_point_active_learning as mal
 import data_point_generation
 import xlwt
 
-category = formula.POLYHEDRON
-number = 30
+category = formula.POLYNOMIAL
+number = 100
 
 upper_bound = 1000
 lower_bound = -1000
@@ -85,7 +85,6 @@ for f in formula_list:
         mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
     except:
         continue
-
     index += 1
     print("********************Final result here: ")
     # print(ben_train_acc, ben_test_acc, gra_list, mid_list)
