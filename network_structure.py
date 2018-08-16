@@ -7,7 +7,7 @@ class NNStructure():
         self.learning_rate = learning_rate
 
         # Network Parameters
-        n_hidden_1 = 1280  # 1st layer number of neurons
+        n_hidden_1 = 2560  # 1st layer number of neurons
         n_hidden_2 = 10  # 2nd layer number of neurons
         n_input = len(data_size) # MNIST data input (img shape: 28*28)
         n_classes = 1  # MNIST total classes (0-9 digits)
@@ -45,7 +45,7 @@ class NNStructure():
     def multilayer_perceptron(self, x, weights, biases):
         # Hidden fully connected layer with 256 neurons
         x0 = tf.nn.batch_normalization(x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
-        # x0 = x
+        x0 = x
         layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
 
         layer_1 = tf.nn.batch_normalization(layer_1, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
@@ -64,12 +64,12 @@ class NNStructure():
 
 
 class NNStructureFixedVar():
-    def __init__(self, data_size, learning_rate,weights,biases):
+    def __init__(self, data_size, learning_rate, weights, biases):
         self.learning_rate = learning_rate
 
         # Network Parameters
 
-        n_input = len(data_size) # MNIST data input (img shape: 28*28)
+        n_input = len(data_size)  # MNIST data input (img shape: 28*28)
         n_classes = 1  # MNIST total classes (0-9 digits)
 
         # tf Graph input

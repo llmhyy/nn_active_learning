@@ -36,33 +36,33 @@ lower_bound = -1000
 upper_bound = 1000
 
 learning_rate = 0.01
-training_epochs = 100
+training_epochs = 500
 parts_num = 5
 
 train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
-train_data_file = "dataset/train461.csv"
+train_data_file = "test.csv"
 test_data_file = "dataset/test461.csv"
-print (f.get_list())
+print(f.get_list())
 tf.reset_default_graph()
 random.seed(random_seed)
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
 
-ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs,lower_bound, upper_bound)
+# ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs,lower_bound, upper_bound)
+#
+# tf.reset_default_graph()
+# random.seed(random_seed)
+# np.random.seed(random_seed)
+# tf.set_random_seed(random_seed)
+
+gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True)
 
 tf.reset_default_graph()
 random.seed(random_seed)
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
 
-gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
-
-tf.reset_default_graph()
-random.seed(random_seed)
-np.random.seed(random_seed)
-tf.set_random_seed(random_seed)
-
-mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
+# mid_list = mal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
 # tf.reset_default_graph()
 # random.seed(random_seed)
 # np.random.seed(random_seed)
