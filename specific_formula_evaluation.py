@@ -3,6 +3,7 @@ import formula_generator as fg
 import benchmark
 import gradient_active_learning as gal
 import mid_point_active_learning as mal
+import cluster
 import data_point_generation
 import xlwt
 import random
@@ -47,6 +48,12 @@ tf.reset_default_graph()
 random.seed(random_seed)
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
+
+still_on_one_side = cluster.get_clustering_points(1, True, f)
+if not still_on_one_side:
+    print("HAHA")
+else:
+    print("XIXI")
 
 # ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs,lower_bound, upper_bound)
 #

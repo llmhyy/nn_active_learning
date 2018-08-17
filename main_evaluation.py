@@ -74,10 +74,10 @@ for f in formula_list:
     #TODO each foumla write its generated data into files with the formula name
     train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
 
-    ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs)
+    ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
     try:
-        gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound)
+        gra_list = gal.generate_accuracy(train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, False)
     except:
         continue
     #TODO mid_list should contain a set of mid_train_acc and mid_test_acc
