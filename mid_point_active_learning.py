@@ -35,14 +35,12 @@ def filter_distant_point_pair(label_0, label_1, threshold):
 
 def generate_accuracy(train_data_file, test_data_file, formu, category, learning_rate, training_epochs, lower_bound, upper_bound):
     print("=========MID_POINT===========")
-
     balance_ratio_threshold = 0.7
     boundary_remaining_trial_iteration = 100
 
-    to_be_appended_points_number = 2
-    to_be_appended_boundary_remaining_points_number = 1
-    to_be_appended_random_points_number = 1
-
+    to_be_appended_points_number = 3
+    to_be_appended_boundary_remaining_points_number = 3
+    to_be_appended_random_points_number = 3
     active_learning_iteration = 5
     threshold = 100
     save_path="model_saved/mid_point_model"
