@@ -53,6 +53,7 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
     print ("less side points:",points_in_less_side)
     newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev)
 
+
     for k in newX:
         label = testing_function.test_label(k, formu)
         if (label):
