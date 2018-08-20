@@ -182,18 +182,19 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
-            if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
-                                            formula,
-                                            train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number)
+            # if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
+            #     br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
+            #                                 formula,
+            #                                 train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number)
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                 #                         train_set_Y, 10+i)
-
             all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
             # print(all_data_X, all_data_Y)
 
             all_weights_dict = []
             all_biases_dict = []
+            all_weights = {}
+            all_biases = {}
             if usebagging:
                 for parts in range(parts_num):
                     best_accuracy = 0
@@ -205,24 +206,67 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
                         if train_acc > best_accuracy:
                             best_accuracy = train_acc
-                            print("best_accuracy ", best_accuracy)
+                            # print("best_accuracy ", best_accuracy)
                             saver.save(sess, './models/benchmark.ckpt')
 
                     saver.restore(sess, "./models/benchmark.ckpt")
-                    # saver.restore(sess, "./models/benchmark.ckpt")
-                    predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
-                    util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),
-                                                train_set_X, train_set_Y,
-                                                lower_bound, upper_bound, -1)
+                    # predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
+                    # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),
+                    #                             train_set_X, train_set_Y,
+                    #                             lower_bound, upper_bound, -1)
 
-                    all_weights_dict.append(sess.run(net_stru.weights))
-                    all_biases_dict.append(sess.run(net_stru.biases))
+                    weights_dict = sess.run(net_stru.weights)
+                    bias_dict = sess.run(net_stru.biases)
 
+                    all_weights_dict.append(weights_dict)
+                    all_biases_dict.append(bias_dict)
 
-                weight_tags = list(all_weights_dict[0].keys())
-                bias_tag = list(all_biases_dict[0].keys())
+                # initialize dictionary
+                for key in all_weights_dict[0].keys():
+                    all_weights[key]  = []
+                    for dim in range(len(all_weights_dict[0][key])):
+                        if key != "out":
+                            all_weights[key].append([])
+                for key in all_biases_dict[0].keys():
+                    all_biases[key]  = []
 
-                weights, biases = calculate_average(all_weights_dict, all_biases_dict, weight_tags, bias_tag)
+                # combine all weights and biases
+                for key in all_weights_dict[0].keys():
+                    if key == "out":
+                        for cnt in range(len(all_weights_dict)):
+                            for dim in range(len(all_weights_dict[0][key])):
+                                weights_list = [k/parts_num for k in all_weights_dict[cnt][key][dim]]
+                                all_weights[key].append(weights_list)
+                    else:
+                        for cnt in range(len(all_weights_dict)):   
+                            for dim in range(len(all_weights_dict[0][key])):
+                                weights_list = [k for k in all_weights_dict[cnt][key][dim]]
+                                all_weights[key][dim] += weights_list
+                for key in all_biases_dict[0].keys():
+                    if key == "out":
+                        for cnt in range(len(all_biases_dict)):
+                            all_biases[key].append(all_biases_dict[cnt][key][0])
+                    else:
+                        for cnt in range(len(all_biases_dict)):
+                            bias_list = [k for k in all_biases_dict[cnt][key]]
+                            all_biases[key] += bias_list
+                
+                total = 0
+                for out_bias in all_biases["out"]:
+                    total += out_bias
+                all_biases["out"] = [total/parts_num]
+                
+                for key in all_weights.keys():
+                    # print(all_weights[key])
+                    all_weights[key] = tf.Variable(all_weights[key])
+                for key in all_biases.keys():
+                    all_biases[key] = tf.Variable(all_biases[key])
+
+                # print(all_biases_dict)
+                # weight_tags = list(all_weights_dict[0].keys())
+                # bias_tag = list(all_biases_dict[0].keys())
+
+                # weights, biases = calculate_average(all_weights_dict, all_biases_dict, weight_tags, bias_tag)
 
                 # print("weights average:", sess.run(weights))
                 # print("bias average:", type(biases["b1"]))
@@ -230,13 +274,9 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                 # print(len(weights["out"]), len(biases["out"]))
                 #
                 # print(type(all_weights_dict[0]["h1"]))
-                net_stru_ = ns.NNStructureFixedVar(train_set_X[0], learning_rate, weights, biases)
+                net_stru_ = ns.NNStructureFixedVar(train_set_X[0], learning_rate, all_weights, all_biases)
                 # with tf.Session as session:
                 #     session.run(net_stru_.init)
-                sess.run(net_stru_.init)
-                train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
-                train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-                print(train_acc)
             else:
                 for epoch in range(training_epochs):
                     _, c = sess.run([net_stru.train_op, net_stru.loss_op],
@@ -247,10 +287,12 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                 train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
                 if train_acc > best_accuracy:
                     best_accuracy = train_acc
-                    print("best_accuracy ", best_accuracy)
+                    # print("best_accuracy ", best_accuracy)
                     saver.save(sess, './models/benchmark.ckpt')
 
-            saver.restore(sess, "./models/benchmark.ckpt")
+            # saver.restore(sess, "./models/benchmark.ckpt")
+            sess.run(net_stru_.init)
+
             train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
             test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
@@ -258,14 +300,21 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
             test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
+            print(train_acc)
+            print(test_acc)
+
+            # saver = tf.train.Saver()
             # save model
             if len(train_acc_list) == 0:
                 saver.save(sess, save_path)
                 train_acc_max = train_acc
             else:
                 if train_acc >= train_acc_max:
+                    print("Got better result")
                     saver.save(sess, save_path)
                     train_acc_max = train_acc
+                else:
+                    print("not a better result")
 
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
@@ -396,12 +445,15 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
         saver.restore(sess, save_path)
         # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
         #                             train_set_Y, lower_bound,upper_bound,-1)
-        print("weights final:", sess.run(net_stru.weights))
-        train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
-        test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
+        sess.run(net_stru_.init)
+        print("weights final:", sess.run(net_stru_.weights))
+        train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
+        test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
         test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+        print("Training: ", train_acc)
+        print("Testing: ", test_acc)
         train_acc_list.append(train_acc)
         test_acc_list.append(test_acc)
     result.append(train_acc_list)
