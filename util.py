@@ -305,6 +305,9 @@ def generate_polynomial_points(formu, to_be_appended_random_points_number, lower
         else:
             outputY.append([0])
 
+
+
+
     return outputX, outputY
 
 

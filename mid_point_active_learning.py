@@ -33,7 +33,7 @@ def filter_distant_point_pair(label_0, label_1, threshold):
     return distance_list, point_pair_list
 
 
-def generate_accuracy(train_data_file, test_data_file, formu, category, learning_rate, training_epochs, lower_bound, upper_bound):
+def generate_accuracy(train_data_file, test_data_file, formu, category, learning_rate, training_epochs, lower_bound, upper_bound,type,name_list,mock):
     print("=========MID_POINT===========")
     balance_ratio_threshold = 0.7
     boundary_remaining_trial_iteration = 100
@@ -93,7 +93,7 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
             if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
                 br.\
                     apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits, formu, train_set_X,
-                                            train_set_Y, to_be_appended_boundary_remaining_points_number)
+                                            train_set_Y, to_be_appended_boundary_remaining_points_number,type,name_list,mock)
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                 #                         train_set_Y, lower_bound,upper_bound,10+i)
                 print("new training size after boundary remaining", "X: ", len(train_set_X))
@@ -103,6 +103,8 @@ def generate_accuracy(train_data_file, test_data_file, formu, category, learning
                 # print ("loss: ",c)
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
             #                             train_set_Y, lower_bound,upper_bound,i)
+
+            print ("$TRAINING_FINISH")
             train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
             test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
 
@@ -201,6 +203,7 @@ def append_mid_points(distance_list, formu, point_pair_list, to_be_appended_poin
             util.add_distance_values(num, distance_list, selected_distance_list, pointer)
     print ("all list:",distance_list)
     print ("selected list:",selected_distance_list)
+    new_middle_points=[]
     for distance in selected_distance_list:
         for point_key, dis_value in point_pair_list.items():
             if (distance == dis_value):
@@ -215,6 +218,9 @@ def append_mid_points(distance_list, formu, point_pair_list, to_be_appended_poin
 
                 for b in range(len(point_0)):
                     middle_point.append((point_0[b] + point_1[b]) / 2.0)
+
+
+                new_middle_points.append(middle_point)
 
                 label = testing_function.test_label(middle_point, formu)
 

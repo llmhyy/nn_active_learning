@@ -36,7 +36,7 @@ def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, trai
 
 
 def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
-                             logits, formu, train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number):
+                             logits, formu, train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number,type,name_list,mock):
     points_in_less_side, preliminary_gradients_in_less_side, to_be_added_number = \
         initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y)
 
@@ -51,19 +51,19 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
     bias_direction = length_0 > length_1
     random.shuffle(points_in_less_side)
     print ("less side points:",points_in_less_side)
-    newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev)
+    newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev,type,name_list,mock)
 
-
-    for k in newX:
-        label = testing_function.test_label(k, formu)
-        if (label):
-            train_set_X.append(k)
-            train_set_Y.append([1])
-            print ("added point: ",k,label)
-        else:
-            train_set_X.append(k)
-            train_set_Y.append([0])
-            print ("added point: ",k,label)
+    train_set_X,train_set_Y=testing_function.test_label(newX,formu,train_set_X,train_set_Y,type,name_list,mock)
+    # for k in newX:
+    #     label = testing_function.test_label(k, formu)
+    #     if (label):
+    #         train_set_X.append(k)
+    #         train_set_Y.append([1])
+    #         print ("added point: ",k,label)
+    #     else:
+    #         train_set_X.append(k)
+    #         train_set_Y.append([0])
+    #         print ("added point: ",k,label)
 
 
 
@@ -199,7 +199,7 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
     return direction
 
 
-def balancing_points(is_label_1_side, points_in_less_side, gradients, length_added, formu, std_dev):
+def balancing_points(is_label_1_side, points_in_less_side, gradients, length_added, formu, std_dev,type,name_list,mock):
     add_points = []
     break_loop = False
     trial_count = 0.0
@@ -222,7 +222,7 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
                 tmp_value = points_in_less_side[i][j] + gradients[i][j] * (step / gradient_length)
                 tmp_point.append(tmp_value)
 
-            point_label = testing_function.test_label(tmp_point, formu)
+            point_label = testing_function.test_label(tmp_point, formu,type,mock)
 
             if is_label_1_side and not point_label:
                 wrong += 1
