@@ -7,7 +7,7 @@ class NNStructure():
         self.learning_rate = learning_rate
 
         # Network Parameters
-        n_hidden_1 = 2560  # 1st layer number of neurons
+        n_hidden_1 = 1024  # 1st layer number of neurons
         n_hidden_2 = 10  # 2nd layer number of neurons
         n_input = len(data_size) # MNIST data input (img shape: 28*28)
         n_classes = 1  # MNIST total classes (0-9 digits)
