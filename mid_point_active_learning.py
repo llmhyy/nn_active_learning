@@ -112,7 +112,6 @@ def generate_accuracy(inputX,inputY,train_data_file, test_data_file, formu, cate
             util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                                         train_set_Y, lower_bound,upper_bound,i)
 
-            print ("$TRAINING_FINISH")
             train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
             test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
 
@@ -160,7 +159,7 @@ def generate_accuracy(inputX,inputY,train_data_file, test_data_file, formu, cate
             #     print (label_0[m])
             # print ("weights after :",sess.run(net_stru.weights))
 
-
+    print ("$TRAINING_FINISH")
     with tf.Session() as sess:
         saver.restore(sess, save_path)
         # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
