@@ -1,6 +1,9 @@
 import math
 import formula
-
+import json_handler
+from sys import stdin
+from sys import stdout
+import json
 def logModel(x1, x2):
     if (x2 > math.log(x1)):
         return True
@@ -42,13 +45,45 @@ def polycircle_model(center, radius, x):
     return False
 
 
-def test_label(point, formu):
-    category = formu.get_category()
-    form = formu.get_list()
-    flag = True
-    if category == formula.POLYHEDRON:
-        flag = polycircle_model(form[0], form[1], point)
-    elif category == formula.POLYNOMIAL:
-        flag = polynomial_model(form[:-1], point, form[-1])
+def test_label(points, formu,type,name_list,mock):
+    if mock==True:
+        category = formu.get_category()
+        form = formu.get_list()
+        flagList=[]
+        if category == formula.POLYHEDRON:
+            if isinstance(points[0],list):
+                for point in points:
+                    flag = polycircle_model(form[0], form[1], point)
+                    if (flag):
+                        flagList.append(1)
+                    else:
+                        flagList.append(0)
+            else:
+                flag= polycircle_model(form[0], form[1], points)
+                if (flag):
+                    flagList.append(1)
+                else:
+                    flagList.append(0)
+        elif category == formula.POLYNOMIAL:
+            if isinstance(points[0],list):
+                for point in points:
+                    flag = polynomial_model(form[:-1], point, form[-1])
+                    if (flag):
+                        flagList.append(1)
+                    else:
+                        flagList.append(0)
+            else:
+                flag = polynomial_model(form[:-1], points, form[-1])
+                if (flag):
+                    flagList.append(1)
+                else:
+                    flagList.append(0)
+        return flagList
 
-    return flag
+    else:
+        json_handler.requestLabel(points,type,name_list)
+        data = stdin.readline()
+        data = data.strip("\n")
+        data =json.load(data)
+        flagList=json_handler.label_parser(data)
+        return flagList

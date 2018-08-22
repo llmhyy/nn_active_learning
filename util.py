@@ -38,7 +38,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
-    plt.show()
+    # plt.show()
     file_name = 'test' + str(iteration) + '.png'
     plt.savefig(file_name)
 
@@ -103,13 +103,13 @@ def preprocess(train_path, test_path, read_next):
     train_set_Y = []
 
     # read training data
-    with open(train_path, 'r+') as csvfile:
-        with open('./dataset/train_next.csv', 'w') as file:
+    with open(train_path, 'r+',newline='') as csvfile:
+        with open('./dataset/train_next.csv', 'w',newline='') as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 0 or i > 10000):
+                if (i < 0 or i > 20):
                     i += 1
                     continue
                 else:
@@ -119,7 +119,7 @@ def preprocess(train_path, test_path, read_next):
 
     # read testing data
     # test_path = "./dataset/test[-1]_[-1]_[2, -4, -3, 5]_[-1]_[-4, -2, 3]_[4, 0, -5]_[3, 5]_[2, 1, -1]_[2, -1]_8624.csv"
-    with open(test_path, 'r+') as csvfile:
+    with open(test_path, 'r+',newline='') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:
             if len(row) == 0:
@@ -137,7 +137,7 @@ def preprocess(train_path, test_path, read_next):
     # read training data
     if read_next:
         train_path = './dataset/train_next.csv'
-    with open(train_path, 'r+') as csvfile:
+    with open(train_path, 'r+',newline='') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:
             if (len(row) == 0):
@@ -264,7 +264,8 @@ def data_partition_gradient(train_set_X, train_set_Y, gradient):
     return label_0, label_1, label_0_gradient, label_1_gradient
 
 
-def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_points_number, lower_bound, upper_bound):
+def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_points_number, lower_bound, upper_bound,type,name_list,mock):
+
     category = formu.get_category()
     if (category == formula.POLYNOMIAL):
         newPointsX, newPointsY = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
@@ -304,6 +305,9 @@ def generate_polynomial_points(formu, to_be_appended_random_points_number, lower
             outputY.append([1])
         else:
             outputY.append([0])
+
+
+
 
     return outputX, outputY
 

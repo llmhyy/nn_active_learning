@@ -65,8 +65,8 @@ def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,
     train_path = "./dataset/" + train_name
     test_path = "./dataset/" + test_name
 
-    with open(train_path, 'w') as csvfile:
-        with open(test_path, 'w') as csvfile2:
+    with open(train_path, 'w',newline='') as csvfile:
+        with open(test_path, 'w',newline='') as csvfile2:
             train = csv.writer(csvfile)
             test = csv.writer(csvfile2)
 
@@ -100,7 +100,7 @@ def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,
 
 
 def polyhedron_point(formu, dimension, number, path, catagory):
-    with open(path, 'w') as csvfile:
+    with open(path, 'w',newline='') as csvfile:
         test = csv.writer(csvfile)
         numberOfPoint = int(round(math.pow(int(number / len(formu[0])), (1.0 / dimension))))
         # numberOfPoint = 300
@@ -128,7 +128,7 @@ def polyhedron_point(formu, dimension, number, path, catagory):
 
 
 def testing_point(formu, dimension, number, lower_bound, large_bound, path, catagory):
-    with open(path, 'w') as csvfile:
+    with open(path, 'w',newline='') as csvfile:
         numberOfPoint = int(round(math.pow(number, (1.0 / dimension))))
         step = (large_bound - lower_bound) / float(numberOfPoint)
         pointList = []
