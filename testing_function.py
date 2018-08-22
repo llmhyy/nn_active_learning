@@ -84,7 +84,7 @@ def test_label(points, formu,type,name_list,mock):
         json_handler.requestLabel(points,type,name_list)
         data = stdin.readline()
         data = data.strip("\n")
-        data =json.load(data)
+        data =json.loads(data)
         flagList=json_handler.\
             label_parser(data)
         return flagList
