@@ -1,3 +1,2 @@
-model_checkpoint_path: "gradient_model"
-all_model_checkpoint_paths: "..\\models\\benchmark.ckpt"
-all_model_checkpoint_paths: "gradient_model"
+model_checkpoint_path: "mid_point_model"
+all_model_checkpoint_paths: "mid_point_model"

@@ -3,7 +3,7 @@ import formula
 import json_handler
 from sys import stdin
 from sys import stdout
-
+import json
 def logModel(x1, x2):
     if (x2 > math.log(x1)):
         return True
@@ -45,39 +45,45 @@ def polycircle_model(center, radius, x):
     return False
 
 
-def test_label(points, formu,train_set_X,train_set_Y,type,name_list,mock):
+def test_label(points, formu,type,name_list,mock):
     if mock==True:
         category = formu.get_category()
         form = formu.get_list()
-        flag = True
+        flagList=[]
         if category == formula.POLYHEDRON:
-            for point in points:
-                flag = polycircle_model(form[0], form[1], point)
+            if isinstance(points[0],list):
+                for point in points:
+                    flag = polycircle_model(form[0], form[1], point)
+                    if (flag):
+                        flagList.append(1)
+                    else:
+                        flagList.append(0)
+            else:
+                flag= polycircle_model(form[0], form[1], points)
                 if (flag):
-                    train_set_X.append(point)
-                    train_set_Y.append([1])
-                    print ("added point: ",point,flag)
+                    flagList.append(1)
                 else:
-                    train_set_X.append(point)
-                    train_set_Y.append([0])
-                    print ("added point: ",point,flag)
+                    flagList.append(0)
         elif category == formula.POLYNOMIAL:
-            for point in points:
-                flag = polynomial_model(form[:-1], point, form[-1])
+            if isinstance(points[0],list):
+                for point in points:
+                    flag = polynomial_model(form[:-1], point, form[-1])
+                    if (flag):
+                        flagList.append(1)
+                    else:
+                        flagList.append(0)
+            else:
+                flag = polynomial_model(form[:-1], points, form[-1])
                 if (flag):
-                    train_set_X.append(point)
-                    train_set_Y.append([1])
-                    print ("added point: ",point,flag)
+                    flagList.append(1)
                 else:
-                    train_set_X.append(point)
-                    train_set_Y.append([0])
-        return train_set_X,train_set_Y
+                    flagList.append(0)
+        return flagList
 
     else:
         json_handler.requestLabel(points,type,name_list)
         data = stdin.readline()
         data = data.strip("\n")
-        newX,newY,name_list=json_handler.json_parser(data)
-        train_set_X=train_set_X+newX
-        train_set_Y=train_set_Y+newY
-        return train_set_X,train_set_Y
+        data =json.load(data)
+        flagList=json_handler.label_parser(data)
+        return flagList
