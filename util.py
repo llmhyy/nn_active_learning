@@ -4,10 +4,11 @@ import random
 
 import numpy as np
 from matplotlib import pyplot as plt
-
+from sys import stdin
+import json
 import formula
 import testing_function
-
+import json_handler
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
 
@@ -265,20 +266,29 @@ def data_partition_gradient(train_set_X, train_set_Y, gradient):
 
 
 def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_points_number, lower_bound, upper_bound,type,name_list,mock):
-
-    category = formu.get_category()
-    if (category == formula.POLYNOMIAL):
-        newPointsX, newPointsY = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
-        train_set_X = train_set_X + newPointsX
-        train_set_Y = train_set_Y + newPointsY
-    elif (category == formula.POLYHEDRON):
-        newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
-        train_set_X = train_set_X + newPointsX
-        train_set_Y = train_set_Y + newPointsY
-    print("New random points X", newPointsX)
-    print("New random points Y", newPointsY)
-    return train_set_X, train_set_Y
-
+    if mock==True:
+        category = formu.get_category()
+        if (category == formula.POLYNOMIAL):
+            newPointsX, newPointsY = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
+            train_set_X = train_set_X + newPointsX
+            train_set_Y = train_set_Y + newPointsY
+        elif (category == formula.POLYHEDRON):
+            newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound)
+            train_set_X = train_set_X + newPointsX
+            train_set_Y = train_set_Y + newPointsY
+        print("New random points X", newPointsX)
+        print("New random points Y", newPointsY)
+        return train_set_X, train_set_Y
+    else:
+        print ("REQUEST_RANDOM_POINTS")
+        print (to_be_appended_random_points_number)
+        data = stdin.readline()
+        data = data.strip("\n")
+        data =json.load(data)
+        newX,newY,name_list=json_handler.json_parser(data)
+        train_set_X=train_set_X+newX
+        train_set_Y=train_set_Y+newY
+        return train_set_X,train_set_Y
 
 def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
     return (length_0 / length_1 > balance_ratio_threshold and length_0 / length_1 <= 1) \

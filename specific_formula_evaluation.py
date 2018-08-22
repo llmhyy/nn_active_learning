@@ -19,7 +19,7 @@ tf.set_random_seed(random_seed)
 
 def generate_specific_formula():
     formulas = formula.Formulas()
-    formu = formula.Formula([[1,2,3], [-3,-4],5], formula.POLYNOMIAL)
+    formu = formula.Formula([[1,2], [-10,-11],5], formula.POLYNOMIAL)
     formulas.put(formu.get_category(), formu)
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
