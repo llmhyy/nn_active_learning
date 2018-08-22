@@ -5,7 +5,6 @@ from sys import stdout
 import json_handler
 import mid_point_active_learning
 
-# print("start")
 
 lower_bound = -1000
 upper_bound = 1000
@@ -14,11 +13,14 @@ learning_rate = 0.01
 training_epochs = 500
 mock = False
 try:
-    while (1):
+    while (True):
         request_type = stdin.readline()
         request_type = request_type.strip(" ").strip("\n")
+        print("request type", request_type)
         message_body = stdin.readline()
         message_body = message_body.strip("\n")
+        print("message body", message_body)
+        stdout.flush()
         # json.dump(data)
         message_body = json.loads(message_body)
         # print("@@PythonStart@@")
