@@ -63,11 +63,13 @@ def requestLabel(train_set_X,type,name_list):
         tmp_list=[]
         for coordinate in point:
             tmp_dic={}
+            tmp_dic["NAME"] = name_list[point.index(coordinate)]
             if type=="INTEGER":
                 coordinate=int(coordinate)
             tmp_dic["VALUE"]=str(coordinate)
             tmp_dic["TYPE"]=type
-            tmp_dic["NAME"]=name_list[point.index(coordinate)]
+
+           
             tmp_list.append(tmp_dic)
         outputList.append(tmp_list)
 
@@ -80,7 +82,7 @@ def requestLabel(train_set_X,type,name_list):
 
     return outputString
 
-json_parser(input)
+# json_parser(input)
 # requestLabel(test_data,"PRIMITIVE",["a","b"])
 label_input={"RESULT":[[{"LABEL":True,"VALUE":1,"TYPE":"INTEGER","NAME":"a"},{"LABEL":True,"VALUE":2,"TYPE":"INTEGER","NAME":"b"}],[{"LABEL":True,"VALUE":3,"TYPE":"INTEGER","NAME":"a"},{"LABEL":True,"VALUE":4,"TYPE":"INTEGER","NAME":"b"}],[{"LABEL":False,"VALUE":5,"TYPE":"INTEGER","NAME":"a"},{"LABEL":False,"VALUE":6,"TYPE":"INTEGER","NAME":"b"}]]}
 def label_parser(input):
