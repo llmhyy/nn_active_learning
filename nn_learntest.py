@@ -6,7 +6,6 @@ import mid_point_active_learning
 import json_handler
 # print("start")
 
-type = stdin.readline()
 lower_bound = -1000
 upper_bound = 1000
 
@@ -22,7 +21,7 @@ try:
         # print("@@PythonStart@@")
         # print(a)
         # print("@@PythonEnd@@")
-        train_set_X,train_set_Y,name_list=json_handler.json_parser(data)
+        train_set_X,train_set_Y,name_list,type=json_handler.json_parser(data)
         if mock==False:
             inputX=train_set_X
             inputY=train_set_Y
