@@ -46,7 +46,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
 # def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
 #     X = np.array(train_set_X)
 #     Y = np.array(train_set_Y)
-#
+
 #     # Set min and max values and give it some padding
 #     x_min, x_max = X[:, 0].min() - .5, X[:, 0].max() + .5
 #     y_min, y_max = X[:, 1].min() - .5, X[:, 1].max() + .5
@@ -56,20 +56,20 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
 #     # Predict the function value for the whole gid
 #     kx = xx.ravel()
 #     ky = yy.ravel()
-#
+
 #     list = []
 #     for i in range(len(kx)):
 #         list.append([kx[i], ky[i]])
-#
+
 #     Z = pred_func(list)
 #     Z = Z.reshape(xx.shape)
 #     # Plot the contour and training examples
 #     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
-#     y = Y.reshape(len(Y))
-#     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
-#     plt.show()
-#     file_name = 'test' + str(iteration) + '.png'
-#     plt.savefig(file_name)
+    # y = Y.reshape(len(Y))
+    # plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
+    # plt.show()
+    # file_name = 'test' + str(iteration) + '.png'
+    # plt.savefig(file_name)
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
@@ -104,12 +104,12 @@ def preprocess(train_path, test_path, read_next):
 
     # read training data
     with open(train_path, 'r+') as csvfile:
-        with open('./dataset/train_next.csv', 'w') as file:
+        with open('./dataset/train_next.csv', 'w', newline="") as file:
             i = 0
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 0 or i > 10000):
+                if (i < 20 or i > 60):
                     i += 1
                     continue
                 else:
