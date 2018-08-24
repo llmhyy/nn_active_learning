@@ -10,6 +10,7 @@ import formula
 import testing_function
 import json_handler
 
+
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
 
     # Set min and max values and give it some padding
@@ -42,6 +43,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     # plt.show()
     file_name = 'test' + str(iteration) + '.png'
     plt.savefig(file_name)
+    pass
 
 
 # def plot_decision_boundary(pred_func, train_set_X, train_set_Y, iteration):
