@@ -82,7 +82,8 @@ def calculate_average(weights, biases, weight_tags, bias_tags):
     return weights_dict, biases_dict
 
 
-def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, to_be_appended_gradient_points_number,
+def \
+        append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, to_be_appended_gradient_points_number,
                           decision_combination):
     new_train_set_X = []
     new_train_set_Y = []
