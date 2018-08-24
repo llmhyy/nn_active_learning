@@ -83,6 +83,7 @@ def test_label(points, formu, type, name_list, mock):
         return flagList
     else:
         json_handler.requestLabel(points, type, name_list)
+        message_type = stdin.readline()
         data = stdin.readline()
         data = data.strip("\n")
         data = json.loads(data)

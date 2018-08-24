@@ -4,6 +4,7 @@ from sys import stdout
 
 import json_handler
 import mid_point_active_learning
+import traceback
 
 
 lower_bound = -1000
@@ -40,8 +41,10 @@ try:
                                                     name_list, mock)
         stdout.flush()
         print("finished!")
-# except Exception as e:
-#     print(e)
+except Exception as e:
+    print(e)
+    traceback.print_exc()
+    stdout.flush()
 finally:
     # sess.close()
     print("finished!")
