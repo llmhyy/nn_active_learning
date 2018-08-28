@@ -82,9 +82,8 @@ def calculate_average(weights, biases, weight_tags, bias_tags):
     return weights_dict, biases_dict
 
 
-def \
-        append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, to_be_appended_gradient_points_number,
-                          decision_combination):
+def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, to_be_appended_gradient_points_number,
+                          decision_combination, type, name_list, mock):
     new_train_set_X = []
     new_train_set_Y = []
 
@@ -125,12 +124,13 @@ def \
         if (len(new) != 0):
             if (new not in train_set_X):
                 new_train_set_X.append(new)
-
-                flag = testing_function.test_label(new, formu)
-                if (flag):
-                    new_train_set_Y.append([1])
-                else:
+                new = [new]
+                flag = testing_function.test_label(new, formu, type, name_list, mock)
+                label = None
+                if (flag[0] == 0):
                     new_train_set_Y.append([0])
+                else:
+                    new_train_set_Y.append([1])
 
     train_set_X = train_set_X + new_train_set_X
     train_set_Y = train_set_Y + new_train_set_Y
@@ -138,20 +138,31 @@ def \
     return train_set_X, train_set_Y
 
 
-def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, usebagging):
+def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, usebagging, type, name_list, mock):
     print("=========GRADIENT===========")
 
     # Parameters
     # learning_rate = 0.1
     # training_epochs = 100
     balance_ratio_threshold = 0.7
-    active_learning_iteration = 1
+    active_learning_iteration = 5
 
     to_be_appended_random_points_number = 6
     to_be_appended_gradient_points_number = 6
     to_be_appended_boundary_remaining_points_number = 6
 
-    train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
+    train_set_X = []
+    train_set_Y = []
+    test_set_X = []
+    test_set_Y = []  
+
+    if mock == True:
+        train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
+    
+    else:
+        train_set_X = inputX
+        train_set_Y = inputY
+
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
     newgrads = tf.gradients(net_stru.logits, net_stru.X)
@@ -184,10 +195,10 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
-            # if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-            #     br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
-            #                                 formula,
-            #                                 train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number)
+            if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
+                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
+                                            formula,
+                                            train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number, type, name_list, mock)
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                 #                         train_set_Y, 10+i)
             all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
@@ -277,9 +288,16 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                 #
                 # print(type(all_weights_dict[0]["h1"]))
                 net_stru_ = ns.NNStructureFixedVar(train_set_X[0], learning_rate, all_weights, all_biases)
+                # sess.run(net_stru_.init)
+                train_y = sess.run(net_stru_.logits, feed_dict={
+                                   net_stru_.X: train_set_X})
+                train_acc = util.calculate_accuracy(
+                    train_y, train_set_Y, False)
+                print(train_acc)
                 # with tf.Session as session:
                 #     session.run(net_stru_.init)
             else:
+                best_accuracy = 0
                 for epoch in range(training_epochs):
                     _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                     feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
@@ -290,20 +308,20 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                 if train_acc > best_accuracy:
                     best_accuracy = train_acc
                     # print("best_accuracy ", best_accuracy)
-                    saver.save(sess, './models/benchmark.ckpt')
+                    # saver.save(sess, './models/benchmark.ckpt')
 
             # saver.restore(sess, "./models/benchmark.ckpt")
-            sess.run(net_stru_.init)
+            # sess.run(net_stru_.init)
 
             train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
-            test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
+            # test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
             print("Bagging performance")
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-            test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+            # test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
             print(train_acc)
-            print(test_acc)
+            # print(test_acc)
 
             # saver = tf.train.Saver()
             # save model
@@ -322,7 +340,7 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                     print("not a better result")
 
             train_acc_list.append(train_acc)
-            test_acc_list.append(test_acc)
+            # test_acc_list.append(test_acc)
 
             # if i == 2:
             #     with open("test.csv", "w") as file:
@@ -336,14 +354,14 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
             # print(g)
             train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru_.X, net_stru_.logits, formula, train_set_X,
-                                                                train_set_Y, category, to_be_appended_gradient_points_number, decision)
+                                                                train_set_Y, category, to_be_appended_gradient_points_number, decision, type, name_list, mock)
             #
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
             #                             train_set_Y, 20+i)
 
-            train_set_X, train_set_Y = util.append_random_points(formula, train_set_X, train_set_Y,
-                                                                    to_be_appended_random_points_number, lower_bound,
-                                                                    upper_bound)
+            # train_set_X, train_set_Y = util.append_random_points(formula, train_set_X, train_set_Y,
+            #                                                         to_be_appended_random_points_number, lower_bound,
+            #                                                         upper_bound)
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
             #                             train_set_Y, 30+i)
 
@@ -358,7 +376,7 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
     # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
     with tf.Session() as sess:
 
-        # sess.run(net_stru_.init)
+        sess.run(net_stru_.init)
         print("weights final:", sess.run(net_stru_.weights))
 
         saver.restore(sess, save_path)

@@ -6,7 +6,7 @@ import mid_point_active_learning as mal
 import data_point_generation
 import xlwt
 
-category = formula.POLYNOMIAL
+category = formula.POLYHEDRON
 number = 100
 
 upper_bound = 1000

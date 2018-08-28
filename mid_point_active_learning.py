@@ -41,7 +41,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     # to_be_appended_random_points_number = 3
     active_learning_iteration = 5
     threshold = 100
-    save_path = "model_saved/mid_point_model"
+    save_path = "E:\\Research_project\\nn_active_learning\\model_saved\\mid_point_model"
     train_set_X = []
     train_set_Y = []
     test_set_X = []
