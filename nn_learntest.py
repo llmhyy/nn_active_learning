@@ -39,6 +39,7 @@ try:
         mid_point_active_learning.generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category,
                                                     learning_rate, training_epochs, lower_bound, upper_bound, type,
                                                     name_list, mock)
+
         stdout.flush()
         print("finished!")
 except Exception as e:
