@@ -82,7 +82,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             # if len(train_acc_list)!=0:
             #     saver.restore(sess,save_path)
             sess.run(net_stru.init)
-            print("weights after restore:", sess.run(net_stru.weights))
+            # print("weights after restore:", sess.run(net_stru.weights))
             label_0 = []
             label_1 = []
 
@@ -91,7 +91,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             length_1 = len(label_1) + 0.0
 
             print(length_0, length_1)
-            print(label_1)
+            # print(label_1)
             initial_point = len(label_0)
             if (length_0 == 0 or length_1 == 0):
                 raise Exception("Cannot be classified")
@@ -106,8 +106,8 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                                             train_set_Y, lower_bound, upper_bound, 10 + i)
                 print("new training size after boundary remaining", "X: ", len(train_set_X))
 
-            print(train_set_X)
-            print(train_set_Y)
+            # print(train_set_X)
+            # print(train_set_Y)
             for epoch in range(training_epochs):
                 _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                 feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
@@ -160,7 +160,9 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             length_1 = len(label_1) + 0.0
 
             print("label 0 length", length_0, "label 1 length", length_1)
-            print("weights trained:", sess.run(net_stru.weights))
+            for index in range(len(train_set_X)):
+                print (train_set_X[index],train_set_Y[index])
+            # print("weights trained:", sess.run(net_stru.weights))
 
             # for m in range(initial_point,len(label_0)):
             #     print (label_0[m])
@@ -240,6 +242,11 @@ def append_mid_points(distance_list, formu, point_pair_list, to_be_appended_poin
                 for b in range(len(point_0)):
                     middle_point.append((point_0[b] + point_1[b]) / 2.0)
                 input_points.append(middle_point)
+                for point in input_points:
+                    for index in range(len(point)):
+                        if type=="INTEGER":
+                            point[index]=int(round(point[index]))
+
                 result = testing_function.test_label(input_points, formu, type, name_list, mock)
                 label = None
                 if result[0] == 0:

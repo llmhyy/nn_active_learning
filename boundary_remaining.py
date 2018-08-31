@@ -59,6 +59,7 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
     for k in range(len(newX)):
         label = flagList[k]
         if (label):
+
             train_set_X.append(newX[k])
             train_set_Y.append([1])
             print("added point: ", newX[k], label)
@@ -275,6 +276,10 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
 
     print("Boundry remaining points added ", len(add_points))
     print("Boundary remaining accuracy: ", float((trial_count - wrong) / trial_count))
+    for point in add_points:
+        for index in range(len(point)):
+            if type=="INTEGER":
+                point[index]=int(round(point[index]))
     return add_points
 
 
