@@ -33,8 +33,8 @@ class NNStructure():
 
         # Define loss and optimizer
         self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
-        self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
-        # optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+        # self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
         # Initializing the variables
         self.train_op = self.optimizer.minimize(self.loss_op)
         # Initializing the variables

@@ -81,7 +81,9 @@ def calculate_accuracy(y, set_Y, print_data_details):
     train_correct = []
     train_wrong = []
     for i in range(len(set_Y)):
-        if (print_data_details):
+        # if (print_data_details):
+        #     print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
+        if math.isnan(y[i][0]):
             print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
 
         if y[i][0] > 0 and set_Y[i][0] == 1:
@@ -112,7 +114,7 @@ def preprocess(train_path, test_path, read_next):
             spamreader = csv.reader(csvfile)
             writer = csv.writer(file)
             for row in spamreader:
-                if (i < 0 or i > 20):
+                if (i < 0 or i > 200):
                     i += 1
                     continue
                 else:
