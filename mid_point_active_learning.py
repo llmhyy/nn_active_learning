@@ -106,8 +106,6 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                                             train_set_Y, lower_bound, upper_bound, 10 + i)
                 print("new training size after boundary remaining", "X: ", len(train_set_X))
 
-            print(train_set_X)
-            print(train_set_Y)
             for epoch in range(training_epochs):
                 _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                 feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
@@ -180,7 +178,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
         train_acc_list.append(train_acc)
         # test_acc_list.append(test_acc)
     result.append(train_acc_list)
-    result.append(test_acc_list)
+    # result.append(test_acc_list)
     print("Result", result)
     tf.reset_default_graph()
     return result
