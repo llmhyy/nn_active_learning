@@ -59,13 +59,13 @@ X = [[-10, -10], [-8, -5], [-11, -6], [0, 10], [1, 14], [-1, 9], [89, 55], [68, 
 #     else:
 #         print("same label")
 
-tf.reset_default_graph()
-random.seed(random_seed)
-np.random.seed(random_seed)
-tf.set_random_seed(random_seed)
+# tf.reset_default_graph()
+# random.seed(random_seed)
+# np.random.seed(random_seed)
+# tf.set_random_seed(random_seed)
 
-gra_list = gal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs,
-                                 lower_bound, upper_bound, parts_num, False, "", "", True)
+# gra_list = gal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs,
+#                                  lower_bound, upper_bound, parts_num, False, "", "", True)
 
 tf.reset_default_graph()
 random.seed(random_seed)
@@ -75,7 +75,7 @@ train_set_X = []
 train_set_Y = []
 test_set_X = []
 test_set_Y = []
-# mid_list = mal.generate_accuracy(train_set_X,train_set_Y,train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound,None,None,True)
+mid_list = mal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)
 # tf.reset_default_graph()
 # random.seed(random_seed)
 # np.random.seed(random_seed)
