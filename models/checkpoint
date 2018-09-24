@@ -1,3 +1,0 @@
-model_checkpoint_path: "benchmark.ckpt"
-all_model_checkpoint_paths: "E:\\Research_project\\nn_active_learning\\model_saved\\mid_point_model"
-all_model_checkpoint_paths: "benchmark.ckpt"

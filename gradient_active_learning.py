@@ -381,27 +381,27 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             print("label 0 length", length_0, "label 1 length", length_1)
 
     # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
-    with tf.Session() as sess:
-
-        sess.run(net_stru_.init)
-        print("weights final:", sess.run(net_stru_.weights))
-
-        saver.restore(sess, save_path)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-        #                             train_set_Y, lower_bound,upper_bound,-1)
-        # sess.run(net_stru_.init)
-        # saver = tf.train.Saver()
-        # saver.restore(sess, save_path)
-        print("weights final:", sess.run(net_stru_.weights))
-        train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
-        test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
-
-        train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-        test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
-        print("Training: ", train_acc)
-        print("Testing: ", test_acc)
-        train_acc_list.append(train_acc)
-        test_acc_list.append(test_acc)
+    # with tf.Session() as sess:
+    #
+    #     sess.run(net_stru_.init)
+    #     print("weights final:", sess.run(net_stru_.weights))
+    #
+    #     saver.restore(sess, save_path)
+    #     # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+    #     #                             train_set_Y, lower_bound,upper_bound,-1)
+    #     # sess.run(net_stru_.init)
+    #     # saver = tf.train.Saver()
+    #     # saver.restore(sess, save_path)
+    #     print("weights final:", sess.run(net_stru_.weights))
+    #     train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
+    #     test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
+    #
+    #     train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
+    #     test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+    #     print("Training: ", train_acc)
+    #     print("Testing: ", test_acc)
+    #     train_acc_list.append(train_acc)
+    #     test_acc_list.append(test_acc)
 
     result.append(train_acc_list)
     result.append(test_acc_list)

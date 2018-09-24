@@ -283,16 +283,9 @@ def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_
         print("New random points X", newPointsX)
         print("New random points Y", newPointsY)
         return train_set_X, train_set_Y
-    else:
-        print ("REQUEST_RANDOM_POINTS")
-        print (to_be_appended_random_points_number)
-        data = stdin.readline()
-        data = data.strip("\n")
-        data =json.load(data)
-        newX,newY,name_list=json_handler.json_parser(data)
-        train_set_X=train_set_X+newX
-        train_set_Y=train_set_Y+newY
-        return train_set_X,train_set_Y
+    # else:
+    #     newPointsX=generate_random_points(to_be_appended_random_points_number,lower_bound,upper_bound)
+    #     return train_set_X,train_set_Y
 
 def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
     return (length_0 / length_1 > balance_ratio_threshold and length_0 / length_1 <= 1) \
@@ -355,3 +348,4 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
         else:
             outputY.append([0])
     return outputX, outputY
+

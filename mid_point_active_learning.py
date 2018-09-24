@@ -73,7 +73,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     # to_be_appended_random_points_number = 3
     active_learning_iteration = 5
     threshold = 100
-    save_path = "E:\\Research_project\\nn_active_learning\\model_saved\\mid_point_model"
+    save_path = "model_saved/gradient_model"
     train_set_X = []
     train_set_Y = []
     test_set_X = []
@@ -289,7 +289,10 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             train_acc_list.append(train_acc)
             # test_acc_list.append(test_acc)
             threshold = util.calculate_std_dev(train_set_X)
-
+            predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
+            print (train_set_X)
+            print (train_set_Y)
+            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru_.X: x}), train_set_X,train_set_Y, lower_bound, upper_bound, i)
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             distance_list, point_pair_list = filter_distant_point_pair(label_0, label_1, threshold)
             util.quickSort(distance_list)
@@ -298,8 +301,8 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                               train_set_X, train_set_Y, type, name_list, mock)
 
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-                                        train_set_Y, lower_bound, upper_bound, 20 + i)
+            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+            #                             train_set_Y, lower_bound, upper_bound, 20 + i)
 
             # train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
             #                                                      to_be_appended_random_points_number, lower_bound, upper_bound,type,name_list,mock)
@@ -321,20 +324,20 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             # print ("weights after :",sess.run(net_stru.weights))
 
     print("$TRAINING_FINISH")
-    with tf.Session() as sess:
-        saver.restore(sess, save_path)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-        #                             train_set_Y, lower_bound,upper_bound,-1)
-        print("weights final:", sess.run(net_stru.weights))
-        train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
-        # test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
-
-        train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-        # test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
-        train_acc_list.append(train_acc)
-        # test_acc_list.append(test_acc)
+    # with tf.Session() as sess:
+    #     saver.restore(sess, save_path)
+    #     # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+    #     #                             train_set_Y, lower_bound,upper_bound,-1)
+    #     print("weights final:", sess.run(net_stru.weights))
+    #     train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
+    #     # test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
+    #
+    #     train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
+    #     # test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+    #     train_acc_list.append(train_acc)
+    #     # test_acc_list.append(test_acc)
     result.append(train_acc_list)
-    result.append(test_acc_list)
+    # result.append(test_acc_list)
     print("Result", result)
     tf.reset_default_graph()
     return result

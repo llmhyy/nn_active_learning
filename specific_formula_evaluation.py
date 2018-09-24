@@ -63,7 +63,7 @@ X = [[-10, -10], [-8, -5], [-11, -6], [0, 10], [1, 14], [-1, 9], [89, 55], [68, 
 # random.seed(random_seed)
 # np.random.seed(random_seed)
 # tf.set_random_seed(random_seed)
-
+#
 # gra_list = gal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs,
 #                                  lower_bound, upper_bound, parts_num, False, "", "", True)
 
