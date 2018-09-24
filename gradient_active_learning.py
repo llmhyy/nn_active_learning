@@ -10,6 +10,7 @@ import gradient_combination
 import network_structure as ns
 import testing_function
 import util
+import math
 
 
 def partition_data(label_0, label_1, parts_num):
@@ -82,9 +83,9 @@ def calculate_average(weights, biases, weight_tags, bias_tags):
     return weights_dict, biases_dict
 
 
-def \
-        append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory, to_be_appended_gradient_points_number,
-                          decision_combination):
+def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory,
+                          to_be_appended_gradient_points_number,
+                          decision_combination, type, name_list, mock):
     new_train_set_X = []
     new_train_set_Y = []
 
@@ -103,7 +104,7 @@ def \
     gradient_size_list.sort()
 
     index = -to_be_appended_gradient_points_number
-    if(to_be_appended_gradient_points_number > len(gradient_size_list)):
+    if (to_be_appended_gradient_points_number > len(gradient_size_list)):
         index = 0
 
     size_threshold = gradient_size_list[index]
@@ -114,7 +115,7 @@ def \
         if size < size_threshold:
             continue
         count += 1
-        if count>to_be_appended_gradient_points_number:
+        if count > to_be_appended_gradient_points_number:
             continue
         # value = sess.run(logits, feed_dict={X:[train_set_X[j]]})
         new = br.decide_cross_boundary_point(sess, g[0][j], size, X, logits,
@@ -125,12 +126,13 @@ def \
         if (len(new) != 0):
             if (new not in train_set_X):
                 new_train_set_X.append(new)
-
-                flag = testing_function.test_label(new, formu)
-                if (flag):
-                    new_train_set_Y.append([1])
-                else:
+                new = [new]
+                flag = testing_function.test_label(new, formu, type, name_list, mock)
+                label = None
+                if (flag[0] == 0):
                     new_train_set_Y.append([0])
+                else:
+                    new_train_set_Y.append([1])
 
     train_set_X = train_set_X + new_train_set_X
     train_set_Y = train_set_Y + new_train_set_Y
@@ -138,7 +140,8 @@ def \
     return train_set_X, train_set_Y
 
 
-def generate_accuracy(train_path, test_path, formula, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, usebagging):
+def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, learning_rate, training_epochs,
+                      lower_bound, upper_bound, parts_num, use_bagging, type, name_list, mock):
     print("=========GRADIENT===========")
 
     # Parameters
@@ -151,7 +154,18 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
     to_be_appended_gradient_points_number = 6
     to_be_appended_boundary_remaining_points_number = 6
 
-    train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
+    train_set_X = []
+    train_set_Y = []
+    test_set_X = []
+    test_set_Y = []
+
+    if mock == True:
+        train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
+
+    else:
+        train_set_X = inputX
+        train_set_Y = inputY
+
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
     newgrads = tf.gradients(net_stru.logits, net_stru.X)
@@ -166,12 +180,13 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
     decision = gradient_combination.combination(len(train_set_X[0]))
     save_path = "model_saved/gradient_model"
     # predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
-    saver = tf.train.Saver()
-    for i in range(active_learning_iteration):
-        print("*******", i, "th loop:")
-        print("training set size", len(train_set_X))
-        # ten times training
-        with tf.Session() as sess:
+    with tf.Session() as sess:
+        saver = tf.train.Saver()
+        for i in range(active_learning_iteration):
+            print("*******", i, "th loop:")
+            print("training set size", len(train_set_X))
+            # ten times training
+
             sess.run(net_stru.init)
             label_0 = []
             label_1 = []
@@ -183,10 +198,11 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
-            # if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-            #     br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
-            #                                 formula,
-            #                                 train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number)
+            if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
+                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
+                                            formula,
+                                            train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number,
+                                            type, name_list, mock)
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                 #                         train_set_Y, 10+i)
             all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
@@ -196,7 +212,7 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             all_biases_dict = []
             all_weights = {}
             all_biases = {}
-            if usebagging:
+            if use_bagging:
                 for parts in range(parts_num):
                     best_accuracy = 0
                     sess.run(net_stru.init)
@@ -224,22 +240,22 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
 
                 # initialize dictionary
                 for key in all_weights_dict[0].keys():
-                    all_weights[key]  = []
+                    all_weights[key] = []
                     for dim in range(len(all_weights_dict[0][key])):
                         if key != "out":
                             all_weights[key].append([])
                 for key in all_biases_dict[0].keys():
-                    all_biases[key]  = []
+                    all_biases[key] = []
 
                 # combine all weights and biases
                 for key in all_weights_dict[0].keys():
                     if key == "out":
                         for cnt in range(len(all_weights_dict)):
                             for dim in range(len(all_weights_dict[0][key])):
-                                weights_list = [k/parts_num for k in all_weights_dict[cnt][key][dim]]
+                                weights_list = [k / parts_num for k in all_weights_dict[cnt][key][dim]]
                                 all_weights[key].append(weights_list)
                     else:
-                        for cnt in range(len(all_weights_dict)):   
+                        for cnt in range(len(all_weights_dict)):
                             for dim in range(len(all_weights_dict[0][key])):
                                 weights_list = [k for k in all_weights_dict[cnt][key][dim]]
                                 all_weights[key][dim] += weights_list
@@ -251,12 +267,12 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                         for cnt in range(len(all_biases_dict)):
                             bias_list = [k for k in all_biases_dict[cnt][key]]
                             all_biases[key] += bias_list
-                
+
                 total = 0
                 for out_bias in all_biases["out"]:
                     total += out_bias
-                all_biases["out"] = [total/parts_num]
-                
+                all_biases["out"] = [total / parts_num]
+
                 for key in all_weights.keys():
                     # print(all_weights[key])
                     all_weights[key] = tf.Variable(all_weights[key])
@@ -276,10 +292,17 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                 #
                 # print(type(all_weights_dict[0]["h1"]))
                 net_stru_ = ns.NNStructureFixedVar(train_set_X[0], learning_rate, all_weights, all_biases)
+                sess.run(net_stru_.init)
+                train_y = sess.run(net_stru_.logits, feed_dict={
+                    net_stru_.X: train_set_X})
+                train_acc = util.calculate_accuracy(
+                    train_y, train_set_Y, False)
+                print(train_acc)
                 # with tf.Session as session:
                 #     session.run(net_stru_.init)
             else:
-                for epoch in range(training_epochs):
+                best_accuracy = 0
+                for epoch in range(2000):
                     _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                     feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
                 net_stru_ = net_stru
@@ -289,36 +312,39 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
                 if train_acc > best_accuracy:
                     best_accuracy = train_acc
                     # print("best_accuracy ", best_accuracy)
-                    saver.save(sess, './models/benchmark.ckpt')
+                    # saver.save(sess, './models/benchmark.ckpt')
 
             # saver.restore(sess, "./models/benchmark.ckpt")
-            sess.run(net_stru_.init)
+            # sess.run(net_stru_.init)
 
             train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
-            test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
+            # test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
             print("Bagging performance")
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-            test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+            # test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
             print(train_acc)
-            print(test_acc)
+            # print(test_acc)
 
             # saver = tf.train.Saver()
             # save model
             if len(train_acc_list) == 0:
+                # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
                 saver.save(sess, save_path)
+                print("Model saved")
                 train_acc_max = train_acc
             else:
                 if train_acc >= train_acc_max:
                     print("Got better result")
+                    # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
                     saver.save(sess, save_path)
                     train_acc_max = train_acc
                 else:
                     print("not a better result")
 
             train_acc_list.append(train_acc)
-            test_acc_list.append(test_acc)
+            # test_acc_list.append(test_acc)
 
             # if i == 2:
             #     with open("test.csv", "w") as file:
@@ -327,21 +353,24 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
             #             tmp = [float(train_set_Y[line][0])] + train_set_X[line]
             #             wr.writerow(tmp)
             predicted = tf.cast(net_stru_.logits > 0, dtype=tf.float32)
+            # if(math.isnan(predicted)):
+            #     print()
             util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru_.X: x}), train_set_X,
                                         train_set_Y, lower_bound, upper_bound, i)
-
             g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
             # print(g)
-
-            train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru_.X, net_stru_.logits, formula, train_set_X,
-                                                             train_set_Y, category, to_be_appended_gradient_points_number, decision)
+            train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru_.X, net_stru_.logits, formula,
+                                                             train_set_X,
+                                                             train_set_Y, category,
+                                                             to_be_appended_gradient_points_number, decision, type,
+                                                             name_list, mock)
             #
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
             #                             train_set_Y, 20+i)
 
-            train_set_X, train_set_Y = util.append_random_points(formula, train_set_X, train_set_Y,
-                                                                 to_be_appended_random_points_number, lower_bound,
-                                                                 upper_bound)
+            # train_set_X, train_set_Y = util.append_random_points(formula, train_set_X, train_set_Y,
+            #                                                         to_be_appended_random_points_number, lower_bound,
+            #                                                         upper_bound)
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
             #                             train_set_Y, 30+i)
 
@@ -351,112 +380,29 @@ def generate_accuracy(train_path, test_path, formula, category, learning_rate, t
 
             print("label 0 length", length_0, "label 1 length", length_1)
 
-    ###########################################
-    # decide new points dimension by dimension
-    # for j in range(len(train_set_X)):
-    #     grad = 0
-    #     for k in range(n_input):
-    #         grad += g[0][j][k] * g[0][j][k]
-    #     g_total = math.sqrt(grad)
-    #     # print("Im here ==================================")
-    #     new = []
-    #     if (g_total > threshold):
-    #         for k in range(n_input):
+    # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
+    # with tf.Session() as sess:
+    #
+    #     sess.run(net_stru_.init)
+    #     print("weights final:", sess.run(net_stru_.weights))
+    #
+    #     saver.restore(sess, save_path)
+    #     # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+    #     #                             train_set_Y, lower_bound,upper_bound,-1)
+    #     # sess.run(net_stru_.init)
+    #     # saver = tf.train.Saver()
+    #     # saver.restore(sess, save_path)
+    #     print("weights final:", sess.run(net_stru_.weights))
+    #     train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
+    #     test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
+    #
+    #     train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
+    #     test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+    #     print("Training: ", train_acc)
+    #     print("Testing: ", test_acc)
+    #     train_acc_list.append(train_acc)
+    #     test_acc_list.append(test_acc)
 
-    #             tmp1 = [x for x in train_set_X[j]]
-    #             tmp1[k] = tmp1[k] + g[0][j][k] * (step / g_total)
-    #             tmp2 = [x for x in train_set_X[j]]
-    #             tmp2[k] = tmp2[k] - g[0][j][k] * (step / g_total)
-
-    #             new_pointsX = [tmp1, tmp2, train_set_X[j]]
-    #             new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
-
-    #             original_y = new_pointsY[-1]
-    #             distances = [x for x in new_pointsY]
-    #             distances = distances[:-1]
-    #             # ans = 0
-    #             if (original_y < 0.5):
-    #                 ans = max(distances)
-    #             else:
-    #                 ans = min(distances)
-    #             one_position = new_pointsX[distances.index(ans)]
-    #             if (one_position==tmp1):
-    #                 new.append(tmp1[k])
-    #             else:
-    #                 new.append(tmp2[k])
-
-    #############################################
-
-    ##boundary remaining test
-    ##small gradient test
-    #         X1=train_set_X[j][0]
-    #         X2=train_set_X[j][1]
-    #         newY=train_set_Y[j][0]
-    #         g_x = g[0][j][0]
-    #         g_y = g[0][j][1]
-    #         g_total = math.sqrt(g_x*g_x+g_y*g_y)
-
-    #         if (g_total==0) :
-    #             tmpX1 = X1 - step
-    #             tmpX2 = X2 + step
-    #         else:
-    #             tmpX1 = X1 - g[0][j][1]*(step/g_total)
-    #             tmpX2 = X2 + g[0][j][0]*(step/g_total)
-    #         ##print ("Y",newY)
-    #         if(g[0][j][0]<0.01):
-
-    #         	smallGradient_total+=1
-    #         	if(newY==0):
-    #         		if(polynomial_model(tmpX1,tmpX2)):
-    #         			smallGradient_Unchanged+=1.0
-    #         	elif(newY==1):
-    #         		if(not polynomial_model(tmpX1,tmpX2)):
-    #         			smallGradient_Unchanged+=1.0
-
-    #         # ##large gradient test
-    #         if(g[0][j][0]>0.01):
-    #         	# newtmpX1=train_set_X[j][0]-g[0][j][0]*k
-    #         	# newtmpX2=train_set_X[j][1]-g[0][j][1]*k
-
-    #         	largeGradient_total+=1
-    #         	if(newY==0):
-    #         		if(polynomial_model(tmpX1,tmpX2)):
-    #         			largeGradient_Unchanged+=1.0
-    #         	elif(newY==1):
-    #         		if(not polynomial_model(tmpX1,tmpX2)):
-    #         			largeGradient_Unchanged+=1.0
-
-    # # print("generated data points:")
-    # for j in range(len(new_train_set_X)):
-    #     print("(", new_train_set_X[j][0], ", ", new_train_set_X[j][1], ", ", new_train_set_X[j][2], ")", "label: ", new_train_set_Y[j][0])
-    # if (smallGradient_total != 0) :
-    #     print ("Small gradients", smallGradient_Unchanged/smallGradient_total)
-    # if (largeGradient_total != 0):
-    #     print ("Large gradients", largeGradient_Unchanged/largeGradient_total)
-    # print(train_set_X)
-
-    # print(smallGradient_total)
-    # print (smallGradient_Unchanged)
-    # print(largeGradient_total)
-    # print (largeGradient_Unchanged)
-
-    # print ("small gradient unchanged rate: ",smallGradient_Unchanged/smallGradient_total)
-    # print ("large gradient unchanged rate: ", largeGradient_Unchanged/largeGradient_total)
-    with tf.Session() as sess:
-        saver.restore(sess, save_path)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-        #                             train_set_Y, lower_bound,upper_bound,-1)
-        sess.run(net_stru_.init)
-        print("weights final:", sess.run(net_stru_.weights))
-        train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
-        test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
-
-        train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-        test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
-        print("Training: ", train_acc)
-        print("Testing: ", test_acc)
-        train_acc_list.append(train_acc)
-        test_acc_list.append(test_acc)
     result.append(train_acc_list)
     result.append(test_acc_list)
     # tf.reset_default_graph()

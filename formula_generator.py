@@ -48,7 +48,7 @@ def generate_polyhedron(category):
         for j in range(num_of_dimension):
             center_coordinate = random.randint(-1000, 1000)
             center.append(center_coordinate)
-        radius = random.randint(400, 600)
+        radius = random.randint(400, 500)
         centers.append(center)
         radiuses.append(radius)
     formula_ = [centers, radiuses]

@@ -66,7 +66,7 @@ def requestLabel(train_set_X, type, name_list):
             tmp_dic = {}
             tmp_dic["NAME"] = name_list[point.index(coordinate)]
             if type == "INTEGER":
-                coordinate = int(coordinate)
+                coordinate = int(round(coordinate))
             tmp_dic["VALUE"] = str(coordinate)
             tmp_dic["TYPE"] = type
 
