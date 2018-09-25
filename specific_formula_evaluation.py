@@ -10,6 +10,8 @@ import random
 import numpy as np
 import tensorflow as tf
 
+data_point_number = 200
+
 random_seed = 10
 random.seed(random_seed)
 np.random.seed(random_seed)
@@ -42,7 +44,7 @@ learning_rate = 0.01
 training_epochs = 100
 parts_num = 5
 
-train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
+train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound, data_point_number)
 # train_data_file = "dataset/train485_430.csv"
 # test_data_file = "dataset/test485_430.csv"
 print(f.get_list())

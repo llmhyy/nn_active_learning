@@ -7,16 +7,16 @@ import formula
 import testing_function as tf
 
 
-def generate_data_points(formu, category, lower_bound, upper_bound):
+def generate_data_points(formu, category, lower_bound, upper_bound, data_point_number):
     if (category == formula.POLYHEDRON):
-        trainpath, testpath = random_polyhedron(formu, lower_bound, upper_bound)
+        trainpath, testpath = generate_random_points_for_sphere(formu, lower_bound, upper_bound, data_point_number)
     elif (category == formula.POLYNOMIAL):
-        trainpath, testpath = generate_random_points_for_polynomial(formu, lower_bound, upper_bound)
+        trainpath, testpath = generate_random_points_for_polynomial(formu, lower_bound, upper_bound, data_point_number)
     return trainpath, testpath
 
 
 # TODO coefficient and xList should comes from formu
-def generate_random_points_for_polynomial(formu, lower_bound, upper_bound):
+def generate_random_points_for_polynomial(formu, lower_bound, upper_bound, data_point_number):
     train_name = "train" + "_".join(str(x) for x in formu.get_list()) + ".csv"
     test_name = "test" + "_".join(str(x) for x in formu.get_list()) + ".csv"
 
@@ -29,7 +29,7 @@ def generate_random_points_for_polynomial(formu, lower_bound, upper_bound):
 
         train = csv.writer(csvfile)
 
-        for k in range(700):
+        for k in range(data_point_number):
             xList = []
             variable_num = len(coefficient_list)
             for i in range(variable_num):
@@ -53,7 +53,7 @@ def generate_random_points_for_polynomial(formu, lower_bound, upper_bound):
 
 # generate random data points for a circle formula
 #TODO use upper_bound, lower_bound parameter
-def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,4]]
+def generate_random_points_for_sphere(formu, upper_bound, lower_bound, data_point_number):  # [[[12,0],[-12,0]],[4,4]]
     number = random.randint(1, 20)
     formu_list = formu.get_list()
     dim = len(formu_list[0][0])
@@ -70,7 +70,7 @@ def random_polyhedron(formu, upper_bound, lower_bound):  # [[[12,0],[-12,0]],[4,
             train = csv.writer(csvfile)
             test = csv.writer(csvfile2)
 
-            for k in range(700):
+            for k in range(data_point_number):
                 data_point = []
                 generated_point = []
                 if k % 3 == 0:

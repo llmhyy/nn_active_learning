@@ -13,6 +13,7 @@ upper_bound = 1000
 lower_bound = -1000
 learning_rate = 0.01
 training_epochs = 100
+data_point_number = 200
 parts_num = 5
 
 formulas = fg.generate_formula(category, number)
@@ -73,7 +74,7 @@ for f in formula_list:
     print(f.get_list())
     # f = [[-1,4,2,5],[ -2,5,1,0],-1748]
     #TODO each foumla write its generated data into files with the formula name
-    train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
+    train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound, data_point_number)
 
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
