@@ -10,8 +10,8 @@ import util
 def generate_accuracy(train_path, test_path, learning_rate, training_epochs, lower_bound, upper_bound):
     print("=========BENCH_MARK===========")
 
-    learning_rate = 0.00001
-    training_epochs = 200
+    # learning_rate = 0.00001
+    # training_epochs = 200
 
     train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=False)
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
@@ -59,10 +59,10 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
             # print(con_gra2[0])
             # print(con_gra4[0])
             loss_list.append(loss)
-            # if (epoch % 10 == 0):
-            #     util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),
-            #                                 train_set_X[:data_size], train_set_Y[:data_size],
-            #                                 lower_bound, upper_bound, epoch)
+            if epoch % 10 == 0:
+                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),
+                                            train_set_X[:data_size], train_set_Y[:data_size],
+                                            lower_bound, upper_bound, epoch)
 
             # train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
             # train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
@@ -84,6 +84,6 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
         test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
-        print(train_acc)
+        print("train:", train_acc, " test: ", test_acc)
 
     return train_acc, test_acc
