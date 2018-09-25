@@ -34,25 +34,30 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
         best_accuracy = 0
         loss_list = []
         predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
-        gra = tf.gradients(net_stru.loss_op, net_stru.weights["h1"])
-        gra2 = tf.gradients(net_stru.loss_op, net_stru.weights["out"])
-        gra3 = tf.gradients(net_stru.loss_op, net_stru.logits)
-        gra4 = tf.gradients(net_stru.logits, net_stru.weights["out"])
-        gra5 = tf.gradients(net_stru.logits, net_stru.layer_1)
+        # gra = tf.gradients(net_stru.loss_op, net_stru.weights["h1"])
+        # gra2 = tf.gradients(net_stru.loss_op, net_stru.weights["out"])
+        # gra3 = tf.gradients(net_stru.loss_op, net_stru.logits)
+        # gra4 = tf.gradients(net_stru.logits, net_stru.weights["out"])
+        # gra5 = tf.gradients(net_stru.logits, net_stru.layer_1)
         for epoch in range(training_epochs):
-            _, loss, l, con_gra, con_gra2, con_gra3, con_gra4, con_gra5, A, layer1 = sess.run(
-                [net_stru.train_op, net_stru.loss_op, net_stru.logits, gra, gra2,
-                 gra3, gra4, gra5, net_stru.A, net_stru.layer_1],
+            _, loss, = sess.run(
+                [net_stru.train_op, net_stru.loss_op],
                 feed_dict={net_stru.X: train_set_X[:data_size],
                            net_stru.Y: train_set_Y[:data_size]})
 
+            # _, loss, l, con_gra, con_gra2, con_gra3, con_gra4, con_gra5, A, layer1 = sess.run(
+            #     [net_stru.train_op, net_stru.loss_op, net_stru.logits, gra, gra2,
+            #      gra3, gra4, gra5, net_stru.A, net_stru.layer_1],
+            #     feed_dict={net_stru.X: train_set_X[:data_size],
+            #                net_stru.Y: train_set_Y[:data_size]})
+
             print("loss: ", loss, "temp: ")
             # print(con_gra)
-            print(train_set_Y[:3])
-            print(l[:3])
-            print(con_gra3[0][:3])
-            print(con_gra2[0])
-            print(con_gra4[0])
+            # print(train_set_Y[:3])
+            # print(l[:3])
+            # print(con_gra3[0][:3])
+            # print(con_gra2[0])
+            # print(con_gra4[0])
             loss_list.append(loss)
             # if (epoch % 10 == 0):
             #     util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),

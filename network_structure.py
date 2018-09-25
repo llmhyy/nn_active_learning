@@ -32,11 +32,11 @@ class NNStructure():
         self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
 
         # Define loss and optimizer
-        self.logits = tf.nn.sigmoid(self.logits)
-        # self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+        # self.logits = tf.nn.sigmoid(self.logits)
+        self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
 
-        self.A = tf.square(self.logits - self.Y)
-        self.loss_op = tf.reduce_sum(tf.square(self.logits - self.Y))
+        # self.A = tf.square(self.logits - self.Y)
+        # self.loss_op = tf.reduce_sum(tf.square(self.logits - self.Y))
         # self.loss_op = tf.reduce_mean(tf.square(self.logits - self.Y))
         # self.loss_op = tf.losses.mean_squared_error(labels=self.Y, predictions=self.logits)
 
