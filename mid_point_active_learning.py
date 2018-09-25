@@ -160,6 +160,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                         train_acc = util.calculate_accuracy(
                             train_y, train_set_Y, False)
                         if train_acc > best_accuracy:
+
                             best_accuracy = train_acc
                             # print("best_accuracy ", best_accuracy)
                             saver.save(sess, './models/benchmark.ckpt')
@@ -263,11 +264,11 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
 
             train_y = sess.run(net_stru_.logits, feed_dict={
                                net_stru_.X: train_set_X})
-            # test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
+            test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
             print("Bagging performance")
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-            # test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+            test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
             print("train_acc", train_acc)
             # print("test_acc", test_acc)
 
@@ -287,7 +288,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                     print("not a better result")
                     
             train_acc_list.append(train_acc)
-            # test_acc_list.append(test_acc)
+            test_acc_list.append(test_acc)
             threshold = util.calculate_std_dev(train_set_X)
             predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
             print (train_set_X)
@@ -337,7 +338,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     #     train_acc_list.append(train_acc)
     #     # test_acc_list.append(test_acc)
     result.append(train_acc_list)
-    # result.append(test_acc_list)
+    result.append(test_acc_list)
     print("Result", result)
     tf.reset_default_graph()
     return result

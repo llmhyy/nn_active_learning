@@ -318,14 +318,14 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             # sess.run(net_stru_.init)
 
             train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
-            # test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
+            test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
             print("Bagging performance")
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-            # test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
+            test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
 
             print(train_acc)
-            # print(test_acc)
+            print(test_acc)
 
             # saver = tf.train.Saver()
             # save model
@@ -344,7 +344,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
                     print("not a better result")
 
             train_acc_list.append(train_acc)
-            # test_acc_list.append(test_acc)
+            test_acc_list.append(test_acc)
 
             # if i == 2:
             #     with open("test.csv", "w") as file:
