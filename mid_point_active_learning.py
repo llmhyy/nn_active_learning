@@ -6,9 +6,10 @@ import boundary_remaining as br
 import network_structure as ns
 import testing_function
 import util
-import numpy as np 
+import numpy as np
 import random
 import math
+
 
 def partition_data(label_0, label_1, parts_num):
     result_X = []
@@ -40,6 +41,7 @@ def partition_data(label_0, label_1, parts_num):
 
     return result_X, result_Y
 
+
 def filter_distant_point_pair(label_0, label_1, threshold):
     distance_list = []
     point_pair_list = {}
@@ -63,7 +65,7 @@ def filter_distant_point_pair(label_0, label_1, threshold):
 
 
 def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category, learning_rate, training_epochs,
-                      lower_bound, upper_bound, parts_num, use_bagging, type, name_list, mock):
+                      lower_bound, upper_bound, use_bagging, type, name_list, mock):
     print("=========MID_POINT===========")
     balance_ratio_threshold = 0.7
     boundary_remaining_trial_iteration = 100
@@ -88,7 +90,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
     ## save weights and bias
-    saver = tf.train.Saver()
+    # saver = tf.train.Saver()
 
     train_acc_list = []
     test_acc_list = []
@@ -129,17 +131,20 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                 raise Exception("Cannot be classified")
 
             if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br. \
-                    apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1,
-                                             net_stru.logits, formu, train_set_X,
-                                             train_set_Y, to_be_appended_boundary_remaining_points_number, type,
-                                             name_list, mock)
+                br.apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1,
+                                            net_stru.logits, formu, train_set_X,
+                                            train_set_Y, to_be_appended_boundary_remaining_points_number, type,
+                                            name_list, mock)
                 util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                                             train_set_Y, lower_bound, upper_bound, 10 + i)
                 print("new training size after boundary remaining", "X: ", len(train_set_X))
 
             # print(train_set_X)
             # print(train_set_Y)
+            smaller_set_size = min(len(label_0), len(label_1))
+            larger_set_size = max(len(label_0), len(label_1))
+            parts_num = int(larger_set_size / smaller_set_size)
+
             all_data_X, all_data_Y = partition_data(
                 label_0, label_1, parts_num)
             # print(all_data_X, all_data_Y)
@@ -156,16 +161,15 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                         _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                         feed_dict={net_stru.X: all_data_X[parts], net_stru.Y: all_data_Y[parts]})
                         train_y = sess.run(net_stru.logits, feed_dict={
-                                           net_stru.X: train_set_X})
+                            net_stru.X: train_set_X})
                         train_acc = util.calculate_accuracy(
                             train_y, train_set_Y, False)
-                        if train_acc > best_accuracy:
+                        # if train_acc > best_accuracy:
+                        #     best_accuracy = train_acc
+                        #     # print("best_accuracy ", best_accuracy)
+                        #     saver.save(sess, './models/benchmark.ckpt')
 
-                            best_accuracy = train_acc
-                            # print("best_accuracy ", best_accuracy)
-                            saver.save(sess, './models/benchmark.ckpt')
-
-                    saver.restore(sess, "./models/benchmark.ckpt")
+                    # saver.restore(sess, "./models/benchmark.ckpt")
                     # predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
                     # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),
                     #                             train_set_X, train_set_Y,
@@ -251,7 +255,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                 net_stru_ = net_stru
 
                 train_y = sess.run(net_stru_.logits, feed_dict={
-                                   net_stru_.X: train_set_X})
+                    net_stru_.X: train_set_X})
                 train_acc = util.calculate_accuracy(
                     train_y, train_set_Y, False)
                 if train_acc > best_accuracy:
@@ -263,7 +267,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             # sess.run(net_stru_.init)
 
             train_y = sess.run(net_stru_.logits, feed_dict={
-                               net_stru_.X: train_set_X})
+                net_stru_.X: train_set_X})
             test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
 
             print("Bagging performance")
@@ -273,26 +277,26 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             # print("test_acc", test_acc)
 
             ## save model
-            if len(train_acc_list) == 0:
-                # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
-                saver.save(sess, save_path)
-                print("Model saved")
-                train_acc_max = train_acc
-            else:
-                if train_acc >= train_acc_max:
-                    print("Got better result")
-                    # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
-                    saver.save(sess, save_path)
-                    train_acc_max = train_acc
-                else:
-                    print("not a better result")
-                    
+            # if len(train_acc_list) == 0:
+            #     # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
+            #     saver.save(sess, save_path)
+            #     print("Model saved")
+            #     train_acc_max = train_acc
+            # else:
+            #     if train_acc >= train_acc_max:
+            #         print("Got better result")
+            #         # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
+            #         saver.save(sess, save_path)
+            #         train_acc_max = train_acc
+            #     else:
+            #         print("not a better result")
+
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
             threshold = util.calculate_std_dev(train_set_X)
             predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
-            print (train_set_X)
-            print (train_set_Y)
+            print(train_set_X)
+            print(train_set_Y)
             # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru_.X: x}), train_set_X,train_set_Y, lower_bound, upper_bound, i)
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             distance_list, point_pair_list = filter_distant_point_pair(label_0, label_1, threshold)
@@ -317,7 +321,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
 
             print("label 0 length", length_0, "label 1 length", length_1)
             for index in range(len(train_set_X)):
-                print (train_set_X[index],train_set_Y[index])
+                print(train_set_X[index], train_set_Y[index])
             # print("weights trained:", sess.run(net_stru.weights))
 
             # for m in range(initial_point,len(label_0)):
@@ -400,8 +404,8 @@ def append_mid_points(distance_list, formu, point_pair_list, to_be_appended_poin
                 input_points.append(middle_point)
                 for point in input_points:
                     for index in range(len(point)):
-                        if type=="INTEGER":
-                            point[index]=int(round(point[index]))
+                        if type == "INTEGER":
+                            point[index] = int(round(point[index]))
 
                 result = testing_function.test_label(input_points, formu, type, name_list, mock)
                 label = None
