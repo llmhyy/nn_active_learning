@@ -87,9 +87,10 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     to_be_appended_points_number = 6
     to_be_appended_boundary_remaining_points_number = 3
     # to_be_appended_random_points_number = 3
-    active_learning_iteration = 5
-    threshold = 100
-    save_path = "model_saved/gradient_model"
+    active_learning_iteration = 10
+    # threshold = 100
+    # training_epochs = 1000
+
     train_set_X = []
     train_set_Y = []
     test_set_X = []
@@ -155,7 +156,6 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             # parts_num = 2
 
             all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
-            # print(all_data_X, all_data_Y)
 
             all_weights_dict = []
             all_biases_dict = []
@@ -190,8 +190,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                     aggregated_network.X: train_set_X})
                 train_acc = util.calculate_accuracy(train_y, train_set_Y, print_data_details=False)
                 print("Bagging performance", "train_acc", train_acc)
-                # with tf.Session as session:
-                #     session.run(net_stru_.init)
+
             else:
                 for epoch in range(training_epochs):
                     _, c = sess.run([net_stru.train_op, net_stru.loss_op],
@@ -204,29 +203,6 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                     train_y, train_set_Y, print_data_details=False)
                 print("train_acc", train_acc)
 
-                # if train_acc > best_accuracy:
-                #     best_accuracy = train_acc
-                # print("best_accuracy ", best_accuracy)
-                # saver.save(sess, './models/benchmark.ckpt')
-
-            # saver.restore(sess, "./models/benchmark.ckpt")
-            # sess.run(net_stru_.init)
-
-            ## save model
-            # if len(train_acc_list) == 0:
-            #     # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
-            #     saver.save(sess, save_path)
-            #     print("Model saved")
-            #     train_acc_max = train_acc
-            # else:
-            #     if train_acc >= train_acc_max:
-            #         print("Got better result")
-            #         # net_stru_ = ns.NNStructure_save(train_set_X[0], learning_rate)
-            #         saver.save(sess, save_path)
-            #         train_acc_max = train_acc
-            #     else:
-            #         print("not a better result")
-
             train_acc_list.append(train_acc)
             threshold = util.calculate_std_dev(train_set_X)
 
@@ -237,48 +213,20 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             pair_list = filter_distant_point_pair(label_0, label_1, threshold)
             sorted(pair_list, key=operator.attrgetter('distance'))
-            pass
-            # print ("sorted list: ",distance_list)
             append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended_points_number,
                               train_set_X, train_set_Y, type, name_list, mock)
 
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
-            # predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
-            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-            #                             train_set_Y, lower_bound, upper_bound, 20 + i)
-
-            # train_set_X, train_set_Y = util.append_random_points(formu, train_set_X, train_set_Y,
-            #                                                      to_be_appended_random_points_number, lower_bound, upper_bound,type,name_list,mock)
-            # print ("size after random points:",len(train_set_X))
-            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-            #                             train_set_Y, lower_bound,upper_bound,30+i)
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
             print("label 0 length", length_0, "label 1 length", length_1)
-            # for index in range(len(train_set_X)):
-            #     print(train_set_X[index], train_set_Y[index])
-            # print("weights trained:", sess.run(net_stru.weights))
 
-            # for m in range(initial_point,len(label_0)):
-            #     print (label_0[m])
-            # print ("weights after :",sess.run(net_stru.weights))
 
     print("$TRAINING_FINISH")
-    # with tf.Session() as sess:
-    #     saver.restore(sess, save_path)
-    #     # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-    #     #                             train_set_Y, lower_bound,upper_bound,-1)
-    #     print("weights final:", sess.run(net_stru.weights))
-    #     train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
-    #     # test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
-    #
-    #     train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
-    #     # test_acc = util.calculate_accuracy(test_y, test_set_Y, False)
-    #     train_acc_list.append(train_acc)
-    #     # test_acc_list.append(test_acc)
+
     result.append(train_acc_list)
     result.append(test_acc_list)
     print("Result", result)
@@ -287,6 +235,16 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
 
 
 def calculate_unconfident_mid_point(sess, aggregated_network, pair):
+    px = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_x]})[0]
+    py = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_y]})[0]
+    predict_x = px > 0.5
+    predict_y = py > 0.5
+    if predict_x or not predict_y:
+        if predict_x:
+            return pair.point_x
+        elif not predict_y:
+            return pair.point_y
+
     mid_point = pair.calculate_mid_point()
     list = []
     list.append(mid_point)
@@ -319,7 +277,10 @@ def append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended
     for pair in selected_pairs:
         point = calculate_unconfident_mid_point(sess, aggregated_network, pair)
         if (point is not None):
-            unconfident_points.append(point)
+            if not (point in unconfident_points):
+                unconfident_points.append(point)
+            else:
+                print()
 
     results = testing_function.test_label(unconfident_points, formu, type, name_list, mock)
     for i in range(len(results)):
