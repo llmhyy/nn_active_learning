@@ -238,7 +238,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             sorted(pair_list, key=operator.attrgetter('distance'))
             pass
             # print ("sorted list: ",distance_list)
-            append_mid_points(pair_list, formu, to_be_appended_points_number,
+            append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended_points_number,
                               train_set_X, train_set_Y, type, name_list, mock)
 
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
@@ -284,16 +284,21 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     return result
 
 
-def append_mid_points(pair_list, formu, to_be_appended_points_number,
+def append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended_points_number,
                       train_set_X, train_set_Y, type, name_list, mock):
-    selected_distance_list = []
-    length = len(pair_list)
-    index1 = int(length / 3)
-    index2 = int(length / 3 * 2)
+    selected_pairs = []
 
+    for i in range(to_be_appended_points_number):
+        index = random.randint(0, len(pair_list)-1)
+        pair = pair_list[index]
+        selected_pairs.append(pair)
+        pair_list.remove(pair)
 
+    aggregated_network.logits
 
-
+    # lenlength = len(pair_list)
+    # index1 = int(length / 3)
+    # index2 = int(length / 3 * 2)
     # pointer = 0
     # for p in range(3):
     #     if (pointer < index1):
