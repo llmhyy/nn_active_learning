@@ -44,7 +44,6 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
                 [net_stru.train_op, net_stru.loss_op],
                 feed_dict={net_stru.X: train_set_X[:data_size],
                            net_stru.Y: train_set_Y[:data_size]})
-
             # _, loss, l, con_gra, con_gra2, con_gra3, con_gra4, con_gra5, A, layer1 = sess.run(
             #     [net_stru.train_op, net_stru.loss_op, net_stru.logits, gra, gra2,
             #      gra3, gra4, gra5, net_stru.A, net_stru.layer_1],

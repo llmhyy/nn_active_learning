@@ -291,7 +291,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
                 # print(len(weights["out"]), len(biases["out"]))
                 #
                 # print(type(all_weights_dict[0]["h1"]))
-                net_stru_ = ns.AggregateNNStructure(train_set_X[0], learning_rate, all_weights, all_biases)
+                net_stru_ = ns.AggregateNNStructure(train_set_X[0], all_weights, all_biases)
                 sess.run(net_stru_.init)
                 train_y = sess.run(net_stru_.logits, feed_dict={
                     net_stru_.X: train_set_X})

@@ -30,6 +30,7 @@ class NNStructure():
 
         # Construct model
         self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
+        self.probability = tf.nn.sigmoid(self.logits)
 
         # Define loss and optimizer
         self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
@@ -85,11 +86,11 @@ class AggregateNNStructure():
         self.biases_dict_list = biases_dict_list
 
         # Construct model
-        self.logits = self.construct_network()
+        self.probability = self.construct_network()
         self.init = tf.global_variables_initializer()
 
     # Create model
-    def construct_network(self, x):
+    def construct_network(self):
         x = self.X
         aggregate_num = len(self.weights_dict_list)
 

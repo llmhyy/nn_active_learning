@@ -85,11 +85,11 @@ def calculate_accuracy(y, set_Y, print_data_details):
         if math.isnan(y[i][0]):
             print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
 
-        if y[i][0] > 0 and set_Y[i][0] == 1:
+        if y[i][0] > 0.5 and set_Y[i][0] == 1:
             test_correct.append(y[i])
-        elif y[i][0] > 0 and set_Y[i][0] == 0:
+        elif y[i][0] > 0.5 and set_Y[i][0] == 0:
             test_wrong.append(y[i])
-        elif y[i][0] <= 0 and set_Y[i][0] == 0:
+        elif y[i][0] <= 0.5 and set_Y[i][0] == 0:
             test_correct.append(y[i])
         else:
             test_wrong.append(y[i])
