@@ -33,7 +33,7 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
 
         best_accuracy = 0
         loss_list = []
-        predicted = tf.cast(net_stru.logits > 0.5, dtype=tf.float32)
+        predicted = tf.cast(net_stru.probability > 0.5, dtype=tf.float32)
         # gra = tf.gradients(net_stru.loss_op, net_stru.weights["h1"])
         # gra2 = tf.gradients(net_stru.loss_op, net_stru.weights["out"])
         # gra3 = tf.gradients(net_stru.loss_op, net_stru.logits)
@@ -77,8 +77,8 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
         plt.savefig(file_name)
         # saver.restore(sess, "./models/benchmark.ckpt")
 
-        train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
-        test_y = sess.run(net_stru.logits, feed_dict={net_stru.X: test_set_X})
+        train_y = sess.run(net_stru.probability, feed_dict={net_stru.X: train_set_X})
+        test_y = sess.run(net_stru.probability, feed_dict={net_stru.X: test_set_X})
 
         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
         test_acc = util.calculate_accuracy(test_y, test_set_Y, False)

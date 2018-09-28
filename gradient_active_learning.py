@@ -83,7 +83,7 @@ def calculate_average(weights, biases, weight_tags, bias_tags):
     return weights_dict, biases_dict
 
 
-def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, catagory,
+def append_large_gradient(sess, g, X, probability, formu, train_set_X, train_set_Y, catagory,
                           to_be_appended_gradient_points_number,
                           decision_combination, type, name_list, mock):
     new_train_set_X = []
@@ -118,7 +118,7 @@ def append_large_gradient(sess, g, X, logits, formu, train_set_X, train_set_Y, c
         if count > to_be_appended_gradient_points_number:
             continue
         # value = sess.run(logits, feed_dict={X:[train_set_X[j]]})
-        new = br.decide_cross_boundary_point(sess, g[0][j], size, X, logits,
+        new = br.decide_cross_boundary_point(sess, g[0][j], size, X, probability,
                                              train_set_X[j], decision_combination, moving_step)
 
         # new_value = sess.run(logits, feed_dict={X:[new]})
@@ -168,7 +168,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
 
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
 
-    newgrads = tf.gradients(net_stru.logits, net_stru.X)
+    newgrads = tf.gradients(net_stru.probability, net_stru.X)
 
     y = None
 
@@ -199,7 +199,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             length_1 = len(label_1) + 0.0
 
             if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.logits,
+                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.probability,
                                             formula,
                                             train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number,
                                             type, name_list, mock)
@@ -219,7 +219,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
                     for epoch in range(training_epochs):
                         _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                         feed_dict={net_stru.X: all_data_X[parts], net_stru.Y: all_data_Y[parts]})
-                        train_y = sess.run(net_stru.logits, feed_dict={net_stru.X: train_set_X})
+                        train_y = sess.run(net_stru.probability, feed_dict={net_stru.X: train_set_X})
                         train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
                         if train_acc > best_accuracy:
                             best_accuracy = train_acc
@@ -307,7 +307,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
                                     feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
                 net_stru_ = net_stru
 
-                train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
+                train_y = sess.run(net_stru_.probability, feed_dict={net_stru_.X: train_set_X})
                 train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
                 if train_acc > best_accuracy:
                     best_accuracy = train_acc
@@ -317,8 +317,8 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             # saver.restore(sess, "./models/benchmark.ckpt")
             # sess.run(net_stru_.init)
 
-            train_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: train_set_X})
-            test_y = sess.run(net_stru_.logits, feed_dict={net_stru_.X: test_set_X})
+            train_y = sess.run(net_stru_.probability, feed_dict={net_stru_.X: train_set_X})
+            test_y = sess.run(net_stru_.probability, feed_dict={net_stru_.X: test_set_X})
 
             print("Bagging performance")
             train_acc = util.calculate_accuracy(train_y, train_set_Y, False)
@@ -352,14 +352,14 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             #         for line in range(len(train_set_X)):
             #             tmp = [float(train_set_Y[line][0])] + train_set_X[line]
             #             wr.writerow(tmp)
-            predicted = tf.cast(net_stru_.logits > 0, dtype=tf.float32)
+            predicted = tf.cast(net_stru_.probability > 0.5, dtype=tf.float32)
             # if(math.isnan(predicted)):
             #     print()
             util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru_.X: x}), train_set_X,
                                         train_set_Y, lower_bound, upper_bound, i)
             g = sess.run(newgrads, feed_dict={net_stru.X: train_set_X})
             # print(g)
-            train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru_.X, net_stru_.logits, formula,
+            train_set_X, train_set_Y = append_large_gradient(sess, g, net_stru_.X, net_stru_.probability, formula,
                                                              train_set_X,
                                                              train_set_Y, category,
                                                              to_be_appended_gradient_points_number, decision, type,

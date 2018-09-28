@@ -69,7 +69,7 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
             print("added point: ", newX[k], label)
 
 
-def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_selected, logits, sess):
+def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_selected, probability, sess):
     gradient_list = []
     decision_options = gradient_combination.combination(len(label_selected[0]))
     for j in range(len(label_selected)):
@@ -94,7 +94,7 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
 
         # TODO decision_direction should return a direction towards boudary
         direction = decision_direction(X, decision_options, gradient_length,
-                                       gradient_selected, j, label_selected, logits, sess, inverse=True)
+                                       gradient_selected, j, label_selected, probability, sess, inverse=True)
 
         # TODO calculate your own direction based on the above direction
 
@@ -290,7 +290,7 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
 # gra1=[]
 # balancing_points(label_0,label_1,gra0,gra1)
 
-def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, logits, train_sample, decision_combination,
+def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, probability, train_sample, decision_combination,
                                 moving_step):
     # step = random.uniform(2, 4)
     grad = 0
@@ -312,7 +312,7 @@ def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, logits,
 
     # prediction = tf.sigmoid(logits)
 
-    new_pointsY = sess.run(logits, feed_dict={X: new_pointsX})
+    new_pointsY = sess.run(probability, feed_dict={X: new_pointsX})
     original_y = new_pointsY[-1]
     values = [x for x in new_pointsY]
     values = values[:-1]

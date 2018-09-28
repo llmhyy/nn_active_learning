@@ -113,10 +113,10 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
 
     result = []
 
-    new_grads = tf.gradients(net_stru.logits, net_stru.X)
+    new_grads = tf.gradients(net_stru.probability, net_stru.X)
     y = None
 
-    predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
+    predicted = tf.cast(net_stru.probability > 0.5, dtype=tf.float32)
 
     for i in range(active_learning_iteration):
         print("*******", i, "th loop:")
@@ -125,7 +125,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
         # TODO add a to_be_randomed_points_number = 10
 
         with tf.Session() as sess:
-            sess.run(net_stru.init)
+            # sess.run(net_stru.init)
             label_0 = []
             label_1 = []
 
@@ -139,14 +139,14 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             if (length_0 == 0 or length_1 == 0):
                 raise Exception("Cannot be classified")
 
-            if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1,
-                                            net_stru.logits, formu, train_set_X,
-                                            train_set_Y, to_be_appended_boundary_remaining_points_number, type,
-                                            name_list, mock)
-                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
-                                            train_set_Y, lower_bound, upper_bound, 10 + i)
-                print("new training size after boundary remaining", "X: ", len(train_set_X))
+            # if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
+            #     br.apply_boundary_remaining(sess, new_grads, net_stru.X, net_stru.Y, length_0, length_1,
+            #                                 net_stru.probability, formu, train_set_X,
+            #                                 train_set_Y, to_be_appended_boundary_remaining_points_number, type,
+            #                                 name_list, mock)
+            #     util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
+            #                                 train_set_Y, lower_bound, upper_bound, 10 + i)
+            #     print("new training size after boundary remaining", "X: ", len(train_set_X))
 
             # print(train_set_X)
             # print(train_set_Y)
@@ -156,6 +156,10 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             # parts_num = 2
 
             all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
+            tmp = list(zip(all_data_X, all_data_Y))
+            random.shuffle(tmp)
+            all_data_X, all_data_Y = zip(*tmp)
+
 
             all_weights_dict = []
             all_biases_dict = []
@@ -167,7 +171,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                     for epoch in range(training_epochs):
                         _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                         feed_dict={net_stru.X: all_data_X[parts], net_stru.Y: all_data_Y[parts]})
-                        train_y = sess.run(net_stru.logits, feed_dict={
+                        train_y = sess.run(net_stru.probability, feed_dict={
                             net_stru.X: train_set_X})
                         train_acc = util.calculate_accuracy(
                             train_y, train_set_Y, False)
@@ -192,12 +196,13 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                 print("Bagging performance", "train_acc", train_acc)
 
             else:
+                sess.run(net_stru.init)
                 for epoch in range(training_epochs):
                     _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                     feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
                 aggregated_network = net_stru
 
-                train_y = sess.run(aggregated_network.logits, feed_dict={
+                train_y = sess.run(aggregated_network.probability, feed_dict={
                     aggregated_network.X: train_set_X})
                 train_acc = util.calculate_accuracy(
                     train_y, train_set_Y, print_data_details=False)

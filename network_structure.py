@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 
 
@@ -8,7 +9,7 @@ class NNStructure():
 
         # Network Parameters
         n_hidden_1 = 1024  # 1st layer number of neurons
-        n_hidden_2 = 10  # 2nd layer number of neurons
+        n_hidden_2 = 256  # 2nd layer number of neurons
         n_input = len(data_size)
         n_classes = 1
 
@@ -18,9 +19,9 @@ class NNStructure():
 
         # Store layers weight & bias
         self.weights = {
-            'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)),
-            'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)),
-            'out': tf.Variable(tf.random_normal([n_hidden_1, n_classes], mean=0))
+            'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)) / np.sqrt(n_input/2),
+            'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)) / np.sqrt(n_hidden_1/2),
+            'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes], mean=0)) / np.sqrt(n_hidden_2/2)
         }
         self.biases = {
             'b1': tf.Variable(tf.random_normal([n_hidden_1])),
@@ -58,17 +59,18 @@ class NNStructure():
         x0 = x
         self.layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
 
-        self.layer_1 = tf.nn.batch_normalization(self.layer_1, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+        self.layer_1 = tf.nn.batch_normalization(self.layer_1, mean=0.01, variance=1, offset=0, scale=1,
+                                                 variance_epsilon=0.001)
         # layer1_out = tf.sigmoid(layer_1)
 
         # Hidden fully connected layer with 256 neurons
-        # layer_2 = tf.nn.relu(tf.add(tf.matmul(layer_1, weights['h2']), biases['b2']))
+        self.layer_2 = tf.nn.relu(tf.add(tf.matmul(self.layer_1, weights['h2']), biases['b2']))
 
-        # layer_2 = tf.nn.batch_normalization(layer_2, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+        self.layer_2 = tf.nn.batch_normalization(self.layer_2, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
         # layer2_out = tf.sigmoid(layer_2)
 
         # Output fully connected layer with a neuron for each class
-        out_layer = tf.matmul(self.layer_1, weights['out']) + biases['out']
+        out_layer = tf.matmul(self.layer_2, weights['out']) + biases['out']
         return out_layer
 
 
@@ -101,18 +103,18 @@ class AggregateNNStructure():
             weights_dict = self.weights_dict_list[i]
             bias_dict = self.biases_dict_list[i]
             layer_relu = tf.nn.relu(tf.add(tf.matmul(x0, weights_dict['h1']), bias_dict['b1']))
-            layer_batch_norm = tf.nn.batch_normalization(layer_relu, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+            layer_batch_norm = tf.nn.batch_normalization(layer_relu, mean=0.01, variance=1, offset=0, scale=1,
+                                                         variance_epsilon=0.001)
             layer_sigmoid = tf.nn.sigmoid(tf.matmul(layer_batch_norm, weights_dict['out']) + bias_dict['out'])
             sig_list.append(layer_sigmoid)
 
         output = sig_list[0]
-        for i in range(len(sig_list)-1):
-            output_tmp = sig_list[i+1]
+        for i in range(len(sig_list) - 1):
+            output_tmp = sig_list[i + 1]
             output = tf.add(output, output_tmp)
 
         output = tf.divide(output, aggregate_num)
         return output
-
 
 # class NNStructure_save():
 #
