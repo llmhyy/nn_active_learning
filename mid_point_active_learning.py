@@ -291,11 +291,12 @@ def append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended
     for i in range(len(results)):
         result = results[i]
         middle_point = unconfident_points[i]
-        if (result == 1):
-            if (middle_point not in train_set_X):
+        probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [middle_point]})[0]
+        if result == 1 and probability < 0.5:
+            if middle_point not in train_set_X:
                 train_set_X.append(middle_point)
                 train_set_Y.append([1])
-        else:
+        elif result == 0 and probability > 0.5:
             if (middle_point not in train_set_X):
                 train_set_X.append(middle_point)
                 train_set_Y.append([0])

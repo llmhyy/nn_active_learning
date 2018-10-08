@@ -9,6 +9,7 @@ import json
 import formula
 import testing_function
 import json_handler
+import tensorflow as tf
 
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
@@ -75,6 +76,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
+
     test_correct = []
     test_wrong = []
     train_correct = []
