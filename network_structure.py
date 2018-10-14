@@ -45,8 +45,8 @@ class NNStructure():
         # self.loss_op = tf.reduce_mean(tf.square(self.logits - self.Y))
         # self.loss_op = tf.losses.mean_squared_error(labels=self.Y, predictions=self.logits)
 
-        self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
-        # self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
+        # self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
         # Initializing the variables
         self.train_op = self.optimizer.minimize(self.loss_op)
         # Initializing the variables
