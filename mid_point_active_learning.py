@@ -275,6 +275,8 @@ def append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended
                       train_set_X, train_set_Y, type, name_list, mock):
     selected_pairs = []
     # to_be_appended_points_number = len(pair_list)
+    if to_be_appended_points_number > len(pair_list):
+        to_be_appended_points_number = len(pair_list)
     for i in range(to_be_appended_points_number):
         index = random.randint(0, len(pair_list) - 1)
         pair = pair_list[index]

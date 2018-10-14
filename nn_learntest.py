@@ -1,11 +1,10 @@
 import json
+import traceback
 from sys import stdin
 from sys import stdout
 
 import json_handler
 import mid_point_active_learning
-import traceback
-
 
 lower_bound = -1000
 upper_bound = 1000
@@ -27,7 +26,7 @@ try:
         # print("@@PythonStart@@")
         # print(a)
         # print("@@PythonEnd@@")
-        train_set_X, train_set_Y, name_list,type= json_handler.json_parser(message_body)
+        train_set_X, train_set_Y, name_list, type = json_handler.json_parser(message_body)
         if mock == False:
             inputX = train_set_X
             inputY = train_set_Y
@@ -37,7 +36,7 @@ try:
             category = None
 
         mid_point_active_learning.generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category,
-                                                    learning_rate, training_epochs, lower_bound, upper_bound, type,
+                                                    learning_rate, training_epochs, lower_bound, upper_bound, False, type,
                                                     name_list, mock)
 
         stdout.flush()
