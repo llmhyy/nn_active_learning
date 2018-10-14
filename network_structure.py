@@ -8,8 +8,8 @@ class NNStructure():
         self.learning_rate = learning_rate
 
         # Network Parameters
-        n_hidden_1 = 1024  # 1st layer number of neurons
-        n_hidden_2 = 256  # 2nd layer number of neurons
+        n_hidden_1 = 16  # 1st layer number of neurons
+        n_hidden_2 = 32  # 2nd layer number of neurons
         n_input = len(data_size)
         n_classes = 1
 
@@ -19,9 +19,9 @@ class NNStructure():
 
         # Store layers weight & bias
         self.weights = {
-            'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)) / np.sqrt(n_input/2),
-            'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)) / np.sqrt(n_hidden_1/2),
-            'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes], mean=0)) / np.sqrt(n_hidden_2/2)
+            'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)) / np.sqrt(n_input),
+            'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)) / np.sqrt(n_hidden_1),
+            'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes], mean=0)) / np.sqrt(n_hidden_2)
         }
         self.biases = {
             'b1': tf.Variable(tf.random_normal([n_hidden_1])),
@@ -30,7 +30,7 @@ class NNStructure():
         }
 
         # Construct model
-        self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
+        self.logits = self.create_model(self.X, self.weights, self.biases)
         self.probability = tf.nn.sigmoid(self.logits)
 
         # Define loss and optimizer
@@ -53,20 +53,21 @@ class NNStructure():
         self.init = tf.global_variables_initializer()
 
     # Create model
-    def multilayer_perceptron(self, x, weights, biases):
+    def create_model(self, x, weights, biases):
         # Hidden fully connected layer with 256 neurons
         # x0 = tf.nn.batch_normalization(x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
         x0 = x
+        # self.layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
         self.layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
 
-        self.layer_1 = tf.nn.batch_normalization(self.layer_1, mean=0.01, variance=1, offset=0, scale=1,
-                                                 variance_epsilon=0.001)
+        # self.layer_1 = tf.nn.batch_normalization(self.layer_1, mean=0.01, variance=1, offset=0, scale=1,
+        #                                          variance_epsilon=0.001)
         # layer1_out = tf.sigmoid(layer_1)
 
         # Hidden fully connected layer with 256 neurons
         self.layer_2 = tf.nn.relu(tf.add(tf.matmul(self.layer_1, weights['h2']), biases['b2']))
 
-        self.layer_2 = tf.nn.batch_normalization(self.layer_2, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+        # self.layer_2 = tf.nn.batch_normalization(self.layer_2, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
         # layer2_out = tf.sigmoid(layer_2)
 
         # Output fully connected layer with a neuron for each class
@@ -144,7 +145,7 @@ class AggregateNNStructure():
 #         }
 #
 #         # Construct model
-#         self.logits = self.multilayer_perceptron(
+#         self.logits = self.create_model(
 #             self.X, self.weights, self.biases)
 #
 #         # Define loss and optimizer
@@ -160,7 +161,7 @@ class AggregateNNStructure():
 #
 #     # Create model
 #
-#     def multilayer_perceptron(self, x, weights, biases):
+#     def create_model(self, x, weights, biases):
 #         # Hidden fully connected layer with 256 neurons
 #         x0 = tf.nn.batch_normalization(
 #             x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)

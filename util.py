@@ -12,6 +12,12 @@ import json_handler
 import tensorflow as tf
 
 
+def reset_random_seed():
+    random_seed = 100
+    random.seed(random_seed)
+    np.random.seed(random_seed)
+    tf.set_random_seed(random_seed)
+
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
     # Set min and max values and give it some padding
     x_min = lower_bound

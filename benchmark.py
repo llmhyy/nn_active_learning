@@ -10,8 +10,8 @@ import util
 def generate_accuracy(train_path, test_path, learning_rate, training_epochs, lower_bound, upper_bound):
     print("=========BENCH_MARK===========")
 
-    # learning_rate = 0.00001
-    # training_epochs = 200
+    learning_rate = 0.01
+    training_epochs = 2000
 
     train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=False)
     net_stru = ns.NNStructure(train_set_X[0], learning_rate)
@@ -31,6 +31,7 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
 
         # print("x:", train_set_X[:data_size])
 
+
         best_accuracy = 0
         loss_list = []
         predicted = tf.cast(net_stru.probability > 0.5, dtype=tf.float32)
@@ -39,6 +40,11 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
         # gra3 = tf.gradients(net_stru.loss_op, net_stru.logits)
         # gra4 = tf.gradients(net_stru.logits, net_stru.weights["out"])
         # gra5 = tf.gradients(net_stru.logits, net_stru.layer_1)
+
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),
+                                    train_set_X[:data_size], train_set_Y[:data_size],
+                                    lower_bound, upper_bound, "beginning")
+
         for epoch in range(training_epochs):
             _, loss, = sess.run(
                 [net_stru.train_op, net_stru.loss_op],
@@ -58,7 +64,7 @@ def generate_accuracy(train_path, test_path, learning_rate, training_epochs, low
             # print(con_gra2[0])
             # print(con_gra4[0])
             loss_list.append(loss)
-            if epoch % 10 == 0:
+            if epoch % 100 == 0:
                 util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}),
                                             train_set_X[:data_size], train_set_Y[:data_size],
                                             lower_bound, upper_bound, epoch)
