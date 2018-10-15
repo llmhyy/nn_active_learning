@@ -76,7 +76,6 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
 
 
 def calculate_accuracy(y, set_Y, print_data_details):
-
     test_correct = []
     test_wrong = []
     train_correct = []
@@ -135,7 +134,7 @@ def preprocess(train_path, test_path, read_next):
             l = [float(x) for x in row]
             # print(l)
             test_set_X.append(l[1:])
-            if (row[0] == '1.0'):
+            if row[0] == '1.0':
                 test_set_Y.append([1])
             else:
                 test_set_Y.append([0])
@@ -151,7 +150,7 @@ def preprocess(train_path, test_path, read_next):
             l = [float(x) for x in row]
             # print(l)
             train_set_X.append(l[1:])
-            if (row[0] == '1.0'):
+            if row[0] == '1.0':
                 train_set_Y.append([1])
             else:
                 train_set_Y.append([0])

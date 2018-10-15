@@ -8,8 +8,8 @@ class NNStructure():
         self.learning_rate = learning_rate
 
         # Network Parameters
-        n_hidden_1 = 1024  # 1st layer number of neurons
-        n_hidden_2 = 256  # 2nd layer number of neurons
+        n_hidden_1 = 64  # 1st layer number of neurons
+        n_hidden_2 = 16  # 2nd layer number of neurons
         n_input = len(data_size)
         n_classes = 1
 
@@ -40,7 +40,7 @@ class NNStructure():
         # self.sig = - self.Y * tf.log(self.logits) - (1-self.Y) * tf.log(1-self.logits)
         # self.loss_op = tf.reduce_mean(self.sig)
 
-        # self.A = tf.square(self.logits - self.Y)
+        # self.A = tf   .square(self.logits - self.Y)
         # self.loss_op = tf.reduce_sum(tf.square(self.logits - self.Y))
         # self.loss_op = tf.reduce_mean(tf.square(self.logits - self.Y))
         # self.loss_op = tf.losses.mean_squared_error(labels=self.Y, predictions=self.logits)

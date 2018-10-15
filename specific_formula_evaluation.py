@@ -10,7 +10,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-data_point_number = 200
+data_point_number = 50
 
 random_seed = 10
 random.seed(random_seed)
@@ -22,8 +22,8 @@ def generate_specific_formula():
     formulas = formula.Formulas()
     formu = formula.Formula(
         # [[[-2, 60], [163, -899]], [485, 430]], formula.POLYHEDRON)
-        #[[[-700, -700], [700, 700]], [300, 300]], formula.POLYHEDRON)
-        [[[-571, 31]], [445]], formula.POLYHEDRON)
+        [[[-700, -700], [700, 700]], [300, 300]], formula.POLYHEDRON)
+        # [[[-571, 31]], [445]], formula.POLYHEDRON)
         # [[[0, 0]], [500]], formula.POLYHEDRON)
     formulas.put(formu.get_category(), formu)
     # formulas.put([[[12,0],[-12,0]],[4,4]])
@@ -41,7 +41,7 @@ lower_bound = -1000
 upper_bound = 1000
 
 learning_rate = 0.01
-training_epochs = 100
+training_epochs = 300
 parts_num = 5
 
 train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound, data_point_number)
@@ -79,9 +79,9 @@ train_set_Y = []
 test_set_X = []
 test_set_Y = []
 
-# benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs, lower_bound, upper_bound)
+benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs, lower_bound, upper_bound)
 
-mid_list = mal.generate_accuracy([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, False, "", "", True)
+# mid_list = mal.generate_accuracy([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, False, "", "", True)
 
 # mid_list = mal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)
 # tf.reset_default_graph()
