@@ -10,7 +10,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-data_point_number = 50
+data_point_number = 200
 
 random_seed = 10
 random.seed(random_seed)

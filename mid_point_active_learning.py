@@ -84,7 +84,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     balance_ratio_threshold = 0.7
     boundary_remaining_trial_iteration = 100
 
-    to_be_appended_points_number = 6
+    to_be_appended_points_number = 20
     to_be_appended_boundary_remaining_points_number = 3
     # to_be_appended_random_points_number = 3
     active_learning_iteration = 10
@@ -196,6 +196,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                 print("Bagging performance", "train_acc", train_acc)
 
             else:
+                util.reset_random_seed()
                 sess.run(net_stru.init)
                 for epoch in range(training_epochs):
                     _, c = sess.run([net_stru.train_op, net_stru.loss_op],
@@ -220,6 +221,8 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             sorted(pair_list, key=operator.attrgetter('distance'))
             append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended_points_number,
                               train_set_X, train_set_Y, type, name_list, mock)
+
+            # append_extrapolated_points(sess, aggregated_network)
 
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
@@ -271,7 +274,9 @@ def calculate_unconfident_mid_point(sess, aggregated_network, pair):
 def append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended_points_number,
                       train_set_X, train_set_Y, type, name_list, mock):
     selected_pairs = []
-
+    # to_be_appended_points_number = len(pair_list)
+    if to_be_appended_points_number > len(pair_list):
+        to_be_appended_points_number = len(pair_list)
     for i in range(to_be_appended_points_number):
         index = random.randint(0, len(pair_list) - 1)
         pair = pair_list[index]
@@ -285,8 +290,10 @@ def append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended
             if not (point in unconfident_points):
                 unconfident_points.append(point)
             else:
-                print()
+                # print()
+                pass
 
+    print("sampled mid points", unconfident_points)
     results = testing_function.test_label(unconfident_points, formu, type, name_list, mock)
     for i in range(len(results)):
         result = results[i]
