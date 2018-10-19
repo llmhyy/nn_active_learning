@@ -53,7 +53,7 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
     random.shuffle(points_in_less_side)
     print("less side points:", points_in_less_side)
     newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev, type,
-                            name_list, mock)
+                            name_list, mock, logits)
     print("newX;", newX)
     flagList = testing_function.test_label(newX, formu, type, name_list, mock)
     for k in range(len(newX)):
@@ -372,3 +372,45 @@ def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_sid
         return_list.append(wrong_point)
     print("one time handle wrong point added", return_list)
     return trial_count, wrong, return_list, flag
+
+def added_balancing_points(is_label_1_side, points_in_less_side, gradients, length_added, formu, std_dev, type, name_list,
+                     mock):
+    add_points = []
+    break_loop = False
+    trial_count = 0.0
+    wrong = 0.0
+    step = random.uniform(std_dev / 2.0, std_dev)
+    print("moving step: ", step)
+    balancing_threshold = 100
+
+    for i in range(len(points_in_less_side)):
+        print("step:", step)
+        trial_count += 1
+
+        gradient_length = util.calculate_vector_size(gradients[i])
+        tmp_point = []
+        for j in range(len(points_in_less_side[i])):
+            tmp_value = points_in_less_side[i][j] + gradients[i][j] * (step / gradient_length)
+            tmp_point.append(tmp_value)
+        input_point = []
+        input_point.append(tmp_point)
+
+        result = testing_function.test_label(input_point, formu, type, name_list, mock)
+        point_label = None
+        if result[0] == 0:
+            point_label = False
+        else:
+            point_label = True
+        
+        add_points.append(tmp_point)
+
+        success = trial_count - wrong
+        print("success", success)
+
+    print("Boundry remaining points added ", len(add_points))
+    print("Boundary remaining accuracy: ", float((trial_count - wrong) / trial_count))
+    for point in add_points:
+        for index in range(len(point)):
+            if type=="INTEGER":
+                point[index]=int(round(point[index]))
+    return add_points

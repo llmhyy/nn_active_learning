@@ -8,6 +8,7 @@ import tensorflow as tf
 import boundary_remaining as br
 import data_pair
 import network_structure as ns
+import cluster
 import testing_function
 import util
 import math
@@ -225,7 +226,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
 
             # append_extrapolated_points(sess, aggregated_network)
             append_critical_point(aggregated_network, formu, mock, name_list, sess,
-                                  to_be_appended_critical_points_number, train_set_X, train_set_Y, type)
+                                  to_be_appended_critical_points_number, train_set_X, train_set_Y, type, mock)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
@@ -244,11 +245,17 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     return result
 
 
-def append_critical_point(sess, aggregated_network, formu, to_be_appended_critical_points_number,
-                          train_set_X, train_set_Y, type, name_list, mock):
-    while(True):
-        random_points_X,random_points_Y=generate_random_points(train_set_X,train_set_Y,to_be_appended_critical_points_number)
-        ## do boundary remaining to random found point
+def append_critical_point(X, sess, aggregated_network, formu, to_be_appended_critical_points_number,
+                          train_set_X, train_set_Y, type, name_list, mock, n):
+
+    # pass in argument n
+
+    # trained model (passed in as argument)
+    # cluster according to trainset (threshold)
+    # move points away from cluster center in small gradient direction to get new points(if any)
+    # re-train the model
+    n = 10
+    centers, n_largest = cluster.cluster_points(train_set_X, n)
 
 
 def generate_random_points(train_set_X,train_set_Y,to_be_appended_critical_points_number):
@@ -258,7 +265,7 @@ def generate_random_points(train_set_X,train_set_Y,to_be_appended_critical_point
     outputY=[]
     count=0
     while count<to_be_appended_critical_points_number:
-        random_number=random.randint(length)
+        random_number = random.randint(length)
         if random_number in random_index_list:
             continue
         else:
@@ -289,6 +296,7 @@ def calculate_smallest_distance(train_set_X,pointX):
             if distance<smallest_distance:
                 smallest_distance=distance
     return distance
+
 def calculate_unconfident_mid_point(sess, aggregated_network, pair):
     px = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_x]})[0]
     py = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_y]})[0]
