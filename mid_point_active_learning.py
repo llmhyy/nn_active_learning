@@ -1,17 +1,18 @@
 from __future__ import print_function
 
+import math
 import operator
 import random
 
 import tensorflow as tf
 
 import boundary_remaining as br
+import cluster
 import data_pair
 import network_structure as ns
-import cluster
 import testing_function
 import util
-import math
+
 
 def partition_data(label_0, label_1, parts_num):
     result_X = []
@@ -89,7 +90,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     to_be_appended_boundary_remaining_points_number = 3
     # to_be_appended_random_points_number = 3
     active_learning_iteration = 10
-    to_be_appended_critical_points_number=1
+    to_be_appended_critical_points_number = 1
     # threshold = 100
     # training_epochs = 1000
 
@@ -162,7 +163,6 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             random.shuffle(tmp)
             all_data_X, all_data_Y = zip(*tmp)
 
-
             all_weights_dict = []
             all_biases_dict = []
 
@@ -225,7 +225,8 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                               train_set_X, train_set_Y, type, name_list, mock)
 
             # append_extrapolated_points(sess, aggregated_network)
-            append_critical_point(sess, aggregated_network, formu, train_set_X, train_set_Y, type, name_list, mock,10)
+            append_generalization_validation_points(sess, aggregated_network, formu, train_set_X, train_set_Y, type,
+                                                    name_list, mock, 10)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
@@ -233,7 +234,6 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             length_1 = len(label_1) + 0.0
 
             print("label 0 length", length_0, "label 1 length", length_1)
-
 
     print("$TRAINING_FINISH")
 
@@ -244,9 +244,8 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     return result
 
 
-def append_critical_point(sess, aggregated_network, formu,
-                          train_set_X, train_set_Y, type, name_list, mock, n):
-
+def append_generalization_validation_points(sess, aggregated_network, formu,
+                                            train_set_X, train_set_Y, type, name_list, mock, n):
     # pass in argument n
 
     # trained model (passed in as argument)
@@ -256,13 +255,14 @@ def append_critical_point(sess, aggregated_network, formu,
     n = 10
 
     centers, n_largest = cluster.cluster_points(train_set_X, n)
-    gradient=tf.gradients(aggregated_network.probabilty,aggregated_network.X)
-    g=sess.run(gradient,feed_dict={X:n_largest})[0]
+    gradient = tf.gradients(aggregated_network.probabilty, aggregated_network.X)
+    g = sess.run(gradient, feed_dict={X: n_largest})[0]
 
-    decided_gradient=br.decide_all_gradients_for_boundary_remaining(aggregated_network.X,g,n_largest,aggregated_network.probability,sess)
-    outputX=[]
-    outputY=[]
-    std_dev=util.calculate_std_dev(n_largest)
+    decided_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, n_largest,
+                                                                      aggregated_network.probability, sess)
+    outputX = []
+    outputY = []
+    std_dev = util.calculate_std_dev(n_largest)
     step = random.uniform(std_dev / 2.0, std_dev)
     for i in range(len(n_largest)):
         gradient_length = util.calculate_vector_size(g[i])
@@ -273,51 +273,54 @@ def append_critical_point(sess, aggregated_network, formu,
         input_point = []
         input_point.append(tmp_point)
 
-        result=sess.run(aggregated_network.probability,feed_dict={aggregated_network.X:input_point})
-        if result[0][0]<0.4 or result[0][0]>0.6:
+        result = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: input_point})
+        if result[0][0] < 0.4 or result[0][0] > 0.6:
             outputX.append(input_point[0])
             outputY.append(result[0])
 
-    print (outputX)
-    print (outputY)
-def generate_random_points(train_set_X,train_set_Y,to_be_appended_critical_points_number):
-    length=len(train_set_X)-1
-    random_index_list=[]
-    outputX=[]
-    outputY=[]
-    count=0
-    while count<to_be_appended_critical_points_number:
+    print(outputX)
+    print(outputY)
+
+
+def generate_random_points(train_set_X, train_set_Y, to_be_appended_critical_points_number):
+    length = len(train_set_X) - 1
+    random_index_list = []
+    outputX = []
+    outputY = []
+    count = 0
+    while count < to_be_appended_critical_points_number:
         random_number = random.randint(length)
         if random_number in random_index_list:
             continue
         else:
             random_index_list.append(random_number)
-        pointX=train_set_X[random_number]
-        std_dev=util.calculate_std_dev(train_set_X)
-        smallest_distance=calculate_smallest_distance(train_set_X,pointX)
+        pointX = train_set_X[random_number]
+        std_dev = util.calculate_std_dev(train_set_X)
+        smallest_distance = calculate_smallest_distance(train_set_X, pointX)
 
-        if smallest_distance<std_dev:
+        if smallest_distance < std_dev:
             continue
 
         outputX.append(pointX)
         outputY.append(train_set_Y[random_number])
-        count+=1
+        count += 1
+
+    return outputX, outputY
 
 
-    return outputX,outputY
-
-def calculate_smallest_distance(train_set_X,pointX):
-    smallest_distance=math.inf
+def calculate_smallest_distance(train_set_X, pointX):
+    smallest_distance = math.inf
     dimension = len(train_set_X[0])
     for i in range(len(train_set_X)):
-        if train_set_X[i][0]!=pointX[0]:
-            distance=0
+        if train_set_X[i][0] != pointX[0]:
+            distance = 0
             for d in dimension:
-                distance+=(train_set_X[i][d]-pointX[d])**2
+                distance += (train_set_X[i][d] - pointX[d]) ** 2
             distance = math.sqrt(distance)
-            if distance<smallest_distance:
-                smallest_distance=distance
+            if distance < smallest_distance:
+                smallest_distance = distance
     return distance
+
 
 def calculate_unconfident_mid_point(sess, aggregated_network, pair):
     px = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_x]})[0]
@@ -373,7 +376,6 @@ def append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended
     print("sampled mid points", unconfident_points)
 
     results = testing_function.test_label(unconfident_points, formu, type, name_list, mock)
-
 
     for i in range(len(results)):
         result = results[i]
