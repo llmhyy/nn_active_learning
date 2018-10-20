@@ -219,14 +219,14 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             pair_list = filter_distant_point_pair(label_0, label_1, threshold)
             sorted(pair_list, key=operator.attrgetter('distance'))
-            append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended_points_number,
-                              train_set_X, train_set_Y, type, name_list, mock)
+            # append_mid_points(sess, aggregated_network, pair_list, formu, to_be_appended_points_number,
+            #                   train_set_X, train_set_Y, type, name_list, mock)
 
             # append_extrapolated_points(sess, aggregated_network)
-            # train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network, formu,
-            #                                                                    train_set_X, train_set_Y, type,
-            #                                                                    name_list, mock, 10)
-            # print("new train size after mid point", len(train_set_X), len(train_set_Y))
+            train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network, formu,
+                                                                               train_set_X, train_set_Y, type,
+                                                                               name_list, mock, 10)
+            print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0

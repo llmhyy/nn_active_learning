@@ -10,7 +10,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-data_point_number = 200
+data_point_number = 50
 
 random_seed = 10
 random.seed(random_seed)
@@ -22,9 +22,9 @@ def generate_specific_formula():
     formulas = formula.Formulas()
     formu = formula.Formula(
         # [[[-2, 60], [163, -899]], [485, 430]], formula.POLYHEDRON)
-        [[[-700, -700], [700, 700]], [300, 300]], formula.POLYHEDRON)
+        # [[[-700, -700], [700, 700]], [300, 300]], formula.POLYHEDRON)
         # [[[-571, 31]], [445]], formula.POLYHEDRON)
-        # [[[0, 0]], [500]], formula.POLYHEDRON)
+        [[[0, 0]], [500]], formula.POLYHEDRON)
     formulas.put(formu.get_category(), formu)
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
