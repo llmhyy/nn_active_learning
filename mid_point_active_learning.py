@@ -225,7 +225,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                               train_set_X, train_set_Y, type, name_list, mock)
 
             # append_extrapolated_points(sess, aggregated_network)
-            append_critical_point(aggregated_network, formu, mock, name_list, sess,train_set_X, train_set_Y, type, mock,10)
+            append_critical_point(sess, aggregated_network, formu, train_set_X, train_set_Y, type, name_list, mock,10)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
@@ -244,7 +244,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     return result
 
 
-def append_critical_point(X, sess, aggregated_network, formu,
+def append_critical_point(sess, aggregated_network, formu,
                           train_set_X, train_set_Y, type, name_list, mock, n):
 
     # pass in argument n
