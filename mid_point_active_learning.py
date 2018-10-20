@@ -225,8 +225,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
                               train_set_X, train_set_Y, type, name_list, mock)
 
             # append_extrapolated_points(sess, aggregated_network)
-            append_critical_point(aggregated_network, formu, mock, name_list, sess,
-                                  to_be_appended_critical_points_number, train_set_X, train_set_Y, type, mock)
+            append_critical_point(aggregated_network, formu, mock, name_list, sess,train_set_X, train_set_Y, type, mock,10)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
@@ -245,7 +244,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     return result
 
 
-def append_critical_point(X, sess, aggregated_network, formu, to_be_appended_critical_points_number,
+def append_critical_point(X, sess, aggregated_network, formu,
                           train_set_X, train_set_Y, type, name_list, mock, n):
 
     # pass in argument n
@@ -255,9 +254,32 @@ def append_critical_point(X, sess, aggregated_network, formu, to_be_appended_cri
     # move points away from cluster center in small gradient direction to get new points(if any)
     # re-train the model
     n = 10
+
     centers, n_largest = cluster.cluster_points(train_set_X, n)
+    gradient=tf.gradients(aggregated_network.probabilty,aggregated_network.X)
+    g=sess.run(gradient,feed_dict={X:n_largest})[0]
 
+    decided_gradient=br.decide_all_gradients_for_boundary_remaining(aggregated_network.X,g,n_largest,aggregated_network.probability,sess)
+    outputX=[]
+    outputY=[]
+    std_dev=util.calculate_std_dev(n_largest)
+    step = random.uniform(std_dev / 2.0, std_dev)
+    for i in range(len(n_largest)):
+        gradient_length = util.calculate_vector_size(g[i])
+        tmp_point = []
+        for j in range(len(n_largest[i])):
+            tmp_value = n_largest[i][j] + g[i][j] * (step / gradient_length)
+            tmp_point.append(tmp_value)
+        input_point = []
+        input_point.append(tmp_point)
 
+        result=sess.run(aggregated_network.probability,feed_dict={aggregated_network.X:input_point})
+        if result[0][0]<0.4 or result[0][0]>0.6:
+            outputX.append(input_point[0])
+            outputY.append(result[0])
+
+    print (outputX)
+    print (outputY)
 def generate_random_points(train_set_X,train_set_Y,to_be_appended_critical_points_number):
     length=len(train_set_X)-1
     random_index_list=[]

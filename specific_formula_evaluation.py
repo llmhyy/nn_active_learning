@@ -79,9 +79,9 @@ train_set_Y = []
 test_set_X = []
 test_set_Y = []
 
-benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs, lower_bound, upper_bound)
+# benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs, lower_bound, upper_bound)
 
-# mid_list = mal.generate_accuracy([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, False, "", "", True)
+mid_list = mal.generate_accuracy([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, False, "", "", True)
 
 # mid_list = mal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)
 # tf.reset_default_graph()
