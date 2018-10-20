@@ -154,7 +154,7 @@ def get_clustering_points(X, label, formula):
 
 def cluster_points(X, n):
 
-    X = [[55,55],[65,56],[5,6],[4,6],[75,44],[7,2],[89,55],[68,86]]
+    # X = [[55,55],[65,56],[5,6],[4,6],[75,44],[7,2],[89,55],[68,86]]
     num_cluster = 3
 
     # print(X)
