@@ -225,6 +225,7 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
                 tmp_value = points_in_less_side[i][j] + gradients[i][j] * (step / gradient_length)
                 tmp_point.append(tmp_value)
             input_point = []
+
             input_point.append(tmp_point)
 
             result = testing_function.test_label(input_point, formu, type, name_list, mock)

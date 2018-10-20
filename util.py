@@ -353,3 +353,8 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
         else:
             outputY.append([0])
     return outputX, outputY
+
+
+def calculate_vector_angle(v0,v1):
+    angle = np.math.atan2(np.linalg.det([v0, v1]), np.dot(v0, v1))
+    return np.degrees(angle)
