@@ -3,6 +3,8 @@ import formula_generator as fg
 import benchmark
 import gradient_active_learning as gal
 import mid_point_active_learning as mal
+import cluster
+import util
 import data_point_generation
 import xlwt
 
@@ -75,7 +77,10 @@ for f in formula_list:
     # f = [[-1,4,2,5],[ -2,5,1,0],-1748]
     #TODO each foumla write its generated data into files with the formula name
     train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound, data_point_number)
-
+    train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_data_file, test_data_file,
+                                                                           read_next=True)
+    print(cluster.cluster_points(train_set_X, 10))
+    '''
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
     try:
@@ -94,4 +99,4 @@ for f in formula_list:
     #TODO write to excel once
     write_to_excel(f.get_list(), ben_train_acc, ben_test_acc, gra_list, mid_list, index)
     
-
+'''
