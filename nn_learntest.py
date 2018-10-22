@@ -24,7 +24,7 @@ try:
         message_body = json.loads(message_body)
 
         if request_type == "$TRAINING":
-            train_set_X, train_set_Y, name_list, type = json_handler.json_parser(message_body)
+            train_set_X, train_set_Y, name_list, data_type = json_handler.json_parser(message_body)
             if not mock:
                 inputX = train_set_X
                 inputY = train_set_Y
@@ -35,7 +35,7 @@ try:
 
             mid_point_active_learning.generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category,
                                                         learning_rate, training_epochs, lower_bound, upper_bound, False,
-                                                        type,
+                                                        data_type,
                                                         name_list, mock)
         elif request_type == "$BOUNDARY_EXPLORATION":
             pass

@@ -80,7 +80,7 @@ def filter_distant_point_pair(label_0, label_1, threshold):
 
 
 def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category, learning_rate, training_epochs,
-                      lower_bound, upper_bound, use_bagging, type, name_list, mock):
+                      lower_bound, upper_bound, use_bagging, data_type, name_list, mock):
     print("=========MID_POINT===========")
     balance_ratio_threshold = 0.7
     boundary_remaining_trial_iteration = 100
@@ -96,7 +96,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
     train_set_Y = []
     test_set_X = []
     test_set_Y = []
-    if mock == True:
+    if mock:
         train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_data_file, test_data_file,
                                                                            read_next=True)
     else:
@@ -224,7 +224,7 @@ def generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, ca
 
             # append_extrapolated_points(sess, aggregated_network)
             train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network, formu,
-                                                                               train_set_X, train_set_Y, type,
+                                                                               train_set_X, train_set_Y, data_type,
                                                                                name_list, mock, 10)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
