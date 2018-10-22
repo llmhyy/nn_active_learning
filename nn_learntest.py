@@ -13,31 +13,34 @@ learning_rate = 0.01
 training_epochs = 500
 mock = False
 try:
-    while (True):
+    while True:
         request_type = stdin.readline()
         request_type = request_type.strip(" ").strip("\n")
         print("request type", request_type)
         message_body = stdin.readline()
         message_body = message_body.strip("\n")
-        print("message body", message_body)
         stdout.flush()
-        # json.dump(data)
+        print("message body", message_body)
         message_body = json.loads(message_body)
-        # print("@@PythonStart@@")
-        # print(a)
-        # print("@@PythonEnd@@")
-        train_set_X, train_set_Y, name_list, type = json_handler.json_parser(message_body)
-        if mock == False:
-            inputX = train_set_X
-            inputY = train_set_Y
-            train_data_file = None
-            test_data_file = None
-            formu = None
-            category = None
 
-        mid_point_active_learning.generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category,
-                                                    learning_rate, training_epochs, lower_bound, upper_bound, False, type,
-                                                    name_list, mock)
+        if request_type == "$TRAINING":
+            train_set_X, train_set_Y, name_list, type = json_handler.json_parser(message_body)
+            if not mock:
+                inputX = train_set_X
+                inputY = train_set_Y
+                train_data_file = None
+                test_data_file = None
+                formu = None
+                category = None
+
+            mid_point_active_learning.generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category,
+                                                        learning_rate, training_epochs, lower_bound, upper_bound, False,
+                                                        type,
+                                                        name_list, mock)
+        elif request_type == "$BOUNDARY_EXPLORATION":
+            pass
+
+
 
         stdout.flush()
         print("finished!")
