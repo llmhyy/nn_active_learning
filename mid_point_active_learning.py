@@ -252,8 +252,20 @@ def append_generalization_validation_points(sess, aggregated_network, formu,
     # move points away from cluster center in small gradient direction to get new points(if any)
     # re-train the model
     n = 10
+    label0 = []
+    label1 = []
+    for i in range(len(train_set_Y)):
+        if train_set_Y[i] == [0]:
+            label0.append(train_set_X[i])
+        else:
+            label1.append(train_set_X[i])
 
-    centers, n_largest = cluster.cluster_points(train_set_X, n)
+    centers1, n_largest1 = cluster.cluster_points(label1, n)
+    centers0, n_largest0 = cluster.cluster_points(label0, n)
+
+    centers = centers0 + centers1
+    n_largest = n_largest0 + n_largest1
+
     print(centers)
     print(n_largest)
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
