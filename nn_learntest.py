@@ -25,15 +25,7 @@ try:
 
         if request_type == "$TRAINING":
             train_set_X, train_set_Y, name_list, data_type = json_handler.json_parser(message_body)
-            if not mock:
-                inputX = train_set_X
-                inputY = train_set_Y
-                train_data_file = None
-                test_data_file = None
-                formu = None
-                category = None
-
-            mid_point_active_learning.generate_accuracy(inputX, inputY, train_data_file, test_data_file, formu, category,
+            mid_point_active_learning.generate_accuracy(train_set_X, train_set_Y, None, None, None,
                                                         learning_rate, training_epochs, lower_bound, upper_bound, False,
                                                         data_type,
                                                         name_list, mock)
