@@ -48,44 +48,45 @@ def polycircle_model(center, radius, x):
 
 
 def test_label(points, test_formula, var_type, name_list, mock):
-    if mock:
-        category = test_formula.get_category()
-        form = test_formula.get_formula()
-        flagList = []
-        if category == test_formula.POLYHEDRON:
-            if isinstance(points[0], list):
-                for point in points:
-                    flag = polycircle_model(form[0], form[1], point)
-                    if (flag):
-                        flagList.append(1)
-                    else:
-                        flagList.append(0)
-            else:
-                flag = polycircle_model(form[0], form[1], points)
-                if (flag):
-                    flagList.append(1)
-                else:
-                    flagList.append(0)
-        elif category == test_formula.POLYNOMIAL:
-            if isinstance(points[0], list):
-                for point in points:
-                    flag = polynomial_model(form[:-1], point, form[-1])
-                    if (flag):
-                        flagList.append(1)
-                    else:
-                        flagList.append(0)
-            else:
-                flag = polynomial_model(form[:-1], points, form[-1])
-                if (flag):
-                    flagList.append(1)
-                else:
-                    flagList.append(0)
-        return flagList
-    else:
-        json_handler.request_label(points, var_type, name_list)
-        message_type = stdin.readline()
-        data = stdin.readline()
-        data = data.strip("\n")
-        data = json.loads(data)
-        flagList = json_handler.parse_label(data)
-        return flagList
+    pass
+    # if mock:
+    #     category = test_formula.get_category()
+    #     form = test_formula.get_formula()
+    #     flagList = []
+    #     if category == test_formula.POLYHEDRON:
+    #         if isinstance(points[0], list):
+    #             for point in points:
+    #                 flag = polycircle_model(form[0], form[1], point)
+    #                 if (flag):
+    #                     flagList.append(1)
+    #                 else:
+    #                     flagList.append(0)
+    #         else:
+    #             flag = polycircle_model(form[0], form[1], points)
+    #             if (flag):
+    #                 flagList.append(1)
+    #             else:
+    #                 flagList.append(0)
+    #     elif category == test_formula.POLYNOMIAL:
+    #         if isinstance(points[0], list):
+    #             for point in points:
+    #                 flag = polynomial_model(form[:-1], point, form[-1])
+    #                 if (flag):
+    #                     flagList.append(1)
+    #                 else:
+    #                     flagList.append(0)
+    #         else:
+    #             flag = polynomial_model(form[:-1], points, form[-1])
+    #             if (flag):
+    #                 flagList.append(1)
+    #             else:
+    #                 flagList.append(0)
+    #     return flagList
+    # else:
+    #     json_handler.generate_label_request(points, var_type, name_list)
+    #     message_type = stdin.readline()
+    #     data = stdin.readline()
+    #     data = data.strip("\n")
+    #     data = json.loads(data)
+    #     flagList = json_handler.parse_label(data)
+    #     return flagList

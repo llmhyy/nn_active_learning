@@ -53,7 +53,7 @@ def parse_training_message_body(message):
     return train_set_X, train_set_Y, variables
 
 
-def request_label(train_set_X, variables):
+def generate_label_request(train_set_X, variables):
     output_list = []
     for point in train_set_X:
         tmp_list = []
@@ -72,16 +72,12 @@ def request_label(train_set_X, variables):
             tmp_list.append(tmp_dic)
         output_list.append(tmp_list)
 
-    outputString = json.dumps(output_list)
-    print("$REQUEST_LABEL")
-    print(outputString)
-    stdout.flush()
-
-    return outputString
+    output_string = json.dumps(output_list)
+    return output_string
 
 
 # parse_training_message_body(input)
-# request_label(test_data,"PRIMITIVE",["a","b"])
+# generate_label_request(test_data,"PRIMITIVE",["a","b"])
 # label_input = {"RESULT": [[{"LABEL": True, "VALUE": 1, "TYPE": "INTEGER", "NAME": "a"},
 #                            {"LABEL": True, "VALUE": 2, "TYPE": "INTEGER", "NAME": "b"}],
 #                           [{"LABEL": True, "VALUE": 3, "TYPE": "INTEGER", "NAME": "a"},

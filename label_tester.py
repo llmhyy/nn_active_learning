@@ -2,6 +2,7 @@ import testing_function as testf
 import json_handler
 import json
 import formula
+import communication
 from sys import stdin
 
 
@@ -57,7 +58,9 @@ class CoverageLabelTester(LabelTester):
         self.vars = variables
 
     def test_label(self, points):
-        json_handler.request_label(points, self.variables)
+        request_string = json_handler.generate_label_request(points, self.variables)
+        communication.send_label_request(request_string)
+
         message_type = stdin.readline()
         data = stdin.readline()
         data = data.strip("\n")
