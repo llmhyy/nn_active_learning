@@ -7,7 +7,7 @@ from sklearn.cluster import AgglomerativeClustering
 import testing_function
 
 
-def calculate_largest(cluster):
+def calculate_farthest_point_distance(cluster):
     dimension = len(cluster[0])
     num_of_points = len(cluster)
     center = calculate_center(cluster)
@@ -79,29 +79,32 @@ def get_point_from_cluster(cluster, num_to_be_added):
     return points_list
 
 
-def clustering_is_valid(clusters):
+def is_clustering_valid(clusters):
     if len(clusters) == 1:
         return True
 
     centers = []
-    largest = []
+    farthest_point_distance_list = []
     for cluster in clusters:
         dimension = len(clusters[cluster][0])
         num_of_points = len(clusters[cluster])
-        centers.append(calculate_center(clusters[cluster]))
-        largest.append(calculate_largest(clusters[cluster]))
+
+        center = calculate_center(clusters[cluster])
+        centers.append(center)
+
+        farthest_point_distance = calculate_farthest_point_distance(clusters[cluster])
+        farthest_point_distance_list.append(farthest_point_distance)
 
     centers.append(centers[0])
-    largest.append(largest[0])
+    farthest_point_distance_list.append(farthest_point_distance_list[0])
 
     for j in range(len(clusters)):
         distance = 0
         for i in range(len(clusters[cluster][0])):
-            distance += (centers[j][i] - centers[j + 1][i]) * \
-                        (centers[j][i] - centers[j + 1][i])
+            distance += (centers[j][i] - centers[j + 1][i])**2
         distance = math.sqrt(distance)
 
-        if largest[j] * 3 > distance or largest[j + 1] * 3 > distance:
+        if farthest_point_distance_list[j] * 3 > distance or farthest_point_distance_list[j + 1] * 3 > distance:
             return False
 
     return True
@@ -126,7 +129,7 @@ def get_clustering_points(X, label, formula):
         for i in range(len(X)):
             sep_clusters[cluster.labels_[i]].append(X[i])
 
-        if clustering_is_valid(sep_clusters):
+        if is_clustering_valid(sep_clusters):
             break
         else:
             num_cluster -= 1
@@ -156,7 +159,7 @@ def cluster_points(X, n):
     # print(X)
     while True:
 
-        cluster = AgglomerativeClustering(n_clusters=num_cluster, affinity='euclidean', linkage='ward')
+        cluster = AgglomerativeClustering(n_clusters=num_cluster, affinity='euclidean', linkage='average')
         cluster.fit_predict(X)
 
         sep_clusters = {}
@@ -166,7 +169,7 @@ def cluster_points(X, n):
         for i in range(len(X)):
             sep_clusters[cluster.labels_[i]].append(X[i])
 
-        if clustering_is_valid(sep_clusters):
+        if is_clustering_valid(sep_clusters):
             break
         else:
             num_cluster -= 1
@@ -174,17 +177,18 @@ def cluster_points(X, n):
     print("Final number of clusters: ", num_cluster)
     print(sep_clusters)
     centers = []
-    n_largest = []
+    n_farthest_distances = []
     for key in sep_clusters.keys():
         cluster = sep_clusters[key]
         center = calculate_center(cluster)
         centers.append(center)
-        n_largest.append(calculate_n_largest(cluster, center, n))
+        farthest_distance_list = calculate_n_farthest_distances(cluster, center, n)
+        n_farthest_distances.append(farthest_distance_list)
 
-    return centers, n_largest
+    return centers, n_farthest_distances
 
 
-def calculate_n_largest(cluster, center, n):
+def calculate_n_farthest_distances(cluster, center, n):
     distance = []
     result = []
     dimension = len(cluster[0])

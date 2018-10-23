@@ -173,13 +173,12 @@ def generate_accuracy(inputX, inputY, learning_rate, training_epochs,
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             pair_list = filter_distant_point_pair(label_0, label_1, threshold)
             sorted(pair_list, key=operator.attrgetter('distance'))
-            append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points_number,
-                              train_set_X, train_set_Y, label_tester)
+            # append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points_number,
+            #                   train_set_X, train_set_Y, label_tester)
 
-            # append_extrapolated_points(sess, aggregated_network)
-            # train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network,
-            #                                                                    train_set_X, train_set_Y, 10, label_tester)
-            # print("new train size after mid point", len(train_set_X), len(train_set_Y))
+            train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network,
+                                                                               train_set_X, train_set_Y, 10, label_tester)
+            print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             length_0 = len(label_0) + 0.0
@@ -234,7 +233,6 @@ def append_generalization_validation_points(sess, aggregated_network,
     # cluster according to trainset (threshold)
     # move points away from cluster center in small gradient direction to get new points(if any)
     # re-train the model
-    n = 10
     label0 = []
     label1 = []
     for i in range(len(train_set_Y)):
@@ -243,37 +241,37 @@ def append_generalization_validation_points(sess, aggregated_network,
         else:
             label1.append(train_set_X[i])
 
-    centers1, n_largest1 = cluster.cluster_points(label1, n)
-    centers0, n_largest0 = cluster.cluster_points(label0, n)
+    centers1, n_farthest_distances1 = cluster.cluster_points(label1, n)
+    centers0, n_farthest_distances0 = cluster.cluster_points(label0, n)
 
     centers = centers0 + centers1
-    n_largest = n_largest0 + n_largest1
+    n_farthest_distances = n_farthest_distances0 + n_farthest_distances1
 
     print(centers)
-    print(n_largest)
+    print(n_farthest_distances)
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
 
     outputX = []
     outputY = []
 
     for i in range(len(centers)):
-        std_dev = util.calculate_std_dev(n_largest[i])
+        std_dev = util.calculate_std_dev(n_farthest_distances[i])
         step = random.uniform(0, std_dev / 2.0)
         print("step", step)
-        for k in range(len(n_largest[i])):
+        for k in range(len(n_farthest_distances[i])):
 
             tmp_vector = []
-            for m in range(len(n_largest[i][k])):
-                tmp_value = n_largest[i][k][m] - centers[i][m]
+            for m in range(len(n_farthest_distances[i][k])):
+                tmp_value = n_farthest_distances[i][k][m] - centers[i][m]
                 tmp_vector.append(tmp_value)
 
             input = []
-            input.append(n_largest[i][k])
+            input.append(n_farthest_distances[i][k])
             g = sess.run(gradient, feed_dict={aggregated_network.X: input})[0]
             decided_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, input,
                                                                               aggregated_network.probability, sess)
 
-            print("center", centers[i], "point", n_largest[i][k])
+            print("center", centers[i], "point", n_farthest_distances[i][k])
             print(decided_gradient)
             print(tmp_vector)
             angle = util.calculate_vector_angle(decided_gradient[0], tmp_vector)
@@ -284,8 +282,8 @@ def append_generalization_validation_points(sess, aggregated_network,
             if angle > -45 and angle < 45:
                 gradient_length = util.calculate_vector_size(decided_gradient[0])
                 tmp_point = []
-                for j in range(len(n_largest[i][k])):
-                    tmp_value = n_largest[i][k][j] + decided_gradient[0][j] * (step / gradient_length)
+                for j in range(len(n_farthest_distances[i][k])):
+                    tmp_value = n_farthest_distances[i][k][j] + decided_gradient[0][j] * (step / gradient_length)
                     tmp_point.append(tmp_value)
                 print(tmp_point)
                 input_point = []
