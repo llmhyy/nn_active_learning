@@ -44,7 +44,7 @@ parts_num = 5
 train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound)
 # train_data_file = "dataset/train485_430.csv"
 # test_data_file = "dataset/test485_430.csv"
-print(f.get_list())
+print(f.get_formula())
 tf.reset_default_graph()
 random.seed(random_seed)
 np.random.seed(random_seed)

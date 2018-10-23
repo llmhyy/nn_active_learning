@@ -7,7 +7,7 @@ class Formula():
         self.list = list
         self.category = category
 
-    def get_list(self):
+    def get_formula(self):
         return self.list
 
     def get_category(self):

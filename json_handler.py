@@ -1,105 +1,101 @@
 import json
 from sys import stdout
-
-input = {"BRANCH_ID": "2-3",
-
-         "POSITIVE_DATA": [
-             [{"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "b"}]],
-
-         "NEGATIVE_DATA": [
-             [{"VALUE": "877", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "0", "TYPE": "PRIMITIVE", "NAME": "b"}],
-             [{"VALUE": "548", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "969", "TYPE": "PRIMITIVE", "NAME": "b"}]
-         ]}
-
-test_data = [[1, 2], [3, 4], [5, 6]]
+import variable as v
 
 
-def json_parser(input):
+# input = {"BRANCH_ID": "2-3",
+#
+#          "POSITIVE_DATA": [
+#              [{"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "b"}]],
+#
+#          "NEGATIVE_DATA": [
+#              [{"VALUE": "877", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "0", "TYPE": "PRIMITIVE", "NAME": "b"}],
+#              [{"VALUE": "548", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "969", "TYPE": "PRIMITIVE", "NAME": "b"}]
+#          ]}
+#
+# test_data = [[1, 2], [3, 4], [5, 6]]
+def parse_training_message_body(message):
     print("starting parse data from java")
 
     train_set_X = []
     train_set_Y = []
-    name_list = []
-    positive_data = input["POSITIVE_DATA"]
-    negative_data = input["NEGATIVE_DATA"]
-    type = None
-    for points in positive_data:
-        tmp = []
-        tmp_name = []
-        for point in points:
-            type = point["TYPE"]
-            if type == "INTEGER":
-                tmp.append(int(point["VALUE"]))
-            tmp_name.append(point["NAME"])
 
-        if name_list == []:
-            name_list = tmp_name
-        train_set_X.append(tmp)
+    positive_data = message["POSITIVE_DATA"]
+    negative_data = message["NEGATIVE_DATA"]
+
+    sample_point = positive_data[0]
+    variables = []
+    for dimension in sample_point:
+        variable = v.Variable(dimension["NAME"], dimension["TYPE"])
+        variables.append(variable)
+
+    for points in positive_data:
+        tmp_point = []
+        for point in points:
+            if type == "INTEGER":
+                tmp_point.append(int(point["VALUE"]))
+
+        train_set_X.append(tmp_point)
         train_set_Y.append([1])
 
     for points in negative_data:
-        tmp = []
-        tmp_name = []
+        tmp_point = []
         for point in points:
-            type = point["TYPE"]
             if type == "INTEGER":
-                tmp.append(int(point["VALUE"]))
-            tmp_name.append(point["NAME"])
+                tmp_point.append(int(point["VALUE"]))
 
-        if name_list == []:
-            name_list = tmp_name
-        train_set_X.append(tmp)
+        train_set_X.append(tmp_point)
         train_set_Y.append([0])
 
-    print(train_set_X)
-    print(train_set_Y)
-    print(name_list)
+    # print(train_set_X)
+    # print(train_set_Y)
     print("parsing finished")
-    return train_set_X, train_set_Y, name_list, type
+    return train_set_X, train_set_Y, variables
 
 
-def requestLabel(train_set_X, type, name_list):
-    outputList = []
+def request_label(train_set_X, variables):
+    output_list = []
     for point in train_set_X:
         tmp_list = []
-        for coordinate in point:
+        for dimension in point:
+            index = point.index(dimension)
+            var_name = variables[index].var_name
+            var_type = variables[index].var_type
+
             tmp_dic = {}
-            tmp_dic["NAME"] = name_list[point.index(coordinate)]
-            if type == "INTEGER":
-                coordinate = int(round(coordinate))
-            tmp_dic["VALUE"] = str(coordinate)
-            tmp_dic["TYPE"] = type
+            tmp_dic["NAME"] = var_name
+            if var_type == "INTEGER":
+                dimension = int(round(dimension))
+            tmp_dic["VALUE"] = str(dimension)
+            tmp_dic["TYPE"] = var_type
 
             tmp_list.append(tmp_dic)
-        outputList.append(tmp_list)
+        output_list.append(tmp_list)
 
-    outputString = json.dumps(outputList)
+    outputString = json.dumps(output_list)
     print("$REQUEST_LABEL")
     print(outputString)
     stdout.flush()
 
-    # print ("finish sending")
-
     return outputString
 
 
-# json_parser(input)
-# requestLabel(test_data,"PRIMITIVE",["a","b"])
-label_input = {"RESULT": [[{"LABEL": True, "VALUE": 1, "TYPE": "INTEGER", "NAME": "a"},
-                           {"LABEL": True, "VALUE": 2, "TYPE": "INTEGER", "NAME": "b"}],
-                          [{"LABEL": True, "VALUE": 3, "TYPE": "INTEGER", "NAME": "a"},
-                           {"LABEL": True, "VALUE": 4, "TYPE": "INTEGER", "NAME": "b"}],
-                          [{"LABEL": False, "VALUE": 5, "TYPE": "INTEGER", "NAME": "a"},
-                           {"LABEL": False, "VALUE": 6, "TYPE": "INTEGER", "NAME": "b"}]]}
+# parse_training_message_body(input)
+# request_label(test_data,"PRIMITIVE",["a","b"])
+# label_input = {"RESULT": [[{"LABEL": True, "VALUE": 1, "TYPE": "INTEGER", "NAME": "a"},
+#                            {"LABEL": True, "VALUE": 2, "TYPE": "INTEGER", "NAME": "b"}],
+#                           [{"LABEL": True, "VALUE": 3, "TYPE": "INTEGER", "NAME": "a"},
+#                            {"LABEL": True, "VALUE": 4, "TYPE": "INTEGER", "NAME": "b"}],
+#                           [{"LABEL": False, "VALUE": 5, "TYPE": "INTEGER", "NAME": "a"},
+#                            {"LABEL": False, "VALUE": 6, "TYPE": "INTEGER", "NAME": "b"}]]}
 
-
-def label_parser(input):
-    label_list = input["RESULT"]
+def parse_label(label_input):
+    label_list = label_input["RESULT"]
     output = []
     for point in label_list:
 
         label = point[0]["LABEL"]
-        if label == True:
+        if label:
             output.append(1)
         else:
             output.append(0)
@@ -107,4 +103,4 @@ def label_parser(input):
     stdout.flush()
     return output
 
-# label_parser(label_input)
+# parse_label(label_input)

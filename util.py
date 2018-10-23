@@ -18,6 +18,7 @@ def reset_random_seed():
     np.random.seed(random_seed)
     tf.set_random_seed(random_seed)
 
+
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
     # Set min and max values and give it some padding
     x_min = lower_bound
@@ -303,7 +304,7 @@ def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
 
 
 def generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):
-    formu = formu.get_list()
+    formu = formu.get_formula()
     coefficientList = formu[:-1]
     y = formu[-1]
     outputX = []
@@ -327,7 +328,7 @@ def generate_polynomial_points(formu, to_be_appended_random_points_number, lower
 
 # TODO use lower and upper bound to generate data points
 def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):
-    formu = formu.get_list()
+    formu = formu.get_formula()
     dim = len(formu[0][0])
     outputX = []
     outputY = []

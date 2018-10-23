@@ -9,6 +9,8 @@ import xlwt
 import random
 import numpy as np
 import tensorflow as tf
+import util
+import label_tester as lt
 
 data_point_number = 50
 
@@ -47,7 +49,7 @@ parts_num = 5
 train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound, data_point_number)
 # train_data_file = "dataset/train485_430.csv"
 # test_data_file = "dataset/test485_430.csv"
-print(f.get_list())
+print(f.get_formula())
 # tf.reset_default_graph()
 # random.seed(random_seed)
 # np.random.seed(random_seed)
@@ -81,7 +83,10 @@ test_set_Y = []
 
 # benchmark.generate_accuracy(train_data_file, test_data_file, learning_rate, training_epochs, lower_bound, upper_bound)
 
-mid_list = mal.generate_accuracy([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, False, "", "", True)
+train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_data_file, test_data_file, read_next=True)
+label_tester = lt.FormulaLabelTester(f)
+
+mid_list = mal.generate_accuracy(train_set_X, train_set_Y, learning_rate, training_epochs, lower_bound, upper_bound, False, label_tester)
 
 # mid_list = mal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)
 # tf.reset_default_graph()
