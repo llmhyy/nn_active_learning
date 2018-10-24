@@ -1,5 +1,6 @@
 import math
 import random
+import util
 
 # import matplotlib.pyplot as plt
 from sklearn.cluster import AgglomerativeClustering
@@ -154,7 +155,7 @@ def get_clustering_points(X, label, formula):
 # plt.scatter(X[:,0], X[:,1], c=cluster.labels_, cmap='rainbow')
 def cluster_points(X, n):
     # X = [[55,55],[65,56],[5,6],[4,6],[75,44],[7,2],[89,55],[68,86]]
-    num_cluster = 3
+    num_cluster = 10
 
     # print(X)
     while True:
@@ -168,6 +169,8 @@ def cluster_points(X, n):
 
         for i in range(len(X)):
             sep_clusters[cluster.labels_[i]].append(X[i])
+
+        util.plot_clustering_result(sep_clusters, -1000, 1000, 1)
 
         if is_clustering_valid(sep_clusters):
             break

@@ -4,19 +4,46 @@ import random
 
 import numpy as np
 from matplotlib import pyplot as plt
-from sys import stdin
-import json
+import matplotlib.cm as cm
 import formula
 import testing_function
-import json_handler
 import tensorflow as tf
-
 
 def reset_random_seed():
     random_seed = 100
     random.seed(random_seed)
     np.random.seed(random_seed)
     tf.set_random_seed(random_seed)
+
+
+def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
+    x_min = lower_bound
+    y_min = lower_bound
+
+    x_max = upper_bound
+    y_max = upper_bound
+
+    train_set_X = []
+    train_set_Y = []
+
+    for key in clusters:
+        train_set_X = train_set_X + clusters[key]
+        for i in range(len(clusters[key])):
+            train_set_Y.append(key+1)
+
+    X = np.array(train_set_X)
+    Y = np.array(train_set_Y)
+    y = Y.reshape(len(Y))
+    # colors = cm.rainbow(np.linspace(0, 1, len(clusters)))
+
+    plt.clf()
+    plt.xlim(lower_bound, upper_bound)
+    plt.ylim(lower_bound, upper_bound)
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
+    plt.show()
+    file_name = 'clustering' + str(iteration + 1) + '.png'
+    plt.savefig(file_name)
+    pass
 
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
