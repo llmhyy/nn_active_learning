@@ -267,10 +267,8 @@ def append_generalization_validation_points(sess, aggregated_network,
                 tmp_value = border_point[m] - center[m]
                 tmp_vector.append(tmp_value)
 
-            points = []
-            points.append(border_point)
-            g = sess.run(gradient, feed_dict={aggregated_network.X: points})[0]
-            decided_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, points,
+            g = sess.run(gradient, feed_dict={aggregated_network.X: [border_point]})[0]
+            decided_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, [border_point],
                                                                               aggregated_network.probability, sess)
 
             print("center", center, "point", border_points_groups[i][k])
