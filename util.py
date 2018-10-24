@@ -17,12 +17,6 @@ def reset_random_seed():
 
 
 def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
-    x_min = lower_bound
-    y_min = lower_bound
-
-    x_max = upper_bound
-    y_max = upper_bound
-
     train_set_X = []
     train_set_Y = []
 
