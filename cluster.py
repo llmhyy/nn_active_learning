@@ -8,20 +8,24 @@ from sklearn.cluster import AgglomerativeClustering
 import testing_function
 
 
-def calculate_farthest_point_distance(cluster):
+def calculate_radius(cluster):
     dimension = len(cluster[0])
     num_of_points = len(cluster)
     center = calculate_center(cluster)
-    largest = 0
+    # largest = 0
+    sum = 0
     for i in range(num_of_points):
         tmp = 0
         for j in range(dimension):
-            tmp += (cluster[i][j] - center[j]) * (cluster[i][j] - center[j])
+            tmp += (cluster[i][j] - center[j])**2
         tmp = math.sqrt(tmp)
-        if tmp > largest:
-            largest = tmp
+        # if tmp > largest:
+        #     largest = tmp
+        sum = sum + tmp
 
-    return largest
+    average = sum / num_of_points;
+
+    return average
 
 
 def calculate_center(cluster):
@@ -80,32 +84,33 @@ def get_point_from_cluster(cluster, num_to_be_added):
     return points_list
 
 
-def is_clustering_valid(clusters):
+def is_clustering_valid(clusters, cluster_distance_threshold):
     if len(clusters) == 1:
         return True
 
     centers = []
-    farthest_point_distance_list = []
-    for cluster in clusters:
-        dimension = len(clusters[cluster][0])
-        num_of_points = len(clusters[cluster])
+    radius_list = []
+    for key in clusters:
+        dimension = len(clusters[key][0])
+        num_of_points = len(clusters[key])
 
-        center = calculate_center(clusters[cluster])
+        center = calculate_center(clusters[key])
         centers.append(center)
 
-        farthest_point_distance = calculate_farthest_point_distance(clusters[cluster])
-        farthest_point_distance_list.append(farthest_point_distance)
+        radius = calculate_radius(clusters[key])
+        radius_list.append(radius)
 
     centers.append(centers[0])
-    farthest_point_distance_list.append(farthest_point_distance_list[0])
+    radius_list.append(radius_list[0])
 
     for j in range(len(clusters)):
-        distance = 0
-        for i in range(len(clusters[cluster][0])):
-            distance += (centers[j][i] - centers[j + 1][i])**2
-        distance = math.sqrt(distance)
+        center_distance = 0
+        for i in range(len(clusters[key][0])):
+            center_distance += (centers[j][i] - centers[j + 1][i])**2
+        center_distance = math.sqrt(center_distance)
 
-        if farthest_point_distance_list[j] * 3 > distance or farthest_point_distance_list[j + 1] * 3 > distance:
+        if radius_list[j] * cluster_distance_threshold > center_distance \
+                or radius_list[j + 1] * cluster_distance_threshold > center_distance:
             return False
 
     return True
@@ -153,9 +158,12 @@ def get_clustering_points(X, label, formula):
 
 
 # plt.scatter(X[:,0], X[:,1], c=cluster.labels_, cmap='rainbow')
-def cluster_points(X, n):
+def cluster_points(X, border_point_number):
     # X = [[55,55],[65,56],[5,6],[4,6],[75,44],[7,2],[89,55],[68,86]]
-    num_cluster = 10
+    num_cluster = 5
+
+    # for each two cluster center, their threshold*radius should be larger than the center distance
+    cluster_distance_threshold = 2
 
     # print(X)
     while True:
@@ -170,9 +178,9 @@ def cluster_points(X, n):
         for i in range(len(X)):
             sep_clusters[cluster.labels_[i]].append(X[i])
 
-        util.plot_clustering_result(sep_clusters, -1000, 1000, 1)
+        # util.plot_clustering_result(sep_clusters, -1000, 1000, 1)
 
-        if is_clustering_valid(sep_clusters):
+        if is_clustering_valid(sep_clusters, cluster_distance_threshold):
             break
         else:
             num_cluster -= 1
@@ -180,18 +188,18 @@ def cluster_points(X, n):
     print("Final number of clusters: ", num_cluster)
     print(sep_clusters)
     centers = []
-    n_farthest_distances = []
+    border_points_group = []
     for key in sep_clusters.keys():
         cluster = sep_clusters[key]
         center = calculate_center(cluster)
         centers.append(center)
-        farthest_distance_list = calculate_n_farthest_distances(cluster, center, n)
-        n_farthest_distances.append(farthest_distance_list)
+        border_points = calculate_n_border_points(cluster, center, border_point_number)
+        border_points_group.append(border_points)
 
-    return centers, n_farthest_distances
+    return centers, border_points_group
 
 
-def calculate_n_farthest_distances(cluster, center, n):
+def calculate_n_border_points(cluster, center, n):
     distance = []
     result = []
     dimension = len(cluster[0])
@@ -203,6 +211,9 @@ def calculate_n_farthest_distances(cluster, center, n):
         tmp = math.sqrt(tmp)
         distance.append(tmp)
     sorted_dist = sorted(distance)
+
+    if n > len(sorted_dist):
+        n = len(sorted_dist)
 
     threshold = sorted_dist[-n]
     for i in range(len(distance)):
