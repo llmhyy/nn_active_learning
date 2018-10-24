@@ -21,36 +21,36 @@ class FormulaLabelTester(LabelTester):
     def test_label(self, points):
         category = self.test_formula.get_category()
         form = self.test_formula.get_formula()
-        flagList = []
+        flag_list = []
         if category == formula.POLYHEDRON:
             if isinstance(points[0], list):
                 for point in points:
                     flag = testf.polycircle_model(form[0], form[1], point)
                     if (flag):
-                        flagList.append(1)
+                        flag_list.append(1)
                     else:
-                        flagList.append(0)
+                        flag_list.append(0)
             else:
                 flag = testf.polycircle_model(form[0], form[1], points)
                 if (flag):
-                    flagList.append(1)
+                    flag_list.append(1)
                 else:
-                    flagList.append(0)
+                    flag_list.append(0)
         elif category == formula.POLYNOMIAL:
             if isinstance(points[0], list):
                 for point in points:
                     flag = testf.polynomial_model(form[:-1], point, form[-1])
                     if (flag):
-                        flagList.append(1)
+                        flag_list.append(1)
                     else:
-                        flagList.append(0)
+                        flag_list.append(0)
             else:
                 flag = testf.polynomial_model(form[:-1], points, form[-1])
-                if (flag):
-                    flagList.append(1)
+                if flag:
+                    flag_list.append(1)
                 else:
-                    flagList.append(0)
-        return flagList
+                    flag_list.append(0)
+        return flag_list
 
 
 class CoverageLabelTester(LabelTester):
