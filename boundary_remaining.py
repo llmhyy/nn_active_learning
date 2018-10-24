@@ -6,6 +6,7 @@ import random
 import gradient_combination
 import testing_function
 import util
+import numpy as np
 
 
 def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y):
@@ -44,7 +45,7 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
     if to_be_added_number > to_be_appended_boundary_remaining_points_number:
         to_be_added_number = to_be_appended_boundary_remaining_points_number
 
-    gradients = decide_all_gradients_for_boundary_remaining(
+    gradients, _ = decide_all_gradients_for_boundary_remaining(
         X, preliminary_gradients_in_less_side, points_in_less_side, logits, sess)
 
     std_dev = util.calculate_std_dev(train_set_X)
@@ -71,6 +72,7 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
 
 def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_selected, probability, sess):
     gradient_list = []
+    is_random_list = []
     decision_options = gradient_combination.combination(len(label_selected[0]))
     for j in range(len(label_selected)):
         grad = 0
@@ -83,11 +85,12 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
         if gradient_length == 0:
             tmpg = []
             for d in range(dimension):
-                randomPower = random.randint(1, 2)
-                sigh = (-1) ** randomPower
-                randomNumber = (random.randint(1, 10)) * sigh
-                tmpg.append(randomNumber)
+                random_power = random.randint(1, 2)
+                sigh = (-1) ** random_power
+                random_number = (random.randint(1, 10)) * sigh
+                tmpg.append(random_number)
             gradient_list.append(tmpg)
+            is_random_list.append(True)
             continue
 
         #############################################################
@@ -113,21 +116,23 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
         random_direction = []
         dimension = len(direction)
 
+        # calculate a direction perpendicular to the gradient
         for i in range(dimension - 1):
             # print("Random_value: ", random.uniform(-10, 10))
             random_value = random.uniform(-5, 5)
             random_direction.append(random_value)
-        dot_product = 0
-        for i in range(dimension - 1):
-            dot_product += return_value[i] * random_direction[i]
 
+        dot_product = np.dot(return_value[0: dimension-1], random_direction)
         lower_bound = -dot_product / return_value[-1]
-        last_direction = random.uniform(lower_bound, lower_bound + 10)
+        # last_direction = random.uniform(lower_bound, lower_bound + 10)
+        last_direction = lower_bound
 
         random_direction.append(last_direction)
         # print("Random direction: ", random_direction)
         gradient_list.append(random_direction)
-    return gradient_list
+        is_random_list.append(False)
+
+    return gradient_list, is_random_list
 
 
 # def decide_direction_2n0(X, gradient_length, j, label_selected, logits, sess, step, train_set_X):

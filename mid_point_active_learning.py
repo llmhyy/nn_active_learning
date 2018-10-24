@@ -176,8 +176,9 @@ def generate_accuracy(inputX, inputY, learning_rate, training_epochs,
             # append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points_number,
             #                   train_set_X, train_set_Y, label_tester)
 
-            train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network,
-                                                                               train_set_X, train_set_Y, 3, label_tester)
+            train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network, lower_bound, upper_bound,
+                                                                               train_set_X, train_set_Y, 3,
+                                                                               label_tester)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
@@ -225,8 +226,8 @@ def train_bootstrap_model(all_biases_dict, all_data_X, all_data_Y, all_weights_d
     return aggregated_network, train_acc
 
 
-def append_generalization_validation_points(sess, aggregated_network,
-                                            train_set_X, train_set_Y, border_point_number, label_tester):
+def append_generalization_validation_points(sess, aggregated_network, lower_bound, upper_bound,
+                                            train_set_x, train_set_y, border_point_number, label_tester):
     # pass in argument n
 
     # trained model (passed in as argument)
@@ -235,77 +236,109 @@ def append_generalization_validation_points(sess, aggregated_network,
     # re-train the model
     label0 = []
     label1 = []
-    for i in range(len(train_set_Y)):
-        if train_set_Y[i] == [0]:
-            label0.append(train_set_X[i])
+    for i in range(len(train_set_y)):
+        if train_set_y[i] == [0]:
+            label0.append(train_set_x[i])
         else:
-            label1.append(train_set_X[i])
+            label1.append(train_set_x[i])
 
     centers1, border_points_groups1 = cluster.cluster_points(label1, border_point_number)
     centers0, border_points_groups0 = cluster.cluster_points(label0, border_point_number)
-
     centers = centers0 + centers1
     border_points_groups = border_points_groups0 + border_points_groups1
+
+    # centers = centers1
+    # border_points_groups = border_points_groups1
 
     print(centers)
     print(border_points_groups)
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
 
-    appended_x = []
-
-    for i in range(len(centers)):
-        border_points = border_points_groups[i]
-        center = centers[i]
-
-        std_dev = util.calculate_std_dev(border_points)
-        step = random.uniform(0, std_dev / 2.0)
-        print("step", step)
-        for k in range(len(border_points)):
-            border_point = border_points[k]
-            tmp_vector = []
-            for m in range(len(border_point)):
-                tmp_value = border_point[m] - center[m]
-                tmp_vector.append(tmp_value)
-
-            g = sess.run(gradient, feed_dict={aggregated_network.X: [border_point]})[0]
-            decided_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, [border_point],
-                                                                              aggregated_network.probability, sess)
-
-            print("center", center, "point", border_points_groups[i][k])
-            print(decided_gradient)
-            print(tmp_vector)
-            angle = util.calculate_vector_angle(decided_gradient[0], tmp_vector)
-
-            print("angle", angle)
-
-            # move the point
-            if angle > -45 and angle < 45:
-                gradient_length = util.calculate_vector_size(decided_gradient[0])
-                tmp_point = []
-                for j in range(len(border_point)):
-                    tmp_value = border_point[j] + decided_gradient[0][j] * (step / gradient_length)
-                    tmp_point.append(tmp_value)
-                print(tmp_point)
-                input_point = []
-                input_point.append(tmp_point)
-                print("input point", input_point)
-                result = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: input_point})
-
-                print("result", result)
-                if result[0][0] < 0.4:
-                    appended_x.append(input_point[0])
-                elif result[0][0] > 0.6:
-                    appended_x.append(input_point[0])
+    appended_x = search_validation_points(aggregated_network, border_points_groups, centers, gradient, sess,
+                                          lower_bound, upper_bound)
 
     labels = label_tester.test_label(appended_x)
     appended_y = []
     for label in labels:
         appended_y.append([label])
 
-    train_set_X = train_set_X + appended_x
-    train_set_Y = train_set_Y + appended_y
+    train_set_x = train_set_x + appended_x
+    train_set_y = train_set_y + appended_y
 
-    return train_set_X, train_set_Y
+    return train_set_x, train_set_y
+
+
+def search_validation_points(aggregated_network, border_points_groups, centers, gradient, sess, lower_bound,
+                             upper_bound):
+    appended_x = []
+    for i in range(len(centers)):
+        border_points = border_points_groups[i]
+        center = centers[i]
+
+        std_dev = util.calculate_std_dev(border_points)
+        step = random.uniform(0, std_dev / 2.0)
+        for k in range(len(border_points)):
+            border_point = border_points[k]
+
+            vector = calculate_vector(border_point, center)
+            g = sess.run(gradient, feed_dict={aggregated_network.X: [border_point]})[0]
+            decided_gradient, is_random_direction = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, [border_point],
+                                                                              aggregated_network.probability, sess)
+            if is_random_direction[0] and util.calculate_vector_size(vector) != 0:
+                decided_gradient = [vector]
+                angle = 0
+            else:
+                angle = util.calculate_vector_angle(decided_gradient[0], vector)
+
+            # move the point
+            best_point = []
+            move_count = 0
+            while abs(angle) < 45 and move_count < 20:
+                gradient_length = util.calculate_vector_size(decided_gradient[0])
+                new_point = []
+                for j in range(len(border_point)):
+                    new_value = border_point[j] + decided_gradient[0][j] * (step / gradient_length)
+                    new_point.append(new_value)
+
+                probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [new_point]})
+
+                if is_point_valid(new_point, probability, lower_bound, upper_bound):
+                    best_point = new_point
+                else:
+                    break
+
+                vector = calculate_vector(new_point, center)
+                g = sess.run(gradient, feed_dict={aggregated_network.X: [new_point]})[0]
+                decided_gradient, is_random_direction = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, [new_point],
+                                                                                  aggregated_network.probability, sess)
+                if is_random_direction[0] and util.calculate_vector_size(vector) != 0:
+                    decided_gradient = [vector]
+                    angle = 0
+                else:
+                    angle = util.calculate_vector_angle(decided_gradient[0], vector)
+
+                border_point = new_point
+                move_count = move_count + 1
+
+            if len(best_point) > 0:
+                appended_x.append(best_point)
+    return appended_x
+
+
+def calculate_vector(point, origin):
+    tmp_vector = []
+    for m in range(len(point)):
+        new_value = point[m] - origin[m]
+        tmp_vector.append(new_value)
+    return tmp_vector
+
+
+def is_point_valid(new_point, probability, lower_bound, upper_bound):
+    if probability[0][0] < 0.4 or probability[0][0] > 0.6:
+        for value in new_point:
+            if lower_bound < value < upper_bound:
+                return True
+    return False
 
 
 # def generate_random_points(train_set_X,train_set_Y,to_be_appended_critical_points_number):
