@@ -244,14 +244,17 @@ def calculate_distance(m, n):
     return distance
 
 
-def calculate_std_dev(train_set_X):
-    dimension = len(train_set_X[0])
+def calculate_std_dev(train_set_x):
+    if len(train_set_x) == 1:
+        return np.random.uniform(1, 10)
+
+    dimension = len(train_set_x[0])
     point_distance_list = []
-    for p in range(len(train_set_X) - 1):
-        for q in range(p + 1, len(train_set_X)):
+    for p in range(len(train_set_x) - 1):
+        for q in range(p + 1, len(train_set_x)):
             distance = 0
             for d in range(dimension):
-                distance += (train_set_X[p][d] - train_set_X[q][d]) * (train_set_X[p][d] - train_set_X[q][d])
+                distance += (train_set_x[p][d] - train_set_x[q][d]) * (train_set_x[p][d] - train_set_x[q][d])
             distance = math.sqrt(distance)
             point_distance_list.append(distance)
     std_dev = np.std(point_distance_list)
