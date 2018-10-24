@@ -1,21 +1,17 @@
-output = []
-
 def combination(n):
-    if (n == 1):
+    output = []
+    if n == 1:
         a = [True]
         b = [False]
         output.append(a)
         output.append(b)
         return output
-
     else:
-        c = [True]
-        d = [False]
         prev_binary_combination = combination(n - 1)
         binary_combination = []
         for i in prev_binary_combination:
-            tmp = i + c
-            binary_combination.append(tmp)
-            tmpp = i + d
-            binary_combination.append(tmpp)
+            a = i + [True]
+            binary_combination.append(a)
+            b = i + [False]
+            binary_combination.append(b)
         return binary_combination
