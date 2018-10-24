@@ -251,8 +251,7 @@ def append_generalization_validation_points(sess, aggregated_network,
     print(border_points_groups)
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
 
-    outputX = []
-    outputY = []
+    appended_x = []
 
     for i in range(len(centers)):
         border_points = border_points_groups[i]
@@ -296,17 +295,17 @@ def append_generalization_validation_points(sess, aggregated_network,
 
                 print("result", result)
                 if result[0][0] < 0.4:
-                    outputX.append(input_point[0])
-                    outputY.append([0])
-
+                    appended_x.append(input_point[0])
                 elif result[0][0] > 0.6:
-                    outputX.append(input_point[0])
-                    outputY.append([1])
-    print(outputX)
-    print(outputY)
+                    appended_x.append(input_point[0])
 
-    train_set_X = train_set_X + outputX
-    train_set_Y = train_set_Y + outputY
+    labels = label_tester.test_label(appended_x)
+    appended_y = []
+    for label in labels:
+        appended_y.append([label])
+
+    train_set_X = train_set_X + appended_x
+    train_set_Y = train_set_Y + appended_y
 
     return train_set_X, train_set_Y
 
