@@ -71,6 +71,12 @@ def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
 
 
 def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_selected, probability, sess):
+    '''
+     Return a direction keep the label, not that, the gradient of a label could be 0, thus,
+     move towards any direction can keep the label. Hence, this function will return a random
+     direction. If the function returns a random direction, we will also specify whether it is random.
+    '''
+
     gradient_list = []
     is_random_list = []
     decision_options = gradient_combination.combination(len(label_selected[0]))
@@ -176,7 +182,7 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
     for decision_option in decision_options:
         tmp = []
         for h in range(len(label_selected[0])):
-            if (decision_option[h] == True):
+            if (decision_option[h]):
                 tmp.append(label_selected[j][h] - gradient_selected[j][h] * (step / gradient_length))
             else:
                 tmp.append(label_selected[j][h] + gradient_selected[j][h] * (step / gradient_length))
@@ -191,12 +197,12 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
     ans = 0
     # ans_gradient = 0
     if (original_y < 0):
-        if inverse == True:
+        if inverse:
             ans = min(values)
         else:
             ans = max(values)
     else:
-        if inverse == True:
+        if inverse:
             ans = max(values)
         else:
             ans = min(values)

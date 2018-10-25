@@ -3,11 +3,12 @@ import math
 import random
 
 import numpy as np
+import tensorflow as tf
 from matplotlib import pyplot as plt
-import matplotlib.cm as cm
+
 import formula
 import testing_function
-import tensorflow as tf
+
 
 def reset_random_seed():
     random_seed = 100
@@ -23,7 +24,7 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
     for key in clusters:
         train_set_X = train_set_X + clusters[key]
         for i in range(len(clusters[key])):
-            train_set_Y.append(key+1)
+            train_set_Y.append(key + 1)
 
     X = np.array(train_set_X)
     Y = np.array(train_set_Y)
@@ -69,7 +70,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     y = Y.reshape(len(Y))
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
-    file_name = 'test' + str(iteration+1) + '.png'
+    file_name = 'test' + str(iteration + 1) + '.png'
     plt.savefig(file_name)
     pass
 
@@ -380,6 +381,22 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
     return outputX, outputY
 
 
-def calculate_vector_angle(v0,v1):
-    angle = np.math.atan2(np.linalg.det([v0, v1]), np.dot(v0, v1))
-    return np.degrees(angle)
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    return vector / np.linalg.norm(vector)
+
+
+def calculate_vector_angle(v1, v2):
+    """ Returns the angle in radians between vectors 'v1' and 'v2'::
+
+            >>> angle_between((1, 0, 0), (0, 1, 0))
+            1.5707963267948966
+            >>> angle_between((1, 0, 0), (1, 0, 0))
+            0.0
+            >>> angle_between((1, 0, 0), (-1, 0, 0))
+            3.141592653589793
+    """
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+

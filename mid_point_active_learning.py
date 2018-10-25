@@ -9,7 +9,7 @@ import boundary_remaining as br
 import cluster
 import data_pair
 import network_structure as ns
-import testing_function
+import math
 import util
 import communication
 
@@ -276,24 +276,15 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
         center = centers[i]
 
         std_dev = util.calculate_std_dev(border_points)
-        step = random.uniform(0, std_dev / 2.0)
+        step = std_dev
+        # step = random.uniform(0, std_dev)
         for k in range(len(border_points)):
             border_point = border_points[k]
-
-            vector = calculate_vector(border_point, center)
-            g = sess.run(gradient, feed_dict={aggregated_network.X: [border_point]})[0]
-            decided_gradient, is_random_direction = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, [border_point],
-                                                                              aggregated_network.probability, sess)
-            if is_random_direction[0] and util.calculate_vector_size(vector) != 0:
-                decided_gradient = [vector]
-                angle = 0
-            else:
-                angle = util.calculate_vector_angle(decided_gradient[0], vector)
-
+            angle, decided_gradient = calculate_gradient_and_angle(aggregated_network, border_point, center, gradient, sess)
             # move the point
             best_point = []
             move_count = 0
-            while abs(angle) < 45 and move_count < 20:
+            while abs(angle) < math.pi/2 and move_count < 10:
                 gradient_length = util.calculate_vector_size(decided_gradient[0])
                 new_point = []
                 for j in range(len(border_point)):
@@ -307,15 +298,8 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
                 else:
                     break
 
-                vector = calculate_vector(new_point, center)
-                g = sess.run(gradient, feed_dict={aggregated_network.X: [new_point]})[0]
-                decided_gradient, is_random_direction = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, [new_point],
-                                                                                  aggregated_network.probability, sess)
-                if is_random_direction[0] and util.calculate_vector_size(vector) != 0:
-                    decided_gradient = [vector]
-                    angle = 0
-                else:
-                    angle = util.calculate_vector_angle(decided_gradient[0], vector)
+                angle, decided_gradient = calculate_gradient_and_angle(aggregated_network, new_point, center,
+                                                                       gradient, sess)
 
                 border_point = new_point
                 move_count = move_count + 1
@@ -323,6 +307,22 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
             if len(best_point) > 0:
                 appended_x.append(best_point)
     return appended_x
+
+
+def calculate_gradient_and_angle(aggregated_network, point, center, gradient, sess):
+    vector = calculate_vector(point, center)
+    g = sess.run(gradient, feed_dict={aggregated_network.X: [point]})[0]
+    decided_gradient, is_random_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g,
+                                                                                          [point],
+                                                                                          aggregated_network.probability,
+                                                                                          sess)
+    if util.calculate_vector_size(vector) == 0 or is_random_gradient[0]:
+        angle = 0
+        if is_random_gradient[0]:
+            decided_gradient = [vector]
+    else:
+        angle = util.calculate_vector_angle(decided_gradient[0], vector)
+    return angle, decided_gradient
 
 
 def calculate_vector(point, origin):
@@ -336,8 +336,10 @@ def calculate_vector(point, origin):
 def is_point_valid(new_point, probability, lower_bound, upper_bound):
     if probability[0][0] < 0.4 or probability[0][0] > 0.6:
         for value in new_point:
-            if lower_bound < value < upper_bound:
-                return True
+            if lower_bound > value or value > upper_bound:
+                return False
+        return True
+
     return False
 
 
