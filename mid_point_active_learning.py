@@ -243,12 +243,12 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
             label1.append(train_set_x[i])
 
     centers1, border_points_groups1 = cluster.cluster_points(label1, border_point_number)
-    centers0, border_points_groups0 = cluster.cluster_points(label0, border_point_number)
-    centers = centers0 + centers1
-    border_points_groups = border_points_groups0 + border_points_groups1
+    # centers0, border_points_groups0 = cluster.cluster_points(label0, border_point_number)
+    # centers = centers0 + centers1
+    # border_points_groups = border_points_groups0 + border_points_groups1
 
-    # centers = centers1
-    # border_points_groups = border_points_groups1
+    centers = centers1
+    border_points_groups = border_points_groups1
 
     print(centers)
     print(border_points_groups)
