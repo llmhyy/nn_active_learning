@@ -173,11 +173,11 @@ def generate_accuracy(inputX, inputY, learning_rate, training_epochs,
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             pair_list = filter_distant_point_pair(label_0, label_1, threshold)
             sorted(pair_list, key=operator.attrgetter('distance'))
-            # append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points_number,
-            #                   train_set_X, train_set_Y, label_tester)
+            append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points_number,
+                              train_set_X, train_set_Y, label_tester)
 
             train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network, lower_bound, upper_bound,
-                                                                               train_set_X, train_set_Y, 3,
+                                                                               train_set_X, train_set_Y, 3, 3,
                                                                                label_tester)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
@@ -227,7 +227,7 @@ def train_bootstrap_model(all_biases_dict, all_data_X, all_data_Y, all_weights_d
 
 
 def append_generalization_validation_points(sess, aggregated_network, lower_bound, upper_bound,
-                                            train_set_x, train_set_y, border_point_number, label_tester):
+                                            train_set_x, train_set_y, border_point_number, cluster_number, label_tester):
     # pass in argument n
 
     # trained model (passed in as argument)
@@ -242,24 +242,25 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
         else:
             label1.append(train_set_x[i])
 
-    centers1, border_points_groups1 = cluster.cluster_points(label1, border_point_number)
+    centers1, border_points_groups1, clusters1 = cluster.cluster_points(label1, border_point_number, cluster_number)
     centers_label1 = np.ones(len(centers1)).tolist()
-    # centers0, border_points_groups0 = cluster.cluster_points(label0, border_point_number)
-    # centers_label0 = np.zeros(len(centers0)).tolist()
-    # centers = centers0 + centers1
-    # centers_label = centers_label0 + centers_label1
-    # border_points_groups = border_points_groups0 + border_points_groups1
+    centers0, border_points_groups0, clusters0 = cluster.cluster_points(label0, border_point_number, cluster_number)
+    centers_label0 = np.zeros(len(centers0)).tolist()
+    centers = centers0 + centers1
+    centers_label = centers_label0 + centers_label1
+    clusters = clusters0 + clusters1
+    border_points_groups = border_points_groups0 + border_points_groups1
 
-    centers = centers1
-    centers_label = centers_label1
-    border_points_groups = border_points_groups1
+    # centers = centers1
+    # centers_label = centers_label1
+    # border_points_groups = border_points_groups1
 
     print(centers)
     print(border_points_groups)
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
 
-    appended_x = search_validation_points(aggregated_network, border_points_groups, centers, centers_label, gradient, sess,
-                                          lower_bound, upper_bound)
+    appended_x = search_validation_points(aggregated_network, border_points_groups, centers, centers_label, clusters,
+                                          gradient, sess, lower_bound, upper_bound)
 
     appended_y = []
     if len(appended_x) != 0:
@@ -273,21 +274,23 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
     return train_set_x, train_set_y
 
 
-def search_validation_points(aggregated_network, border_points_groups, centers, centers_label, gradient, sess, lower_bound,
-                             upper_bound):
+def search_validation_points(aggregated_network, border_points_groups, centers, centers_label, clusters,
+                             gradient, sess, lower_bound, upper_bound):
     appended_x = []
     for i in range(len(centers)):
         border_points = border_points_groups[i]
         center = centers[i]
         label = centers_label[i]
+        single_cluster = clusters[i]
 
         std_dev = util.calculate_std_dev(border_points)
         step = std_dev
         # step = random.uniform(0, std_dev)
         for k in range(len(border_points)):
             border_point = border_points[k]
-            angle, decided_gradient = calculate_gradient_and_angle(aggregated_network, border_point, center, gradient,
-                                                                   sess)
+            original_border_point = border_point
+            angle, decided_gradient = calculate_gradient_and_angle(aggregated_network, border_point,
+                                                                   center, gradient, sess)
             # move the point
             best_point = []
             move_count = 0
@@ -312,9 +315,21 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
                 move_count = move_count + 1
 
             if len(best_point) > 0:
-                appended_x.append(best_point)
+                if not is_too_close(single_cluster, best_point, std_dev):
+                    appended_x.append(best_point)
+
+                # mid_point = ((np.array(best_point) + np.array(original_border_point))/2).tolist()
+                # appended_x.append(mid_point)
     return appended_x
 
+
+def is_too_close(single_cluster, best_point, std_dev):
+    for point in single_cluster:
+        distance = util.calculate_distance(point, best_point)
+        if distance < std_dev/2:
+            return True
+
+    return False
 
 def calculate_gradient_and_angle(aggregated_network, point, center, gradient, sess):
     vector = util.calculate_direction(point, center)

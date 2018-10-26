@@ -158,10 +158,8 @@ def get_clustering_points(X, label, formula):
 
 
 # plt.scatter(X[:,0], X[:,1], c=cluster.labels_, cmap='rainbow')
-def cluster_points(X, border_point_number):
+def cluster_points(X, border_point_number, num_cluster):
     # X = [[55,55],[65,56],[5,6],[4,6],[75,44],[7,2],[89,55],[68,86]]
-    num_cluster = 5
-
     # for each two cluster center, their threshold*radius should be larger than the center distance
     cluster_distance_threshold = 2
 
@@ -189,14 +187,16 @@ def cluster_points(X, border_point_number):
     print(sep_clusters)
     centers = []
     border_points_group = []
+    cluster_group = []
     for key in sep_clusters.keys():
         cluster = sep_clusters[key]
+        cluster_group.append(cluster)
         center = calculate_center(cluster)
         centers.append(center)
         border_points = calculate_n_border_points(cluster, center, border_point_number)
         border_points_group.append(border_points)
 
-    return centers, border_points_group
+    return centers, border_points_group, cluster_group
 
 
 def calculate_n_border_points(cluster, center, n):
