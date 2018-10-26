@@ -68,6 +68,9 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     # Plot the contour and training examples
     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
+    # plt.clf()
+    plt.xlim(lower_bound, upper_bound)
+    plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
     file_name = 'test' + str(iteration + 1) + '.png'
@@ -297,26 +300,22 @@ def data_partition_gradient(train_set_X, train_set_Y, gradient):
     return label_0, label_1, label_0_gradient, label_1_gradient
 
 
-def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_points_number, lower_bound, upper_bound,
+def append_random_points(formu, train_set_x, train_set_y, to_be_appended_random_points_number, lower_bound, upper_bound,
                          type, name_list, mock):
-    if mock == True:
-        category = formu.get_category()
-        if (category == formula.POLYNOMIAL):
-            newPointsX, newPointsY = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound,
+    category = formu.get_category()
+    if category == formula.POLYNOMIAL:
+        new_points_x, new_points_y = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound,
                                                                 upper_bound)
-            train_set_X = train_set_X + newPointsX
-            train_set_Y = train_set_Y + newPointsY
-        elif (category == formula.POLYHEDRON):
-            newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound,
+        train_set_x = train_set_x + new_points_x
+        train_set_y = train_set_y + new_points_y
+    elif category == formula.POLYHEDRON:
+        new_points_x, new_points_y = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound,
                                                                 upper_bound)
-            train_set_X = train_set_X + newPointsX
-            train_set_Y = train_set_Y + newPointsY
-        print("New random points X", newPointsX)
-        print("New random points Y", newPointsY)
-        return train_set_X, train_set_Y
-    # else:
-    #     newPointsX=generate_random_points(to_be_appended_random_points_number,lower_bound,upper_bound)
-    #     return train_set_X,train_set_Y
+        train_set_x = train_set_x + new_points_x
+        train_set_y = train_set_y + new_points_y
+    print("New random points X", new_points_x)
+    print("New random points Y", new_points_y)
+    return train_set_x, train_set_y
 
 
 def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
@@ -401,16 +400,16 @@ def calculate_vector_angle(v1, v2):
 
 def calculate_orthogonal_direction(vector):
     length = len(vector)
-    v = vector[0: length-1]
-    r = np.random.randn(length-1)
+    v = vector[0: length - 1]
+    r = np.random.randn(length - 1)
 
     v_a = np.array(v)
     v_r = np.array(r)
     value = np.dot(v_a, v_r)
 
     last_element = 0
-    if vector[length-1] != 0:
-        last_element = -value/vector[length-1]
+    if vector[length - 1] != 0:
+        last_element = -value / vector[length - 1]
         last_element = np.asscalar(last_element)
 
     direction = r.tolist()
@@ -427,11 +426,10 @@ def calculate_vector_projection(vector, gradient):
     vgra = np.array(gradient)
 
     gradient_length = np.linalg.norm(vgra)
-    orthogonal_part = vgra/gradient_length * (np.dot(vec, vgra)/gradient_length)
+    orthogonal_part = vgra / gradient_length * (np.dot(vec, vgra) / gradient_length)
 
     result = np.subtract(vec, orthogonal_part).tolist()
     return result
-
 
 
 def calculate_direction(point, origin):
