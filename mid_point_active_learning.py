@@ -12,7 +12,7 @@ import network_structure as ns
 import math
 import util
 import communication
-
+import numpy as np
 
 def partition_data(label_0, label_1, parts_num):
     result_X = []
@@ -173,12 +173,12 @@ def generate_accuracy(inputX, inputY, learning_rate, training_epochs,
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
             pair_list = filter_distant_point_pair(label_0, label_1, threshold)
             sorted(pair_list, key=operator.attrgetter('distance'))
-            append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points_number,
-                              train_set_X, train_set_Y, label_tester)
+            # append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points_number,
+            #                   train_set_X, train_set_Y, label_tester)
 
-            # train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network, lower_bound, upper_bound,
-            #                                                                    train_set_X, train_set_Y, 3,
-            #                                                                    label_tester)
+            train_set_X, train_set_Y = append_generalization_validation_points(sess, aggregated_network, lower_bound, upper_bound,
+                                                                               train_set_X, train_set_Y, 3,
+                                                                               label_tester)
             print("new train size after mid point", len(train_set_X), len(train_set_Y))
 
             label_0, label_1 = util.data_partition(train_set_X, train_set_Y)
@@ -243,18 +243,22 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
             label1.append(train_set_x[i])
 
     centers1, border_points_groups1 = cluster.cluster_points(label1, border_point_number)
-    centers0, border_points_groups0 = cluster.cluster_points(label0, border_point_number)
-    centers = centers0 + centers1
-    border_points_groups = border_points_groups0 + border_points_groups1
+    centers_label1 = np.ones(len(centers1)).tolist()
+    # centers0, border_points_groups0 = cluster.cluster_points(label0, border_point_number)
+    # centers_label0 = np.zeros(len(centers0)).tolist()
+    # centers = centers0 + centers1
+    # centers_label = centers_label0 + centers_label1
+    # border_points_groups = border_points_groups0 + border_points_groups1
 
-    # centers = centers1
-    # border_points_groups = border_points_groups1
+    centers = centers1
+    centers_label = centers_label1
+    border_points_groups = border_points_groups1
 
     print(centers)
     print(border_points_groups)
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
 
-    appended_x = search_validation_points(aggregated_network, border_points_groups, centers, gradient, sess,
+    appended_x = search_validation_points(aggregated_network, border_points_groups, centers, centers_label, gradient, sess,
                                           lower_bound, upper_bound)
 
     if len(appended_x) != 0:
@@ -269,12 +273,13 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
     return train_set_x, train_set_y
 
 
-def search_validation_points(aggregated_network, border_points_groups, centers, gradient, sess, lower_bound,
+def search_validation_points(aggregated_network, border_points_groups, centers, centers_label, gradient, sess, lower_bound,
                              upper_bound):
     appended_x = []
     for i in range(len(centers)):
         border_points = border_points_groups[i]
         center = centers[i]
+        label = centers_label[i]
 
         std_dev = util.calculate_std_dev(border_points)
         step = std_dev
@@ -295,7 +300,7 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
 
                 probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [new_point]})
 
-                if is_point_valid(new_point, probability, lower_bound, upper_bound):
+                if is_point_valid(new_point, probability, lower_bound, upper_bound, label):
                     best_point = new_point
                 else:
                     break
@@ -312,31 +317,35 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
 
 
 def calculate_gradient_and_angle(aggregated_network, point, center, gradient, sess):
-    vector = calculate_vector(point, center)
+    vector = util.calculate_direction(point, center)
+    vector_length = util.calculate_vector_size(vector)
     g = sess.run(gradient, feed_dict={aggregated_network.X: [point]})[0]
-    decided_gradient, is_random_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g,
-                                                                                          [point],
-                                                                                          aggregated_network.probability,
-                                                                                          sess)
-    if util.calculate_vector_size(vector) == 0 or is_random_gradient[0]:
-        angle = 0
-        if is_random_gradient[0]:
-            decided_gradient = [vector]
+    g_length = util.calculate_vector_size(g[0].tolist())
+
+    angle = 0
+
+    if vector_length == 0 and g_length == 0:
+        direction = np.random.rand(1, len(point))
+    elif vector_length == 0 and g_length != 0:
+        direction = util.calculate_orthogonal_direction(g[0].tolist())
+    elif vector_length != 0 and g_length == 0:
+        direction = vector
     else:
-        angle = util.calculate_vector_angle(decided_gradient[0], vector)
+        direction = util.calculate_vector_projection(vector, g[0].tolist())
+
+    decided_gradient = [direction]
+
     return angle, decided_gradient
 
 
-def calculate_vector(point, origin):
-    tmp_vector = []
-    for m in range(len(point)):
-        new_value = point[m] - origin[m]
-        tmp_vector.append(new_value)
-    return tmp_vector
+def is_point_valid(new_point, probability, lower_bound, upper_bound, label):
 
-
-def is_point_valid(new_point, probability, lower_bound, upper_bound):
     if probability[0][0] < 0.4 or probability[0][0] > 0.6:
+        if probability[0][0] < 0.4 and label == 1:
+            return False
+        elif probability[0][0] > 0.6 and label == 0:
+            return False
+
         for value in new_point:
             if lower_bound > value or value > upper_bound:
                 return False
@@ -344,45 +353,6 @@ def is_point_valid(new_point, probability, lower_bound, upper_bound):
 
     return False
 
-
-# def generate_random_points(train_set_X,train_set_Y,to_be_appended_critical_points_number):
-#     length=len(train_set_X)-1
-#     random_index_list=[]
-#     outputX=[]
-#     outputY=[]
-#     count=0
-#     while count<to_be_appended_critical_points_number:
-#         random_number = random.randint(length)
-#         if random_number in random_index_list:
-#             continue
-#         else:
-#             random_index_list.append(random_number)
-#         pointX=train_set_X[random_number]
-#         std_dev=util.calculate_std_dev(train_set_X)
-#         smallest_distance=calculate_smallest_distance(train_set_X,pointX)
-#
-#         if smallest_distance<std_dev:
-#             continue
-#
-#         outputX.append(pointX)
-#         outputY.append(train_set_Y[random_number])
-#         count+=1
-#
-#
-#     return outputX,outputY
-
-# def calculate_smallest_distance(train_set_X,pointX):
-#     smallest_distance=math.inf
-#     dimension = len(train_set_X[0])
-#     for i in range(len(train_set_X)):
-#         if train_set_X[i][0]!=pointX[0]:
-#             distance=0
-#             for d in dimension:
-#                 distance+=(train_set_X[i][d]-pointX[d])**2
-#             distance = math.sqrt(distance)
-#             if distance<smallest_distance:
-#                 smallest_distance=distance
-#     return distance
 
 def calculate_unconfident_mid_point(sess, aggregated_network, pair):
     px = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_x]})[0]
@@ -452,76 +422,3 @@ def append_mid_points(sess, aggregated_network, pair_list, to_be_appended_points
                 train_set_X.append(middle_point)
                 train_set_Y.append([0])
 
-    # lenlength = len(pair_list)
-    # index1 = int(length / 3)
-    # index2 = int(length / 3 * 2)
-    # pointer = 0
-    # for p in range(3):
-    #     if (pointer < index1):
-    #         num = to_be_appended_points_number * 0.4
-    #
-    #         num = int(round(num))
-    #
-    #         if (num < 1):
-    #             num = 1
-    #
-    #         util.add_distance_values(num, distance_list, selected_distance_list, pointer)
-    #         pointer = index1
-    #     elif (pointer < index2):
-    #         num = to_be_appended_points_number * 0.3
-    #         num = int(round(num))
-    #
-    #         if (num < 1):
-    #             num = 1
-    #
-    #         util.add_distance_values(num, distance_list, selected_distance_list, pointer)
-    #         #
-    #         pointer = index2
-    #     else:
-    #         num = to_be_appended_points_number * 0.3
-    #         num = int(round(num))
-    #
-    #         if (num < 1):
-    #             num = 1
-    #
-    #         util.add_distance_values(num, distance_list, selected_distance_list, pointer)
-    # print("all list:", distance_list)
-    # print("selected list:", selected_distance_list)
-    #
-    # for distance in selected_distance_list:
-    #     for point_key, dis_value in point_pair_list.items():
-    #         if (distance == dis_value):
-    #             point_0 = []
-    #             point_1 = []
-    #             for b in range(len(point_key)):
-    #                 if (b % 2 == 0):
-    #                     point_0.append(point_key[b])
-    #                 else:
-    #                     point_1.append(point_key[b])
-    #             middle_point = []
-    #             input_points = []
-    #             for b in range(len(point_0)):
-    #                 middle_point.append((point_0[b] + point_1[b]) / 2.0)
-    #             input_points.append(middle_point)
-    #             for point in input_points:
-    #                 for index in range(len(point)):
-    #                     if type == "INTEGER":
-    #                         point[index] = int(round(point[index]))
-    #
-    #             result = testing_function.test_label(input_points, formu, type, name_list, mock)
-    #             label = None
-    #             if result[0] == 0:
-    #                 label = False
-    #             else:
-    #                 label = True
-    #
-    #             if (label):
-    #                 if (middle_point not in train_set_X):
-    #                     train_set_X.append(middle_point)
-    #                     train_set_Y.append([1])
-    #                     print("from:", point_0, point_1, "middle point:", middle_point, label)
-    #             else:
-    #                 if (middle_point not in train_set_X):
-    #                     train_set_X.append(middle_point)
-    #                     train_set_Y.append([0])
-    #                     print("from:", point_0, point_1, "middle point:", middle_point, label)

@@ -188,12 +188,9 @@ def preprocess(train_path, test_path, read_next):
 
 
 def calculate_vector_size(vector):
-    dimension = len(vector)
-    s = 0
-    for j in range(dimension):
-        s += vector[j] * vector[j]
-
-    return math.sqrt(s)
+    vec = np.array(vector)
+    vec_length = np.linalg.norm(vec)
+    return vec_length
 
 
 def quickSort(alist):
@@ -383,6 +380,7 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
+    np.seterr(all='raise')
     return vector / np.linalg.norm(vector)
 
 
@@ -400,3 +398,45 @@ def calculate_vector_angle(v1, v2):
     v2_u = unit_vector(v2)
     return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
+
+def calculate_orthogonal_direction(vector):
+    length = len(vector)
+    v = vector[0: length-1]
+    r = np.random.randn(length-1)
+
+    v_a = np.array(v)
+    v_r = np.array(r)
+    value = np.dot(v_a, v_r)
+
+    last_element = 0
+    if vector[length-1] != 0:
+        last_element = -value/vector[length-1]
+        last_element = np.asscalar(last_element)
+
+    direction = r.tolist()
+    direction.append(last_element)
+
+    return direction
+
+
+def calculate_vector_projection(vector, gradient):
+    '''
+    project vector on the plane orthogonal to gradient
+    '''
+    vec = np.array(vector)
+    vgra = np.array(gradient)
+
+    gradient_length = np.linalg.norm(vgra)
+    orthogonal_part = vgra/gradient_length * (np.dot(vec, vgra)/gradient_length)
+
+    result = np.subtract(vec, orthogonal_part).tolist()
+    return result
+
+
+
+def calculate_direction(point, origin):
+    tmp_vector = []
+    for m in range(len(point)):
+        new_value = point[m] - origin[m]
+        tmp_vector.append(new_value)
+    return tmp_vector
