@@ -261,9 +261,9 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
     appended_x = search_validation_points(aggregated_network, border_points_groups, centers, centers_label, gradient, sess,
                                           lower_bound, upper_bound)
 
+    appended_y = []
     if len(appended_x) != 0:
         labels = label_tester.test_label(appended_x)
-        appended_y = []
         for label in labels:
             appended_y.append([label])
 
