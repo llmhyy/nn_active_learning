@@ -106,7 +106,7 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
         # TODO decision_direction should return a direction towards boundary
         direction = decision_direction(X, decision_options, gradient_length,
                                        gradient_selected, j, label_selected, probability, sess, inverse=True)
-
+        print('direction: ', direction)
         # TODO calculate your own direction based on the above direction
 
         ####################################################
