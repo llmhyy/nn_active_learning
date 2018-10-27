@@ -151,11 +151,11 @@ def calculate_accuracy(y, set_y, print_data_details):
     return result
 
 
-def preprocess(train_path, test_path, read_next):
-    test_set_X = []
-    test_set_Y = []
-    train_set_X = []
-    train_set_Y = []
+def read_data_from_file(train_path, test_path, read_next):
+    test_set_x = []
+    test_set_y = []
+    train_set_x = []
+    train_set_y = []
 
     # # read training data
     # with open(train_path, 'r+', newline='') as csvfile:
@@ -183,11 +183,11 @@ def preprocess(train_path, test_path, read_next):
             # print(row)
             l = [float(x) for x in row]
             # print(l)
-            test_set_X.append(l[1:])
+            test_set_x.append(l[1:])
             if row[0] == '1.0':
-                test_set_Y.append([1])
+                test_set_y.append([1])
             else:
-                test_set_Y.append([0])
+                test_set_y.append([0])
 
     # read training data
     # if read_next:
@@ -199,13 +199,13 @@ def preprocess(train_path, test_path, read_next):
                 continue
             l = [float(x) for x in row]
             # print(l)
-            train_set_X.append(l[1:])
+            train_set_x.append(l[1:])
             if row[0] == '1.0':
-                train_set_Y.append([1])
+                train_set_y.append([1])
             else:
-                train_set_Y.append([0])
+                train_set_y.append([0])
 
-    return train_set_X, train_set_Y, test_set_X, test_set_Y
+    return train_set_x, train_set_y, test_set_x, test_set_y
 
 
 def calculate_vector_size(vector):

@@ -158,7 +158,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             train_acc = util.calculate_accuracy(train_y, train_set_y, False)
 
             test_y = sess.run(aggregated_network.probability, feed_dict={net.X: test_set_x})
-            test_acc = util.calculate_accuracy(test_y, train_set_y, False)
+            test_acc = util.calculate_accuracy(test_y, test_set_y, False)
 
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)

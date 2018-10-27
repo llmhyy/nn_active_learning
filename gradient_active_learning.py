@@ -158,7 +158,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
     test_set_Y = []
 
     if mock == True:
-        train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
+        train_set_X, train_set_Y, test_set_X, test_set_Y = util.read_data_from_file(train_path, test_path, read_next=True)
 
     else:
         train_set_X = inputX

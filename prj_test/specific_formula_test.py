@@ -1,7 +1,8 @@
-from prj_test import data_point_generation, formula
 import label_tester as lt
 import mid_point_active_learning as mal
 import util
+import random
+from prj_test import data_point_generation, formula
 
 
 def generate_specific_formula():
@@ -36,9 +37,14 @@ parts_num = 5
 
 data_point_number = 100
 util.reset_random_seed()
-train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound,
-                                                                             data_point_number)
-train_set_x, train_set_y, test_set_x, test_set_y = util.preprocess(train_data_file, test_data_file, read_next=True)
+# train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound,
+#                                                                              data_point_number)
+# train_set_x, train_set_y, test_set_x, test_set_y = util.read_data_from_file(train_data_file, test_data_file, read_next=True)
+
+train_set_x, train_set_y, test_set_x, test_set_y = data_point_generation.generate_partitioned_data(f, category,
+                                                                                                   lower_bound,
+                                                                                                   upper_bound, 50, 50)
+
 label_tester = lt.FormulaLabelTester(f)
 
 # util.reset_random_seed()
