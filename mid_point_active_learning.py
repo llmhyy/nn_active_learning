@@ -173,8 +173,8 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
 
             threshold = util.calculate_std_dev(train_set_x)
             predicted = tf.cast(aggregated_network.probability > 0.5, dtype=tf.float32)
-            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
-                                        train_set_x, train_set_y, lower_bound, upper_bound, i)
+            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
+            #                             train_set_x, train_set_y, lower_bound, upper_bound, i)
 
             if len(train_set_x) > point_number_limit:
                 break

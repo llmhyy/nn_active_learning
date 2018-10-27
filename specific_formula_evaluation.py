@@ -18,7 +18,7 @@ def generate_specific_formula():
     formu = formula.Formula(
         # [[[-2, 60], [163, -899]], [485, 430]], formula.POLYHEDRON)
         # [[[-700, -700], [700, 700]], [300, 300]], formula.POLYHEDRON)
-        [[[0, 0, 0, 0, 0]], [500]], formula.POLYHEDRON)
+        [[[0, 0, 0, 0, 0, 0, 0, 0, 0]], [500]], formula.POLYHEDRON)
     # [[[-571, 31]], [445]], formula.POLYHEDRON)
     # [[[0, 0]], [500]], formula.POLYHEDRON)
     formulas.put(formu.get_category(), formu)
