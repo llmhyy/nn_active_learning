@@ -71,7 +71,7 @@ print("midpoint train accuracy", train_acc_list)
 print("midpoint test accuracy", test_acc_list)
 print("midpoint data point number", data_point_number_list)
 for appending_dict in appended_point_list:
-    # print("generalization_validation", appending_dict["generalization_validation"])
+    print("generalization_validation", appending_dict["generalization_validation"])
     print("mid_point", appending_dict["mid_point"])
 
 # mid_list = mal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)

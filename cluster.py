@@ -124,7 +124,6 @@ def get_clustering_points(X, label, formula):
 
     # print(X)
     while True:
-
         cluster = AgglomerativeClustering(n_clusters=num_cluster, affinity='euclidean', linkage='ward')
         cluster.fit_predict(X)
 

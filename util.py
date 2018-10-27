@@ -35,7 +35,7 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
     plt.xlim(lower_bound, upper_bound)
     plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
-    plt.show()
+    # plt.show()
     file_name = 'clustering' + str(iteration + 1) + '.png'
     plt.savefig(file_name)
     pass
