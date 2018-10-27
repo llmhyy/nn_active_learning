@@ -4,3 +4,4 @@ test*.png
 dataset/*.csv
 test/dataset/*
 test/*.png
+log.txt
