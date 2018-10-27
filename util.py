@@ -209,32 +209,32 @@ def quickSortHelper(alist, first, last):
 
 
 def partition(alist, first, last):
-    pivotvalue = alist[first]
+    pivot_value = alist[first]
 
-    leftmark = first + 1
-    rightmark = last
+    left_mark = first + 1
+    right_mark = last
 
     done = False
     while not done:
 
-        while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
-            leftmark = leftmark + 1
+        while left_mark <= right_mark and alist[left_mark] <= pivot_value:
+            left_mark = left_mark + 1
 
-        while alist[rightmark] >= pivotvalue and rightmark >= leftmark:
-            rightmark = rightmark - 1
+        while alist[right_mark] >= pivot_value and right_mark >= left_mark:
+            right_mark = right_mark - 1
 
-        if rightmark < leftmark:
+        if right_mark < left_mark:
             done = True
         else:
-            temp = alist[leftmark]
-            alist[leftmark] = alist[rightmark]
-            alist[rightmark] = temp
+            temp = alist[left_mark]
+            alist[left_mark] = alist[right_mark]
+            alist[right_mark] = temp
 
     temp = alist[first]
-    alist[first] = alist[rightmark]
-    alist[rightmark] = temp
+    alist[first] = alist[right_mark]
+    alist[right_mark] = temp
 
-    return rightmark
+    return right_mark
 
 
 def calculate_distance(m, n):
