@@ -37,37 +37,39 @@ def initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, trai
 
 
 def apply_boundary_remaining(sess, new_grads, X, Y, length_0, length_1,
-                             logits, formu, train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number,
-                             type, name_list, mock):
+                             probability, train_set_x, train_set_y, to_be_appended_boundary_remaining_points_number,
+                             label_tester):
     points_in_less_side, preliminary_gradients_in_less_side, to_be_added_number = \
-        initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_X, train_set_Y)
+        initialize_processing_points(sess, new_grads, X, Y, length_0, length_1, train_set_x, train_set_y)
 
     if to_be_added_number > to_be_appended_boundary_remaining_points_number:
         to_be_added_number = to_be_appended_boundary_remaining_points_number
 
     gradients, _ = decide_all_gradients_for_boundary_remaining(
-        X, preliminary_gradients_in_less_side, points_in_less_side, logits, sess)
+        X, preliminary_gradients_in_less_side, points_in_less_side, probability, sess)
 
-    std_dev = util.calculate_std_dev(train_set_X)
+    std_dev = util.calculate_std_dev(train_set_x)
 
     bias_direction = length_0 > length_1
     random.shuffle(points_in_less_side)
     print("less side points:", points_in_less_side)
-    newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, formu, std_dev, type,
-                            name_list, mock, logits)
+    newX = balancing_points(bias_direction, points_in_less_side, gradients, to_be_added_number, std_dev, label_tester)
     print("newX;", newX)
-    flagList = testing_function.test_label(newX, formu, type, name_list, mock)
-    for k in range(len(newX)):
-        label = flagList[k]
-        if (label):
+    labels = label_tester.test_label(newX)
 
-            train_set_X.append(newX[k])
-            train_set_Y.append([1])
+    appended_x = []
+    appended_y = []
+    for k in range(len(newX)):
+        label = labels[k]
+        if label:
+            appended_x.append(newX[k])
+            appended_y.append([1])
             print("added point: ", newX[k], label)
         else:
-            train_set_X.append(newX[k])
-            train_set_Y.append([0])
+            appended_x.append(newX[k])
+            appended_y.append([0])
             print("added point: ", newX[k], label)
+    return appended_x, appended_y
 
 
 def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_selected, probability, sess):
@@ -128,7 +130,7 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
             random_value = random.uniform(-5, 5)
             random_direction.append(random_value)
 
-        dot_product = np.dot(return_value[0: dimension-1], random_direction)
+        dot_product = np.dot(return_value[0: dimension - 1], random_direction)
         lower_bound = -dot_product / return_value[-1]
         # last_direction = random.uniform(lower_bound, lower_bound + 10)
         last_direction = lower_bound
@@ -212,8 +214,7 @@ def decision_direction(X, decision_options, gradient_length, gradient_selected, 
     return direction
 
 
-def balancing_points(is_label_1_side, points_in_less_side, gradients, length_added, formu, std_dev, type, name_list,
-                     mock):
+def balancing_points(is_label_1_side, points_in_less_side, gradients, length_added, std_dev, label_tester):
     add_points = []
     break_loop = False
     trial_count = 0.0
@@ -235,11 +236,9 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
             for j in range(len(points_in_less_side[i])):
                 tmp_value = points_in_less_side[i][j] + gradients[i][j] * (step / gradient_length)
                 tmp_point.append(tmp_value)
-            input_point = []
+            input_point = [tmp_point]
 
-            input_point.append(tmp_point)
-
-            result = testing_function.test_label(input_point, formu, type, name_list, mock)
+            result = label_tester.test_label(input_point)
             point_label = None
             if result[0] == 0:
                 point_label = False
@@ -250,13 +249,13 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
                 tmp_step = step / 2.0
                 trial_count, wrong, points_added, break_loop = handle_wrong_point(points_in_less_side[i], gradients[i],
                                                                                   tmp_step, trial_count, wrong,
-                                                                                  is_label_1_side, formu,
-                                                                                  balancing_threshold, tmp_point, type,
-                                                                                  name_list, mock)
+                                                                                  is_label_1_side,
+                                                                                  balancing_threshold, tmp_point,
+                                                                                  label_tester)
                 add_points = add_points + points_added
                 success = trial_count - wrong
                 print("success", success)
-                if (success >= length_added):
+                if success >= length_added:
                     break_loop = True
                     break
                 continue
@@ -265,13 +264,13 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
                 tmp_step = step / 2.0
                 trial_count, wrong, points_added, break_loop = handle_wrong_point(points_in_less_side[i], gradients[i],
                                                                                   tmp_step, trial_count, wrong,
-                                                                                  is_label_1_side, formu,
-                                                                                  balancing_threshold, tmp_point, type,
-                                                                                  name_list, mock)
+                                                                                  is_label_1_side,
+                                                                                  balancing_threshold, tmp_point,
+                                                                                  label_tester)
                 add_points = add_points + points_added
                 success = trial_count - wrong
                 print("success", success)
-                if (success >= length_added):
+                if success >= length_added:
                     break_loop = True
                     break
                 continue
@@ -279,19 +278,19 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
 
             success = trial_count - wrong
             print("success", success)
-            if (success >= length_added):
+            if success >= length_added:
                 break_loop = True
                 break
 
-        if (break_loop):
+        if break_loop:
             break
 
-    print("Boundry remaining points added ", len(add_points))
+    print("Boundary remaining points added ", len(add_points))
     print("Boundary remaining accuracy: ", float((trial_count - wrong) / trial_count))
     for point in add_points:
         for index in range(len(point)):
-            if type=="INTEGER":
-                point[index]=int(round(point[index]))
+            if type == "INTEGER":
+                point[index] = int(round(point[index]))
     return add_points
 
 
@@ -302,7 +301,8 @@ def balancing_points(is_label_1_side, points_in_less_side, gradients, length_add
 # gra1=[]
 # balancing_points(label_0,label_1,gra0,gra1)
 
-def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, probability, train_sample, decision_combination,
+def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, probability, train_sample,
+                                decision_combination,
                                 moving_step):
     # step = random.uniform(2, 4)
     grad = 0
@@ -337,8 +337,8 @@ def decide_cross_boundary_point(sess, gradient_sample, gradient_size, X, probabi
     return new
 
 
-def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_side, formu, balancing_threshold,
-                       tmp_point, type, name_list, mock):
+def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_side, balancing_threshold,
+                       tmp_point, label_tester):
     print("handling wrong point")
     return_list = []
     correct_point = []
@@ -355,9 +355,8 @@ def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_sid
             tmp_value = point[j] + gradient[j] * direction_step
 
             tmp_point.append(tmp_value)
-        input_point = []
-        input_point.append(tmp_point)
-        result = testing_function.test_label(input_point, formu, type, name_list, mock)
+        input_point = [tmp_point]
+        result = label_tester.test_label(input_point)
         point_label = None
         if result[0] == 0:
             point_label = False
@@ -385,8 +384,10 @@ def handle_wrong_point(point, gradient, step, trial_count, wrong, is_label_1_sid
     print("one time handle wrong point added", return_list)
     return trial_count, wrong, return_list, flag
 
-def added_balancing_points(is_label_1_side, points_in_less_side, gradients, length_added, formu, std_dev, type, name_list,
-                     mock):
+
+def added_balancing_points(is_label_1_side, points_in_less_side, gradients, length_added, formu, std_dev, type,
+                           name_list,
+                           mock):
     add_points = []
     break_loop = False
     trial_count = 0.0
@@ -413,7 +414,7 @@ def added_balancing_points(is_label_1_side, points_in_less_side, gradients, leng
             point_label = False
         else:
             point_label = True
-        
+
         add_points.append(tmp_point)
 
         success = trial_count - wrong
@@ -423,6 +424,6 @@ def added_balancing_points(is_label_1_side, points_in_less_side, gradients, leng
     print("Boundary remaining accuracy: ", float((trial_count - wrong) / trial_count))
     for point in add_points:
         for index in range(len(point)):
-            if type=="INTEGER":
-                point[index]=int(round(point[index]))
+            if type == "INTEGER":
+                point[index] = int(round(point[index]))
     return add_points

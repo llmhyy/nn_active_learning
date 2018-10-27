@@ -198,11 +198,14 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
-            if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.probability,
+            if not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
+                appended_x, appended_y = br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.probability,
                                             formula,
                                             train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number,
                                             type, name_list, mock)
+                train_set_X = train_set_X + appended_x
+                train_set_Y = train_set_Y + appended_y
+
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                 #                         train_set_Y, 10+i)
             all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
