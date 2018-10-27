@@ -8,11 +8,11 @@ import testing_function as tf
 
 
 def generate_data_points(formu, category, lower_bound, upper_bound, data_point_number):
-    if (category == formula.POLYHEDRON):
-        trainpath, testpath = generate_random_points_for_sphere(formu, lower_bound, upper_bound, data_point_number)
-    elif (category == formula.POLYNOMIAL):
-        trainpath, testpath = generate_random_points_for_polynomial(formu, lower_bound, upper_bound, data_point_number)
-    return trainpath, testpath
+    if category == formula.POLYHEDRON:
+        train_path, test_path = generate_random_points_for_sphere(formu, lower_bound, upper_bound, data_point_number)
+    elif category == formula.POLYNOMIAL:
+        train_path, test_path = generate_random_points_for_polynomial(formu, lower_bound, upper_bound, data_point_number)
+    return train_path, test_path
 
 
 # TODO coefficient and xList should comes from formu
@@ -131,21 +131,21 @@ def testing_point(formu, dimension, number, lower_bound, large_bound, path, cata
     with open(path, 'w', newline="") as csvfile:
         number_of_point = int(round(math.pow(number, (1.0 / dimension))))
         step = (large_bound - lower_bound) / float(number_of_point)
-        pointList = []
+        point_list = []
         for i in range(number_of_point):
-            pointList.append(lower_bound + i * step)
+            point_list.append(lower_bound + i * step)
 
-        output = list(product(pointList, repeat=dimension))
+        output = list(product(point_list, repeat=dimension))
         test = csv.writer(csvfile)
         for i in output:
             i = list(i)
 
             if catagory == formula.POLYHEDRON:
-                flag = tf.polycircle_model(formu.get_formula()[0], formu.get_formula()[1], i)
+                is_true = tf.polycircle_model(formu.get_formula()[0], formu.get_formula()[1], i)
             else:
-                flag = tf.polynomial_model(formu.get_formula()[:-1], i, formu.get_formula()[-1])
+                is_true = tf.polynomial_model(formu.get_formula()[:-1], i, formu.get_formula()[-1])
 
-            if (flag):
+            if is_true:
                 i.insert(0, 1.0)
             else:
                 i.insert(0, 0.0)

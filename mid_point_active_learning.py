@@ -80,7 +80,7 @@ def filter_distant_point_pair(label_0, label_1, threshold):
     return pair_list
 
 
-def generate_accuracy(input_x, input_y, learning_rate, training_epochs,
+def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs,
                       lower_bound, upper_bound, use_bagging, label_tester):
     print("=========MID_POINT===========")
     balance_ratio_threshold = 0.7
@@ -93,12 +93,10 @@ def generate_accuracy(input_x, input_y, learning_rate, training_epochs,
     # threshold = 100
     # training_epochs = 1000
 
-    train_set_x = input_x
-    train_set_y = input_y
-
     net = ns.NNStructure(train_set_x[0], learning_rate)
 
     train_acc_list = []
+    test_acc_list = []
 
     result = []
     predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
@@ -157,13 +155,16 @@ def generate_accuracy(input_x, input_y, learning_rate, training_epochs,
                                     feed_dict={net.X: train_set_x, net.Y: train_set_y})
                 aggregated_network = net
 
-                train_y = sess.run(aggregated_network.probability, feed_dict={
-                    aggregated_network.X: train_set_x})
-                train_acc = util.calculate_accuracy(
-                    train_y, train_set_y, print_data_details=False)
-                print("train_acc", train_acc)
+            train_y = sess.run(aggregated_network.probability, feed_dict={net.X: train_set_x})
+            train_acc = util.calculate_accuracy(train_y, train_set_y, False)
 
+            test_y = sess.run(aggregated_network.probability, feed_dict={net.X: test_set_x})
+            test_acc = util.calculate_accuracy(test_y, train_set_y, False)
+
+            print("train:", train_acc, " test: ", test_acc)
             train_acc_list.append(train_acc)
+            test_acc_list.append(test_acc)
+
             threshold = util.calculate_std_dev(train_set_x)
 
             predicted = tf.cast(aggregated_network.probability > 0.5, dtype=tf.float32)
@@ -187,8 +188,8 @@ def generate_accuracy(input_x, input_y, learning_rate, training_epochs,
             print("label 0 length", length_0, "label 1 length", length_1)
 
     communication.send_training_finish_message()
-    result.append(train_acc_list)
-    print("Result", result)
+    print("train accuracy", train_acc_list)
+    print("test accuracy", test_acc_list)
     tf.reset_default_graph()
     return result
 

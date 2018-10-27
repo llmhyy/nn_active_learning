@@ -1,4 +1,4 @@
 *.pyc
 .idea/*
 test*.png
-dataset/*
+dataset/*.csv

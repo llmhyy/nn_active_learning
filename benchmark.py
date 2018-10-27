@@ -7,7 +7,7 @@ import network_structure as ns
 import util
 
 
-def generate_accuracy(train_set_x, train_set_y, learning_rate, training_epochs, lower_bound, upper_bound):
+def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs, lower_bound, upper_bound):
     print("=========BENCH_MARK===========")
 
     # learning_rate = 0.01
@@ -75,15 +75,18 @@ def generate_accuracy(train_set_x, train_set_y, learning_rate, training_epochs, 
                                     train_set_x[:data_size], train_set_y[:data_size],
                                     lower_bound, upper_bound, -1)
 
-        print("Optimization Finished!")
-        plt.clf()
-        plt.plot(loss_list)
-        file_name = 'trend.png'
-        plt.savefig(file_name)
+        # print("Optimization Finished!")
+        # plt.clf()
+        # plt.plot(loss_list)
+        # file_name = 'trend.png'
+        # plt.savefig(file_name)
         # saver.restore(sess, "./models/benchmark.ckpt")
 
         train_y = sess.run(net.probability, feed_dict={net.X: train_set_x})
         train_acc = util.calculate_accuracy(train_y, train_set_y, False)
+
+        test_y = sess.run(net.probability, feed_dict={net.X: test_set_x})
+        test_acc = util.calculate_accuracy(test_y, train_set_y, False)
 
         print("train:", train_acc, " test: ", test_acc)
 
