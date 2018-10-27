@@ -44,6 +44,7 @@ parts_num = 5
 # test_data_file = "dataset/test485_430.csv"
 
 data_point_number = 100
+util.reset_random_seed()
 train_data_file, test_data_file = data_point_generation.generate_data_points(f, category, lower_bound, upper_bound,
                                                                              data_point_number)
 train_set_x, train_set_y, test_set_x, test_set_y = util.preprocess(train_data_file, test_data_file, read_next=True)
@@ -53,7 +54,6 @@ label_tester = lt.FormulaLabelTester(f)
 # train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
 #                                                   training_epochs, lower_bound, upper_bound)
 
-util.reset_random_seed()
 point_number_limit = 100
 train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mal.generate_accuracy(train_set_x[0:50],
                                                                                                    train_set_y[0:50],
