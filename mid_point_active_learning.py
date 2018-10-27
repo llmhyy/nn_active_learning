@@ -73,7 +73,7 @@ def filter_distant_point_pair(label_0, label_1, threshold):
     for m in label_0:
         for n in label_1:
             p = data_pair.DataPair(m, n, False, True)
-            if (p.distance > threshold):
+            if p.distance > threshold:
                 pair = p
                 pair_list.append(pair)
 
@@ -97,8 +97,8 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
 
     train_acc_list = []
     test_acc_list = []
+    data_point_number_list = []
 
-    result = []
     predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
 
     for i in range(active_learning_iteration):
@@ -116,7 +116,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             length_1 = len(label_1) + 0.0
 
             print(length_0, length_1)
-            if (length_0 == 0 or length_1 == 0):
+            if length_0 == 0 or length_1 == 0:
                 raise Exception("Cannot be classified")
 
             # if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
@@ -161,9 +161,9 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             test_y = sess.run(aggregated_network.probability, feed_dict={net.X: test_set_x})
             test_acc = util.calculate_accuracy(test_y, train_set_y, False)
 
-            print("train:", train_acc, " test: ", test_acc)
             train_acc_list.append(train_acc)
             test_acc_list.append(test_acc)
+            data_point_number_list.append(len(train_set_x))
 
             threshold = util.calculate_std_dev(train_set_x)
 
@@ -188,10 +188,8 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             print("label 0 length", length_0, "label 1 length", length_1)
 
     communication.send_training_finish_message()
-    print("train accuracy", train_acc_list)
-    print("test accuracy", test_acc_list)
     tf.reset_default_graph()
-    return result
+    return train_acc_list, test_acc_list, data_point_number_list
 
 
 def train_bootstrap_model(all_biases_dict, all_data_X, all_data_Y, all_weights_dict, net, parts_num, sess, train_set_X,

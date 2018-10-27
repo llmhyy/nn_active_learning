@@ -12,19 +12,14 @@ import tensorflow as tf
 import util
 import label_tester as lt
 
-random_seed = 10
-random.seed(random_seed)
-np.random.seed(random_seed)
-tf.set_random_seed(random_seed)
-
 
 def generate_specific_formula():
     formulas = formula.Formulas()
     formu = formula.Formula(
         # [[[-2, 60], [163, -899]], [485, 430]], formula.POLYHEDRON)
         [[[-700, -700], [700, 700]], [300, 300]], formula.POLYHEDRON)
-        # [[[-571, 31]], [445]], formula.POLYHEDRON)
-        # [[[0, 0]], [500]], formula.POLYHEDRON)
+    # [[[-571, 31]], [445]], formula.POLYHEDRON)
+    # [[[0, 0]], [500]], formula.POLYHEDRON)
     formulas.put(formu.get_category(), formu)
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
@@ -53,9 +48,21 @@ train_data_file, test_data_file = data_point_generation.generate_data_points(f, 
 train_set_x, train_set_y, test_set_x, test_set_y = util.preprocess(train_data_file, test_data_file, read_next=True)
 label_tester = lt.FormulaLabelTester(f)
 
-benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs, lower_bound, upper_bound)
-mid_list = mal.generate_accuracy(train_set_x[0:50], train_set_y[0:50], test_set_x, test_set_y,
-                                 learning_rate, training_epochs, lower_bound, upper_bound, False, label_tester)
+util.reset_random_seed()
+train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
+                                                  training_epochs, lower_bound, upper_bound)
+
+util.reset_random_seed()
+train_acc_list, test_acc_list, data_point_number_list = mal.generate_accuracy(train_set_x[0:50], train_set_y[0:50],
+                                                                              test_set_x, test_set_y,
+                                                                              learning_rate, training_epochs,
+                                                                              lower_bound, upper_bound, False,
+                                                                              label_tester)
+
+print("benchmark train accuracy", train_acc, "benchmark test accuracy", test_acc)
+print("midpoint train accuracy", train_acc_list)
+print("midpoint test accuracy", test_acc_list)
+print("midpoint data point number", data_point_number_list)
 
 # mid_list = mal.generate_accuracy([], [], train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)
 # tf.reset_default_graph()

@@ -33,8 +33,6 @@ try:
         elif request_type == "$BOUNDARY_EXPLORATION":
             pass
 
-
-
         stdout.flush()
         print("finished!")
 except Exception as e:
