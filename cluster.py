@@ -163,11 +163,10 @@ def cluster_points(X, border_point_number, num_cluster):
     # for each two cluster center, their threshold*radius should be larger than the center distance
     cluster_distance_threshold = 2
 
-    if num_cluster < len(X):
+    if num_cluster > len(X):
         num_cluster = len(X)
-    # print(X)
-    while True:
 
+    while True:
         cluster = AgglomerativeClustering(n_clusters=num_cluster, affinity='euclidean', linkage='average')
         cluster.fit_predict(X)
 
@@ -178,7 +177,7 @@ def cluster_points(X, border_point_number, num_cluster):
         for i in range(len(X)):
             sep_clusters[cluster.labels_[i]].append(X[i])
 
-        # util.plot_clustering_result(sep_clusters, -1000, 1000, 1)
+        util.plot_clustering_result(sep_clusters, -1000, 1000, 1)
 
         if is_clustering_valid(sep_clusters, cluster_distance_threshold):
             break
