@@ -163,6 +163,8 @@ def cluster_points(X, border_point_number, num_cluster):
     # for each two cluster center, their threshold*radius should be larger than the center distance
     cluster_distance_threshold = 2
 
+    if num_cluster < len(X):
+        num_cluster = len(X)
     # print(X)
     while True:
 
