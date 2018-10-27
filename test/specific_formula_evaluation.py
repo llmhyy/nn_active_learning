@@ -1,16 +1,8 @@
-import formula
-import formula_generator as fg
-import benchmark
-import gradient_active_learning as gal
-import mid_point_active_learning as mal
-import cluster
 import data_point_generation
-import xlwt
-import random
-import numpy as np
-import tensorflow as tf
-import util
+import formula
 import label_tester as lt
+import mid_point_active_learning as mal
+import util
 
 
 def generate_specific_formula():
@@ -18,9 +10,9 @@ def generate_specific_formula():
     formu = formula.Formula(
         # [[[-2, 60], [163, -899]], [485, 430]], formula.POLYHEDRON)
         [[[-700, -700], [700, 700]], [300, 300]], formula.POLYHEDRON)
-        # [[[0, 0]], [500]], formula.POLYHEDRON)
-        # [[[-571, 31]], [445]], formula.POLYHEDRON)
-        # [[[0, 0]], [500]], formula.POLYHEDRON)
+    # [[[0, 0]], [500]], formula.POLYHEDRON)
+    # [[[-571, 31]], [445]], formula.POLYHEDRON)
+    # [[[0, 0]], [500]], formula.POLYHEDRON)
     formulas.put(formu.get_category(), formu)
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
