@@ -2,6 +2,6 @@
 .idea/*
 test*.png
 dataset/*.csv
-test/dataset/*
-test/*.png
+prj_test/dataset/*.csv
+prj_test/*.png
 log.txt

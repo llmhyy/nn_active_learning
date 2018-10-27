@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-import formula
+from prj_test import formula
 import network_structure as ns
 import util
 

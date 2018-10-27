@@ -81,7 +81,7 @@ def decide_all_gradients_for_boundary_remaining(X, gradient_selected, label_sele
 
     gradient_list = []
     is_random_list = []
-    decision_options = gradient_combination.combination(len(label_selected[0]))
+    decision_options = util.direction_combination(len(label_selected[0]))
     for j in range(len(label_selected)):
         grad = 0
         dimension = len(label_selected[0])

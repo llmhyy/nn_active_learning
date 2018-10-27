@@ -1,5 +1,4 @@
-import data_point_generation
-import formula
+from prj_test import data_point_generation, formula
 import label_tester as lt
 import mid_point_active_learning as mal
 import util

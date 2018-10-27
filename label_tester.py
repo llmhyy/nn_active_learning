@@ -1,9 +1,10 @@
-import testing_function as testf
-import json_handler
 import json
-import formula
-import communication
+import math
 from sys import stdin
+
+import communication
+import json_handler
+from prj_test import formula
 
 
 class LabelTester:
@@ -25,13 +26,13 @@ class FormulaLabelTester(LabelTester):
         if category == formula.POLYHEDRON:
             if isinstance(points[0], list):
                 for point in points:
-                    flag = testf.polycircle_model(form[0], form[1], point)
+                    flag = self.polycircle_model(form[0], form[1], point)
                     if (flag):
                         flag_list.append(1)
                     else:
                         flag_list.append(0)
             else:
-                flag = testf.polycircle_model(form[0], form[1], points)
+                flag = self.polycircle_model(form[0], form[1], points)
                 if (flag):
                     flag_list.append(1)
                 else:
@@ -39,18 +40,43 @@ class FormulaLabelTester(LabelTester):
         elif category == formula.POLYNOMIAL:
             if isinstance(points[0], list):
                 for point in points:
-                    flag = testf.polynomial_model(form[:-1], point, form[-1])
+                    flag = self.polynomial_model(form[:-1], point, form[-1])
                     if (flag):
                         flag_list.append(1)
                     else:
                         flag_list.append(0)
             else:
-                flag = testf.polynomial_model(form[:-1], points, form[-1])
+                flag = self.polynomial_model(form[:-1], points, form[-1])
                 if flag:
                     flag_list.append(1)
                 else:
                     flag_list.append(0)
         return flag_list
+
+    def polynomial_model(self, coefficient_list, x, y):
+        variable_num = len(coefficient_list)
+        output = 0
+        for i in range(variable_num):
+            tmpList = coefficient_list[i]
+            tmpLength = len(tmpList)
+            for j in range(tmpLength):
+                power = tmpLength - j
+                output += tmpList[j] * math.pow(x[i], power)
+
+        if (output > y):
+            return True
+        else:
+            return False
+
+    def polycircle_model(self, center, radius, x):
+        # center format:[[0,1,3],[1,1,1]], radius format: [10,25], x format: [1,2,3]
+        for i in range(len(center)):
+            point_radius = 0
+            for j in range(len(x)):
+                point_radius += (x[j] - center[i][j]) * (x[j] - center[i][j])
+            if (point_radius < radius[i] * radius[i]):
+                return True
+        return False
 
 
 class CoverageLabelTester(LabelTester):

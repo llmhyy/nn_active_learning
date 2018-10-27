@@ -4,10 +4,9 @@ import random
 
 import numpy as np
 import tensorflow as tf
+import label_tester as lt
 from matplotlib import pyplot as plt
-
-import formula
-import testing_function
+from prj_test import formula
 
 
 def reset_random_seed():
@@ -15,6 +14,25 @@ def reset_random_seed():
     random.seed(random_seed)
     np.random.seed(random_seed)
     tf.set_random_seed(random_seed)
+
+
+def direction_combination(n):
+    output = []
+    if n == 1:
+        a = [True]
+        b = [False]
+        output.append(a)
+        output.append(b)
+        return output
+    else:
+        prev_binary_combination = direction_combination(n - 1)
+        binary_combination = []
+        for i in prev_binary_combination:
+            a = i + [True]
+            binary_combination.append(a)
+            b = i + [False]
+            binary_combination.append(b)
+        return binary_combination
 
 
 def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
@@ -36,7 +54,7 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
     plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
-    file_name = 'clustering' + str(iteration + 1) + '.png'
+    file_name = 'picture/clustering' + str(iteration + 1) + '.png'
     plt.savefig(file_name)
     pass
 
@@ -73,7 +91,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
-    file_name = 'test' + str(iteration + 1) + '.png'
+    file_name = 'picture/test' + str(iteration + 1) + '.png'
     plt.savefig(file_name)
     pass
 
@@ -324,10 +342,10 @@ def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
            (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 <= 1)
 
 
-def generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):
-    formu = formu.get_formula()
-    coefficientList = formu[:-1]
-    y = formu[-1]
+def generate_polynomial_points(single_formula, to_be_appended_random_points_number, lower_bound, upper_bound):
+    single_formula = single_formula.get_formula()
+    coefficientList = single_formula[:-1]
+    y = single_formula[-1]
     outputX = []
     outputY = []
     for i in range(to_be_appended_random_points_number):
@@ -336,7 +354,8 @@ def generate_polynomial_points(formu, to_be_appended_random_points_number, lower
         for j in range(variableNum):
             xList.append(random.randint(lower_bound, upper_bound))
 
-        flag = testing_function.polynomial_model(coefficientList, xList, y)
+        formula_tester = lt.FormulaLabelTester(single_formula)
+        flag = formula_tester.polynomial_model(coefficientList, xList, y)
         outputX.append(xList)
 
         if (flag):
@@ -367,7 +386,8 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
         # else:
         #     for i in range(dim):
         #         generated_point.append(random.uniform(-10, 10))
-        flag = testing_function.polycircle_model(formu[0], formu[1], generated_point)
+        formula_tester = lt.FormulaLabelTester()
+        flag = formula_tester.polycircle_model(formu[0], formu[1], generated_point)
         outputX.append(generated_point)
 
         if (flag):

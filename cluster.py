@@ -5,8 +5,6 @@ import util
 # import matplotlib.pyplot as plt
 from sklearn.cluster import AgglomerativeClustering
 
-import testing_function
-
 
 def calculate_radius(cluster):
     dimension = len(cluster[0])
@@ -116,10 +114,9 @@ def is_clustering_valid(clusters, cluster_distance_threshold):
     return True
 
 
-def get_clustering_points(X, label, formula):
+def get_clustering_points(X, label, label_tester):
     # X = [[55,55],[65,56],[5,6],[4,6],[75,44],[7,2],[89,55],[68,86]]
     label = True
-    formula = formula
     num_cluster = 3
 
     # print(X)
@@ -147,7 +144,7 @@ def get_clustering_points(X, label, formula):
 
     # print(return_list)
     for point in return_list:
-        flag = testing_function.test_label(point, formula)
+        flag = label_tester.test_label(point)
         if flag != label:
             print("Found different label")
             return False, return_list

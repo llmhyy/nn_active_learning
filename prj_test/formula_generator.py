@@ -1,6 +1,6 @@
 import random
 
-import formula
+from test import formula
 
 
 def generate_formula(category, number):

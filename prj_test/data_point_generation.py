@@ -3,8 +3,8 @@ import math
 import random
 from itertools import product
 
-import formula
-import testing_function as tf
+from prj_test import formula
+import label_tester as lt
 
 
 def generate_data_points(formu, category, lower_bound, upper_bound, data_point_number):
@@ -15,8 +15,9 @@ def generate_data_points(formu, category, lower_bound, upper_bound, data_point_n
     return train_path, test_path
 
 
-# TODO coefficient and xList should comes from formu
 def generate_random_points_for_polynomial(formu, lower_bound, upper_bound, data_point_number):
+    formula_tester = lt.FormulaLabelTester(formu)
+
     train_name = "train" + "_".join(str(x) for x in formu.get_formula()) + ".csv"
     test_name = "test" + "_".join(str(x) for x in formu.get_formula()) + ".csv"
 
@@ -35,7 +36,7 @@ def generate_random_points_for_polynomial(formu, lower_bound, upper_bound, data_
             for i in range(variable_num):
                 xList.append(random.randint(lower_bound, upper_bound))
 
-            flag = tf.polynomial_model(coefficient_list, xList, y)
+            flag = formula_tester.polynomial_model(coefficient_list, xList, y)
 
             optList = []
             if (flag):
@@ -47,12 +48,11 @@ def generate_random_points_for_polynomial(formu, lower_bound, upper_bound, data_
                 optList += xList
                 train.writerow(optList)
 
-    testing_point(formu, variable_num, 1000, lower_bound, upper_bound, test_path, formula.POLYNOMIAL)
+    generate_testing_point(formu, variable_num, 1000, lower_bound, upper_bound, test_path, formula.POLYNOMIAL)
     return train_path, test_path
 
 
 # generate random data points for a circle formula
-#TODO use upper_bound, lower_bound parameter
 def generate_random_points_for_sphere(formu, upper_bound, lower_bound, data_point_number):  # [[[12,0],[-12,0]],[4,4]]
     number = random.randint(1, 20)
     formu_list = formu.get_formula()
@@ -82,7 +82,8 @@ def generate_random_points_for_sphere(formu, upper_bound, lower_bound, data_poin
                     for i in range(dim):
                         generated_point.append(random.uniform(-1000, 1000))
 
-                flag = tf.polycircle_model(formu_list[0], formu_list[1], generated_point)
+                formula_tester = lt.FormulaLabelTester(formu)
+                flag = formula_tester.polycircle_model(formu_list[0], formu_list[1], generated_point)
 
                 if (flag):
                     data_point.append(1.0)
@@ -95,22 +96,22 @@ def generate_random_points_for_sphere(formu, upper_bound, lower_bound, data_poin
 
                     train.writerow(data_point)
             # polyhedron_point(formu, dim, 4000, test_path, formula.POLYHEDRON)
-            testing_point(formu, dim, 1000, lower_bound, upper_bound, test_path, formula.POLYHEDRON)
+            generate_testing_point(formu, dim, 1000, lower_bound, upper_bound, test_path, formula.POLYHEDRON)
     return train_path, test_path
 
 
-def polyhedron_point(formu, dimension, number, path, catagory):
+def polyhedron_point(single_formula, dimension, number, path, catagory):
     with open(path, 'w', newline="") as csvfile:
         test = csv.writer(csvfile)
-        numberOfPoint = int(round(math.pow(int(number / len(formu[0])), (1.0 / dimension))))
+        numberOfPoint = int(round(math.pow(int(number / len(single_formula[0])), (1.0 / dimension))))
         # numberOfPoint = 300
-        for j in range(len(formu[0])):  # j th center point
+        for j in range(len(single_formula[0])):  # j th center point
 
-            largebound = formu[1][j]
-            step = (2 * largebound) / float(numberOfPoint)
+            large_bound = single_formula[1][j]
+            step = (2 * large_bound) / float(numberOfPoint)
             pointList = []
             for i in range(numberOfPoint):
-                pointList.append(-largebound + i * step)
+                pointList.append(-large_bound + i * step)
 
             output = list(product(pointList, repeat=dimension))
 
@@ -118,8 +119,9 @@ def polyhedron_point(formu, dimension, number, path, catagory):
             for i in output:
                 i = list(i)
                 for d in range(len(i)):
-                    i[d] += formu[0][j][d]
-                flag = tf.polycircle_model(formu[0], formu[1], i)
+                    i[d] += single_formula[0][j][d]
+                formula_tester = lt.FormulaLabelTester(single_formula)
+                flag = formula_tester.polycircle_model(single_formula[0], single_formula[1], i)
                 if (flag):
                     i.insert(0, 0.0)
                 else:
@@ -127,7 +129,7 @@ def polyhedron_point(formu, dimension, number, path, catagory):
                 test.writerow(i)
 
 
-def testing_point(formu, dimension, number, lower_bound, large_bound, path, catagory):
+def generate_testing_point(single_formula, dimension, number, lower_bound, large_bound, path, catagory):
     with open(path, 'w', newline="") as csvfile:
         number_of_point = int(round(math.pow(number, (1.0 / dimension))))
         step = (large_bound - lower_bound) / float(number_of_point)
@@ -139,11 +141,11 @@ def testing_point(formu, dimension, number, lower_bound, large_bound, path, cata
         test = csv.writer(csvfile)
         for i in output:
             i = list(i)
-
+            formula_tester = lt.FormulaLabelTester(single_formula)
             if catagory == formula.POLYHEDRON:
-                is_true = tf.polycircle_model(formu.get_formula()[0], formu.get_formula()[1], i)
+                is_true = formula_tester.polycircle_model(single_formula.get_formula()[0], single_formula.get_formula()[1], i)
             else:
-                is_true = tf.polynomial_model(formu.get_formula()[:-1], i, formu.get_formula()[-1])
+                is_true = formula_tester.polynomial_model(single_formula.get_formula()[:-1], i, single_formula.get_formula()[-1])
 
             if is_true:
                 i.insert(0, 1.0)
@@ -151,5 +153,5 @@ def testing_point(formu, dimension, number, lower_bound, large_bound, path, cata
                 i.insert(0, 0.0)
             test.writerow(i)
 
-# testing_point(2, 4000, -1.5, 1.5)
+# generate_testing_point(2, 4000, -1.5, 1.5)
 # generate_random_points_for_polynomial([[1,2],[3],[4,5,6]])

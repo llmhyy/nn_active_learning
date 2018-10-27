@@ -1,13 +1,13 @@
 from __future__ import print_function
 
 import tensorflow as tf
-from matplotlib import pyplot as plt
 
 import network_structure as ns
 import util
 
 
-def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs, lower_bound, upper_bound):
+def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs, lower_bound,
+                      upper_bound):
     print("=========BENCH_MARK===========")
 
     # learning_rate = 0.01
@@ -29,7 +29,6 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
         # data_size = 100
 
         # print("x:", train_set_X[:data_size])
-
 
         best_accuracy = 0
         loss_list = []

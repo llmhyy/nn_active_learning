@@ -1,11 +1,6 @@
-import formula
-import formula_generator as fg
-import benchmark
-import gradient_active_learning as gal
-import mid_point_active_learning as mal
 import cluster
 import util
-import data_point_generation
+from test import data_point_generation, formula, formula_generator as fg
 import xlwt
 
 category = formula.POLYHEDRON
