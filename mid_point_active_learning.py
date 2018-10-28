@@ -275,7 +275,7 @@ def append_generalization_validation_points(sess, aggregated_network, formu,
 
     for i in range(len(centers)):
         std_dev = util.calculate_std_dev(n_largest[i])
-        step = random.uniform(0, std_dev / 2.0)
+        step = random.uniform(std_dev / 2.0,std_dev)
         print("step", step)
         for k in range(len(n_largest[i])):
 
@@ -286,13 +286,18 @@ def append_generalization_validation_points(sess, aggregated_network, formu,
 
             input = []
             input.append(n_largest[i][k])
+            probability=sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: input})
+            # if probability>0.4 and probability<0.6:
+            #     continue
+            if probability<0.6:
+                continue
             g = sess.run(gradient, feed_dict={aggregated_network.X: input})[0]
             decided_gradient = br.decide_all_gradients_for_boundary_remaining(aggregated_network.X, g, input,
                                                                               aggregated_network.probability, sess)
 
             print("center", centers[i], "point", n_largest[i][k])
-            print(decided_gradient)
-            print(tmp_vector)
+            print("dicided gradient",decided_gradient)
+            print("tmp vector",tmp_vector)
             angle = util.calculate_vector_angle(decided_gradient[0], tmp_vector)
 
             print("angle", angle)
@@ -308,16 +313,12 @@ def append_generalization_validation_points(sess, aggregated_network, formu,
                 input_point = []
                 input_point.append(tmp_point)
                 print("input point", input_point)
-                result = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: input_point})
+                result = testing_function.test_label(input_point, formu, type, name_list, mock)
 
                 print("result", result)
-                if result[0][0] < 0.4:
-                    outputX.append(input_point[0])
-                    outputY.append([0])
+                outputX+=input_point
+                outputY+=[result]
 
-                elif result[0][0] > 0.6:
-                    outputX.append(input_point[0])
-                    outputY.append([1])
     print(outputX)
     print(outputY)
 
