@@ -145,7 +145,8 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             if use_bagging:
                 aggregated_network, train_acc = train_bootstrap_model(all_biases_dict, all_data_x, all_data_y,
                                                                       all_weights_dict, net, parts_num, sess,
-                                                                      train_set_x, train_set_y, training_epochs)
+                                                                      train_set_x, train_set_y, training_epochs,
+                                                                      lower_bound, upper_bound)
             else:
                 util.reset_random_seed()
                 sess.run(net.init)
@@ -154,10 +155,10 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
                                     feed_dict={net.X: train_set_x, net.Y: train_set_y})
                 aggregated_network = net
 
-            train_y = sess.run(aggregated_network.probability, feed_dict={net.X: train_set_x})
+            train_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: train_set_x})
             train_acc = util.calculate_accuracy(train_y, train_set_y, False)
 
-            test_y = sess.run(aggregated_network.probability, feed_dict={net.X: test_set_x})
+            test_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: test_set_x})
             test_acc = util.calculate_accuracy(test_y, test_set_y, False)
 
             train_acc_list.append(train_acc)
@@ -186,7 +187,8 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             appended_x, appended_y = append_generalization_validation_points(sess, aggregated_network, lower_bound,
                                                                              upper_bound, std_dev,
                                                                              label_tester, centers, centers_label,
-                                                                             clusters, border_points_groups, generalization_valid_limit)
+                                                                             clusters, border_points_groups,
+                                                                             generalization_valid_limit)
             train_set_x = train_set_x + appended_x
             train_set_y = train_set_y + appended_y
             appending_dict["generalization_validation"] = appended_x
@@ -234,22 +236,22 @@ def select_point_pair(centers, centers_label, clusters, mid_point_limit):
 
 
 def train_bootstrap_model(all_biases_dict, all_data_x, all_data_y, all_weights_dict, net, parts_num, sess, train_set_x,
-                          train_set_y, training_epochs):
-    for parts in range(parts_num):
+                          train_set_y, training_epochs, lower_bound, upper_bound):
+    for iteration in range(parts_num):
         best_accuracy = 0
         sess.run(net.init)
         for epoch in range(training_epochs):
             _, c = sess.run([net.train_op, net.loss_op],
-                            feed_dict={net.X: all_data_x[parts], net.Y: all_data_y[parts]})
+                            feed_dict={net.X: all_data_x[iteration], net.Y: all_data_y[iteration]})
             train_y = sess.run(net.probability, feed_dict={
                 net.X: train_set_x})
             train_acc = util.calculate_accuracy(
                 train_y, train_set_y, False)
 
-        # predicted = tf.cast(net.logits > 0.5, dtype=tf.float32)
-        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
-        #                             train_set_X, train_set_Y,
-        #                             lower_bound, upper_bound, -1)
+        predicted = tf.cast(net.logits > 0.5, dtype=tf.float32)
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
+                                    all_data_x[iteration], all_data_y[iteration],
+                                    lower_bound, upper_bound, 100 + iteration)
 
         weights_dict = sess.run(net.weights)
         bias_dict = sess.run(net.biases)
@@ -291,7 +293,8 @@ def cluster_training_data(train_set_x, train_set_y, border_point_number, cluster
 
 
 def append_generalization_validation_points(sess, aggregated_network, lower_bound, upper_bound, std_dev,
-                                            label_tester, centers, centers_label, clusters, border_points_groups, generalization_valid_limit):
+                                            label_tester, centers, centers_label, clusters, border_points_groups,
+                                            generalization_valid_limit):
     # pass in argument n
 
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
@@ -380,15 +383,15 @@ def confirm_gradient_direction(sess, point, aggregated_network, gradient):
     for i in range(len(point)):
         value = point[i]
         g = gradient[0][i]
-        value_add = value + delta*g
-        value_minus = value - delta*g
+        value_add = value + delta * g
+        value_minus = value - delta * g
 
         point_add.append(value_add)
         point_minus.append(value_minus)
 
     y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [point]})[0]
-    y_add = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X:[point_add]})[0]
-    y_minus = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X:[point_minus]})[0]
+    y_add = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [point_add]})[0]
+    y_minus = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [point_minus]})[0]
 
     if y < 0.5:
         if y_add > y_minus:
