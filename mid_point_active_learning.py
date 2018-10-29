@@ -96,8 +96,9 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
 
     predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
 
-    for i in range(active_learning_iteration):
-        print("*******", i, "th loop:")
+    count = 1
+    while len(train_set_x) < point_number_limit:
+        print("*******", count, "th loop:")
         print("training set size", len(train_set_x))
 
         with tf.Session() as sess:
@@ -150,7 +151,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
 
             predicted = tf.cast(aggregated_network.probability > 0.5, dtype=tf.float32)
             util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
-                                        train_set_x, train_set_y, lower_bound, upper_bound, i)
+                                        train_set_x, train_set_y, lower_bound, upper_bound, count)
 
             if len(train_set_x) > point_number_limit:
                 break
@@ -182,6 +183,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             length_1 = len(label_1) + 0.0
 
             print("label 0 length", length_0, "label 1 length", length_1)
+            count += 1
 
     communication.send_training_finish_message()
     tf.reset_default_graph()
