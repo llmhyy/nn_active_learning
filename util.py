@@ -92,7 +92,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
-    file_name = 'picture/test' + str(iteration + 1) + '.png'
+    file_name = 'picture/test' + str(iteration) + '.png'
     plt.savefig(file_name)
     pass
 
