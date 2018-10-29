@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import math
 import operator
 import random
 
@@ -332,16 +331,16 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
 
             border_point = border_points[k]
             original_border_point = border_point
-            angle, decided_gradient = calculate_gradient_and_angle(aggregated_network, border_point,
-                                                                   center, gradient, sess)
+            decided_direction = calculate_decided_direction(aggregated_network, border_point,
+                                                            center, gradient, sess)
             # move the point
             best_point = []
             move_count = 0
-            while abs(angle) < math.pi / 2 and move_count < 10:
-                gradient_length = util.calculate_vector_size(decided_gradient[0])
+            while move_count < 10:
+                gradient_length = util.calculate_vector_size(decided_direction[0])
                 new_point = []
                 for j in range(len(border_point)):
-                    new_value = border_point[j] + decided_gradient[0][j] * (step / gradient_length)
+                    new_value = border_point[j] + decided_direction[0][j] * (step / gradient_length)
                     new_point.append(new_value)
 
                 probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [new_point]})
@@ -351,8 +350,8 @@ def search_validation_points(aggregated_network, border_points_groups, centers, 
                 else:
                     break
 
-                angle, decided_gradient = calculate_gradient_and_angle(aggregated_network, new_point, center,
-                                                                       gradient, sess)
+                decided_direction = calculate_decided_direction(aggregated_network, new_point, center,
+                                                                gradient, sess)
 
                 border_point = new_point
                 move_count = move_count + 1
@@ -405,14 +404,12 @@ def confirm_gradient_direction(sess, point, aggregated_network, gradient):
             return gradient
 
 
-def calculate_gradient_and_angle(aggregated_network, point, center, gradient, sess):
+def calculate_decided_direction(aggregated_network, point, center, gradient, sess):
     vector = util.calculate_direction(point, center)
     vector_length = util.calculate_vector_size(vector)
     g = sess.run(gradient, feed_dict={aggregated_network.X: [point]})[0]
     g = confirm_gradient_direction(sess, point, aggregated_network, g)
     g_length = util.calculate_vector_size(g[0].tolist())
-
-    angle = 0
 
     if vector_length == 0 and g_length == 0:
         direction = np.random.randn(len(point)).tolist()
@@ -429,7 +426,7 @@ def calculate_gradient_and_angle(aggregated_network, point, center, gradient, se
 
     decided_gradient = [direction]
 
-    return angle, decided_gradient
+    return decided_gradient
 
 
 def is_point_valid(new_point, probability, lower_bound, upper_bound, label):
@@ -494,14 +491,17 @@ def append_mid_points(sess, aggregated_network, pair_list,
         for i in range(len(results)):
             result = results[i]
             middle_point = unconfident_points[i]
-            probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [middle_point]})[0]
-            if result == 1 and probability < 0.5:
-                if middle_point not in train_set_x:
-                    appended_x.append(middle_point)
-                    appended_y.append([1])
-            elif result == 0 and probability > 0.5:
-                if middle_point not in train_set_x:
-                    appended_x.append(middle_point)
-                    appended_y.append([0])
+            if middle_point not in train_set_x:
+                appended_x.append(middle_point)
+                appended_y.append([result])
+            # probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [middle_point]})[0]
+            # if result == 1 and probability < 0.5:
+            #     if middle_point not in train_set_x:
+            #         appended_x.append(middle_point)
+            #         appended_y.append([result])
+            # elif result == 0 and probability > 0.5:
+            #     if middle_point not in train_set_x:
+            #         appended_x.append(middle_point)
+            #         appended_y.append([result])
 
     return appended_x, appended_y

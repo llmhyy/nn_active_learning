@@ -38,7 +38,7 @@ def generate_partitioned_data(single_formula, category, lower_bound, upper_bound
     train_set_x = list(train_set_x)
     train_set_y = list(train_set_y)
 
-    total_num = positive_num + negative_num
+    total_num = 5000
     test_set_x, test_set_y = generate_testing_point(single_formula, category, dim, total_num,
                                                     lower_bound,
                                                     upper_bound)
