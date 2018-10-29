@@ -97,6 +97,8 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
     predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
 
     count = 1
+    total_appended_x = []
+    total_appended_y = []
     while len(train_set_x) < point_number_limit:
         print("*******", count, "th loop:")
         print("training set size", len(train_set_x))
@@ -121,15 +123,26 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
 
             if use_bagging:
                 aggregated_network, train_acc = train_bootstrap_model(all_data_x, all_data_y,
+                                                                      total_appended_x,
+                                                                      total_appended_y,
                                                                       net, parts_num, sess,
                                                                       train_set_x, train_set_y, training_epochs,
                                                                       lower_bound, upper_bound)
             else:
-                util.reset_random_seed()
                 sess.run(net.init)
                 for epoch in range(training_epochs):
                     _, c = sess.run([net.train_op, net.loss_op],
                                     feed_dict={net.X: train_set_x, net.Y: train_set_y})
+
+                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
+                                            train_set_x, train_set_y, lower_bound, upper_bound, count)
+
+                # if len(total_appended_x) > 0:
+                #     for epoch in range(5):
+                #         _, c = sess.run([net.train_op, net.loss_op],
+                #                         feed_dict={net.X: total_appended_x, net.Y: total_appended_y})
+                #     util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
+                #                                 train_set_x, train_set_y, lower_bound, upper_bound, count)
                 aggregated_network = net
 
             train_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: train_set_x})
@@ -156,6 +169,9 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             if len(train_set_x) > point_number_limit:
                 break
 
+            total_appended_x = []
+            total_appended_y = []
+
             std_dev = util.calculate_std_dev(train_set_x)
             centers, centers_label, clusters, border_points_groups = cluster_training_data(train_set_x, train_set_y, 2,
                                                                                            5)
@@ -166,15 +182,18 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
                                                                              label_tester, centers, centers_label,
                                                                              clusters, border_points_groups,
                                                                              generalization_valid_limit, train_set_x)
-            train_set_x = train_set_x + appended_x
-            train_set_y = train_set_y + appended_y
+            total_appended_x += appended_x
+            total_appended_y += appended_y
             appending_dict["generalization_validation"] = appended_x
 
             pair_list = select_point_pair(centers, centers_label, clusters, mid_point_limit)
             appended_x, appended_y = append_mid_points(sess, aggregated_network, pair_list,
                                                        train_set_x, train_set_y, label_tester)
-            train_set_x = train_set_x + appended_x
-            train_set_y = train_set_y + appended_y
+            total_appended_x += appended_x
+            total_appended_y += appended_y
+            train_set_x += total_appended_x
+            train_set_y += total_appended_y
+
             appending_dict["mid_point"] = appended_x
             appended_point_list.append(appending_dict)
 
@@ -186,7 +205,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             count += 1
 
     communication.send_training_finish_message()
-    tf.reset_default_graph()
+    # tf.reset_default_graph()
     return train_acc_list, test_acc_list, data_point_number_list, appended_point_list
 
 
@@ -198,7 +217,7 @@ def select_point_pair(centers, centers_label, clusters, mid_point_limit):
             positive_clusters.append(clusters[i])
         else:
             negative_clusters.append(clusters[i])
-    max_per_pair_num = (int)(mid_point_limit/len(positive_clusters))
+    max_per_pair_num = (int)(mid_point_limit / len(positive_clusters))
 
     final_pair_list = []
     for positive_cluster in positive_clusters:
@@ -219,7 +238,7 @@ def select_point_pair(centers, centers_label, clusters, mid_point_limit):
     return final_pair_list
 
 
-def train_bootstrap_model(all_data_x, all_data_y, net, parts_num, sess, train_set_x,
+def train_bootstrap_model(all_data_x, all_data_y, total_appended_x, total_appended_y, net, parts_num, sess, train_set_x,
                           train_set_y, training_epochs, lower_bound, upper_bound):
     all_biases_dict = []
     all_weights_dict = []
@@ -288,7 +307,8 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
     gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
 
     appended_x = search_validation_points(aggregated_network, border_points_groups, centers, centers_label, clusters,
-                                          gradient, sess, lower_bound, upper_bound, std_dev, generalization_valid_limit, train_set_x)
+                                          gradient, sess, lower_bound, upper_bound, std_dev, generalization_valid_limit,
+                                          train_set_x)
 
     appended_y = []
     if len(appended_x) != 0:
@@ -300,7 +320,8 @@ def append_generalization_validation_points(sess, aggregated_network, lower_boun
 
 
 def search_validation_points(aggregated_network, border_points_groups, centers, centers_label, clusters,
-                             gradient, sess, lower_bound, upper_bound, std_dev, generalization_valid_limit, train_set_x):
+                             gradient, sess, lower_bound, upper_bound, std_dev, generalization_valid_limit,
+                             train_set_x):
     appended_x = []
     for i in range(len(centers)):
         border_points = border_points_groups[i]
