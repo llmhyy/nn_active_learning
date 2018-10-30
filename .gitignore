@@ -1,4 +1,7 @@
 *.pyc
 .idea/*
 test*.png
-dataset/*
+dataset/*.csv
+prj_test/dataset/*.csv
+prj_test/*.png
+log.txt

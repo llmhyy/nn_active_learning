@@ -1,6 +1,6 @@
 import random
 
-import formula
+from prj_test import formula
 
 
 def generate_formula(category, number):
@@ -39,7 +39,7 @@ def generate_polyhedron(category):
     # generate center point and radius and number of circles
     num_of_center = random.randint(3, 5)
     num_of_dimension = random.randint(3, 5)
-    num_of_center = 1
+    num_of_center = 3
     num_of_dimension = 2
     centers = []
     radiuses = []

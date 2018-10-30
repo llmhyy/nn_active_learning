@@ -3,13 +3,10 @@ import math
 import random
 
 import numpy as np
-from matplotlib import pyplot as plt
-from sys import stdin
-import json
-import formula
-import testing_function
-import json_handler
 import tensorflow as tf
+import label_tester as lt
+from matplotlib import pyplot as plt
+from prj_test import formula
 
 
 def reset_random_seed():
@@ -17,6 +14,50 @@ def reset_random_seed():
     random.seed(random_seed)
     np.random.seed(random_seed)
     tf.set_random_seed(random_seed)
+
+
+def direction_combination(n):
+    output = []
+    if n == 1:
+        a = [True]
+        b = [False]
+        output.append(a)
+        output.append(b)
+        return output
+    else:
+        prev_binary_combination = direction_combination(n - 1)
+        binary_combination = []
+        for i in prev_binary_combination:
+            a = i + [True]
+            binary_combination.append(a)
+            b = i + [False]
+            binary_combination.append(b)
+        return binary_combination
+
+
+def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
+    train_set_X = []
+    train_set_Y = []
+
+    for key in clusters:
+        train_set_X = train_set_X + clusters[key]
+        for i in range(len(clusters[key])):
+            train_set_Y.append(key + 1)
+
+    X = np.array(train_set_X)
+    Y = np.array(train_set_Y)
+    y = Y.reshape(len(Y))
+    # colors = cm.rainbow(np.linspace(0, 1, len(clusters)))
+
+    plt.clf()
+    plt.xlim(lower_bound, upper_bound)
+    plt.ylim(lower_bound, upper_bound)
+    plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
+    # plt.show()
+    file_name = 'picture/clustering' + str(iteration + 1) + '.png'
+    plt.savefig(file_name)
+    pass
+
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
     # Set min and max values and give it some padding
@@ -45,9 +86,12 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     # Plot the contour and training examples
     plt.contourf(xx, yy, Z, cmap=plt.cm.copper)
     y = Y.reshape(len(Y))
+    # plt.clf()
+    plt.xlim(lower_bound, upper_bound)
+    plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
-    file_name = 'test' + str(iteration+1) + '.png'
+    file_name = 'picture/test' + str(iteration + 1) + '.png'
     plt.savefig(file_name)
     pass
 
@@ -81,22 +125,22 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
 # plt.savefig(file_name)
 
 
-def calculate_accuracy(y, set_Y, print_data_details):
+def calculate_accuracy(y, set_y, print_data_details):
     test_correct = []
     test_wrong = []
     train_correct = []
     train_wrong = []
-    for i in range(len(set_Y)):
+    for i in range(len(set_y)):
         # if (print_data_details):
         #     print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
         if math.isnan(y[i][0]):
-            print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
+            print(i, " predict:", y[i][0], " actual: ", set_y[i][0])
 
-        if y[i][0] > 0.5 and set_Y[i][0] == 1:
+        if y[i][0] > 0.5 and set_y[i][0] == 1:
             test_correct.append(y[i])
-        elif y[i][0] > 0.5 and set_Y[i][0] == 0:
+        elif y[i][0] > 0.5 and set_y[i][0] == 0:
             test_wrong.append(y[i])
-        elif y[i][0] <= 0.5 and set_Y[i][0] == 0:
+        elif y[i][0] <= 0.5 and set_y[i][0] == 0:
             test_correct.append(y[i])
         else:
             test_wrong.append(y[i])
@@ -107,11 +151,11 @@ def calculate_accuracy(y, set_Y, print_data_details):
     return result
 
 
-def preprocess(train_path, test_path, read_next):
-    test_set_X = []
-    test_set_Y = []
-    train_set_X = []
-    train_set_Y = []
+def read_data_from_file(train_path, test_path, read_next):
+    test_set_x = []
+    test_set_y = []
+    train_set_x = []
+    train_set_y = []
 
     # # read training data
     # with open(train_path, 'r+', newline='') as csvfile:
@@ -139,11 +183,11 @@ def preprocess(train_path, test_path, read_next):
             # print(row)
             l = [float(x) for x in row]
             # print(l)
-            test_set_X.append(l[1:])
+            test_set_x.append(l[1:])
             if row[0] == '1.0':
-                test_set_Y.append([1])
+                test_set_y.append([1])
             else:
-                test_set_Y.append([0])
+                test_set_y.append([0])
 
     # read training data
     # if read_next:
@@ -155,22 +199,19 @@ def preprocess(train_path, test_path, read_next):
                 continue
             l = [float(x) for x in row]
             # print(l)
-            train_set_X.append(l[1:])
+            train_set_x.append(l[1:])
             if row[0] == '1.0':
-                train_set_Y.append([1])
+                train_set_y.append([1])
             else:
-                train_set_Y.append([0])
+                train_set_y.append([0])
 
-    return train_set_X, train_set_Y, test_set_X, test_set_Y
+    return train_set_x, train_set_y, test_set_x, test_set_y
 
 
 def calculate_vector_size(vector):
-    dimension = len(vector)
-    s = 0
-    for j in range(dimension):
-        s += vector[j] * vector[j]
-
-    return math.sqrt(s)
+    vec = np.array(vector)
+    vec_length = np.linalg.norm(vec)
+    return vec_length
 
 
 def quickSort(alist):
@@ -186,32 +227,32 @@ def quickSortHelper(alist, first, last):
 
 
 def partition(alist, first, last):
-    pivotvalue = alist[first]
+    pivot_value = alist[first]
 
-    leftmark = first + 1
-    rightmark = last
+    left_mark = first + 1
+    right_mark = last
 
     done = False
     while not done:
 
-        while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
-            leftmark = leftmark + 1
+        while left_mark <= right_mark and alist[left_mark] <= pivot_value:
+            left_mark = left_mark + 1
 
-        while alist[rightmark] >= pivotvalue and rightmark >= leftmark:
-            rightmark = rightmark - 1
+        while alist[right_mark] >= pivot_value and right_mark >= left_mark:
+            right_mark = right_mark - 1
 
-        if rightmark < leftmark:
+        if right_mark < left_mark:
             done = True
         else:
-            temp = alist[leftmark]
-            alist[leftmark] = alist[rightmark]
-            alist[rightmark] = temp
+            temp = alist[left_mark]
+            alist[left_mark] = alist[right_mark]
+            alist[right_mark] = temp
 
     temp = alist[first]
-    alist[first] = alist[rightmark]
-    alist[rightmark] = temp
+    alist[first] = alist[right_mark]
+    alist[right_mark] = temp
 
-    return rightmark
+    return right_mark
 
 
 def calculate_distance(m, n):
@@ -222,14 +263,17 @@ def calculate_distance(m, n):
     return distance
 
 
-def calculate_std_dev(train_set_X):
-    dimension = len(train_set_X[0])
+def calculate_std_dev(train_set_x):
+    if len(train_set_x) == 1:
+        return np.random.uniform(1, 10)
+
+    dimension = len(train_set_x[0])
     point_distance_list = []
-    for p in range(len(train_set_X) - 1):
-        for q in range(p + 1, len(train_set_X)):
+    for p in range(len(train_set_x) - 1):
+        for q in range(p + 1, len(train_set_x)):
             distance = 0
             for d in range(dimension):
-                distance += (train_set_X[p][d] - train_set_X[q][d]) * (train_set_X[p][d] - train_set_X[q][d])
+                distance += (train_set_x[p][d] - train_set_x[q][d]) * (train_set_x[p][d] - train_set_x[q][d])
             distance = math.sqrt(distance)
             point_distance_list.append(distance)
     std_dev = np.std(point_distance_list)
@@ -274,26 +318,22 @@ def data_partition_gradient(train_set_X, train_set_Y, gradient):
     return label_0, label_1, label_0_gradient, label_1_gradient
 
 
-def append_random_points(formu, train_set_X, train_set_Y, to_be_appended_random_points_number, lower_bound, upper_bound,
+def append_random_points(formu, train_set_x, train_set_y, to_be_appended_random_points_number, lower_bound, upper_bound,
                          type, name_list, mock):
-    if mock == True:
-        category = formu.get_category()
-        if (category == formula.POLYNOMIAL):
-            newPointsX, newPointsY = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound,
+    category = formu.get_category()
+    if category == formula.POLYNOMIAL:
+        new_points_x, new_points_y = generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound,
                                                                 upper_bound)
-            train_set_X = train_set_X + newPointsX
-            train_set_Y = train_set_Y + newPointsY
-        elif (category == formula.POLYHEDRON):
-            newPointsX, newPointsY = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound,
+        train_set_x = train_set_x + new_points_x
+        train_set_y = train_set_y + new_points_y
+    elif category == formula.POLYHEDRON:
+        new_points_x, new_points_y = generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound,
                                                                 upper_bound)
-            train_set_X = train_set_X + newPointsX
-            train_set_Y = train_set_Y + newPointsY
-        print("New random points X", newPointsX)
-        print("New random points Y", newPointsY)
-        return train_set_X, train_set_Y
-    # else:
-    #     newPointsX=generate_random_points(to_be_appended_random_points_number,lower_bound,upper_bound)
-    #     return train_set_X,train_set_Y
+        train_set_x = train_set_x + new_points_x
+        train_set_y = train_set_y + new_points_y
+    print("New random points X", new_points_x)
+    print("New random points Y", new_points_y)
+    return train_set_x, train_set_y
 
 
 def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
@@ -302,10 +342,10 @@ def is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
            (length_1 / length_0 > balance_ratio_threshold and length_1 / length_0 <= 1)
 
 
-def generate_polynomial_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):
-    formu = formu.get_list()
-    coefficientList = formu[:-1]
-    y = formu[-1]
+def generate_polynomial_points(single_formula, to_be_appended_random_points_number, lower_bound, upper_bound):
+    single_formula = single_formula.get_formula()
+    coefficientList = single_formula[:-1]
+    y = single_formula[-1]
     outputX = []
     outputY = []
     for i in range(to_be_appended_random_points_number):
@@ -314,7 +354,8 @@ def generate_polynomial_points(formu, to_be_appended_random_points_number, lower
         for j in range(variableNum):
             xList.append(random.randint(lower_bound, upper_bound))
 
-        flag = testing_function.polynomial_model(coefficientList, xList, y)
+        formula_tester = lt.FormulaLabelTester(single_formula)
+        flag = formula_tester.polynomial_model(coefficientList, xList, y)
         outputX.append(xList)
 
         if (flag):
@@ -327,7 +368,7 @@ def generate_polynomial_points(formu, to_be_appended_random_points_number, lower
 
 # TODO use lower and upper bound to generate data points
 def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower_bound, upper_bound):
-    formu = formu.get_list()
+    formu = formu.get_formula()
     dim = len(formu[0][0])
     outputX = []
     outputY = []
@@ -345,7 +386,8 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
         # else:
         #     for i in range(dim):
         #         generated_point.append(random.uniform(-10, 10))
-        flag = testing_function.polycircle_model(formu[0], formu[1], generated_point)
+        formula_tester = lt.FormulaLabelTester()
+        flag = formula_tester.polycircle_model(formu[0], formu[1], generated_point)
         outputX.append(generated_point)
 
         if (flag):
@@ -355,6 +397,64 @@ def generate_polyhedron_points(formu, to_be_appended_random_points_number, lower
     return outputX, outputY
 
 
-def calculate_vector_angle(v0,v1):
-    angle = np.math.atan2(np.linalg.det([v0, v1]), np.dot(v0, v1))
-    return np.degrees(angle)
+def unit_vector(vector):
+    """ Returns the unit vector of the vector.  """
+    np.seterr(all='raise')
+    return vector / np.linalg.norm(vector)
+
+
+def calculate_vector_angle(v1, v2):
+    """ Returns the angle in radians between vectors 'v1' and 'v2'::
+
+            >>> angle_between((1, 0, 0), (0, 1, 0))
+            1.5707963267948966
+            >>> angle_between((1, 0, 0), (1, 0, 0))
+            0.0
+            >>> angle_between((1, 0, 0), (-1, 0, 0))
+            3.141592653589793
+    """
+    v1_u = unit_vector(v1)
+    v2_u = unit_vector(v2)
+    return np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
+
+
+def calculate_orthogonal_direction(vector):
+    length = len(vector)
+    v = vector[0: length - 1]
+    r = np.random.randn(length - 1)
+
+    v_a = np.array(v)
+    v_r = np.array(r)
+    value = np.dot(v_a, v_r)
+
+    last_element = 0
+    if vector[length - 1] != 0:
+        last_element = -value / vector[length - 1]
+        last_element = np.asscalar(last_element)
+
+    direction = r.tolist()
+    direction.append(last_element)
+
+    return direction
+
+
+def calculate_vector_projection(vector, gradient):
+    '''
+    project vector on the plane orthogonal to gradient
+    '''
+    vec = np.array(vector)
+    vgra = np.array(gradient)
+
+    gradient_length = np.linalg.norm(vgra)
+    orthogonal_part = vgra / gradient_length * (np.dot(vec, vgra) / gradient_length)
+
+    result = np.subtract(vec, orthogonal_part).tolist()
+    return result
+
+
+def calculate_direction(point, origin):
+    tmp_vector = []
+    for m in range(len(point)):
+        new_value = point[m] - origin[m]
+        tmp_vector.append(new_value)
+    return tmp_vector

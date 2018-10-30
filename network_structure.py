@@ -8,7 +8,7 @@ class NNStructure():
         self.learning_rate = learning_rate
 
         # Network Parameters
-        n_hidden_1 = 64  # 1st layer number of neurons
+        n_hidden_1 = 128  # 1st layer number of neurons
         n_hidden_2 = 16  # 2nd layer number of neurons
         n_input = len(data_size)
         n_classes = 1

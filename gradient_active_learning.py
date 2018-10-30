@@ -1,16 +1,14 @@
 from __future__ import print_function
 
-import tensorflow as tf
-import csv
-
-import numpy as np
 import random
+
+import tensorflow as tf
+
 import boundary_remaining as br
 import gradient_combination
 import network_structure as ns
 import testing_function
 import util
-import math
 
 
 def partition_data(label_0, label_1, parts_num):
@@ -160,7 +158,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
     test_set_Y = []
 
     if mock == True:
-        train_set_X, train_set_Y, test_set_X, test_set_Y = util.preprocess(train_path, test_path, read_next=True)
+        train_set_X, train_set_Y, test_set_X, test_set_Y = util.read_data_from_file(train_path, test_path, read_next=True)
 
     else:
         train_set_X = inputX
@@ -177,7 +175,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
     result = []
     train_acc_max = 0
 
-    decision = gradient_combination.combination(len(train_set_X[0]))
+    decision = util.direction_combination(len(train_set_X[0]))
     save_path = "model_saved/gradient_model"
     # predicted = tf.cast(net_stru.logits > 0, dtype=tf.float32)
     with tf.Session() as sess:
@@ -198,11 +196,16 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             length_0 = len(label_0) + 0.0
             length_1 = len(label_1) + 0.0
 
-            if (not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold)):
-                br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0, length_1, net_stru.probability,
-                                            formula,
-                                            train_set_X, train_set_Y, to_be_appended_boundary_remaining_points_number,
-                                            type, name_list, mock)
+            if not util.is_training_data_balanced(length_0, length_1, balance_ratio_threshold):
+                appended_x, appended_y = br.apply_boundary_remaining(sess, newgrads, net_stru.X, net_stru.Y, length_0,
+                                                                     length_1, net_stru.probability,
+                                                                     formula,
+                                                                     train_set_X, train_set_Y,
+                                                                     to_be_appended_boundary_remaining_points_number,
+                                                                     type, name_list, mock)
+                train_set_X = train_set_X + appended_x
+                train_set_Y = train_set_Y + appended_y
+
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net_stru.X: x}), train_set_X,
                 #                         train_set_Y, 10+i)
             all_data_X, all_data_Y = partition_data(label_0, label_1, parts_num)
