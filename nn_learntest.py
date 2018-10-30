@@ -4,14 +4,14 @@ from sys import stdin
 from sys import stdout
 
 import json_handler
-import mid_point_active_learning
 import label_tester as lt
+import mid_point_active_learning
 
 lower_bound = -1000
 upper_bound = 1000
 
 learning_rate = 0.01
-training_epochs = 500
+training_epochs = 1000
 mock = False
 try:
     while True:
@@ -25,13 +25,16 @@ try:
         message_body = json.loads(message_body)
 
         if request_type == "$TRAINING":
-            train_set_X, train_set_Y, variables = json_handler.parse_training_message_body(message_body)
+            train_set_X, train_set_Y, variables, model_path = json_handler.parse_training_message_body(
+                message_body)
             label_tester = lt.CoverageLabelTester(variables)
             mid_point_active_learning.generate_accuracy(train_set_X, train_set_Y,
-                                                        learning_rate, training_epochs, lower_bound, upper_bound, False,
-                                                        label_tester)
+                                                        learning_rate, training_epochs,
+                                                        lower_bound, upper_bound, False,
+                                                        label_tester, model_path)
         elif request_type == "$BOUNDARY_EXPLORATION":
-            pass
+            data_set, model_path = json_handler.parse_boundary_exploration(message_body)
+
 
         stdout.flush()
         print("finished!")

@@ -4,13 +4,13 @@ import tensorflow as tf
 
 class NNStructure():
 
-    def __init__(self, data_size, learning_rate):
+    def __init__(self, input_dimension, learning_rate):
         self.learning_rate = learning_rate
 
         # Network Parameters
         n_hidden_1 = 8  # 1st layer number of neurons
         n_hidden_2 = 4  # 2nd layer number of neurons
-        n_input = len(data_size)
+        n_input = len(input_dimension)
         n_classes = 1
 
         # tf Graph input

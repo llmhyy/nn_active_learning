@@ -80,14 +80,14 @@ def filter_distant_point_pair(label_0, label_1, threshold):
 
 
 def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs,
-                      lower_bound, upper_bound, use_bagging, label_tester, point_number_limit):
+                      lower_bound, upper_bound, use_bagging, label_tester, point_number_limit, model_path):
     print("=========MID_POINT===========")
 
     mid_point_limit = 10
     generalization_valid_limit = 10
-    active_learning_iteration = 10
 
     net = ns.NNStructure(train_set_x[0], learning_rate)
+    aggregated_network = None
 
     train_acc_list = []
     test_acc_list = []
@@ -202,6 +202,11 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             length_1 = len(label_1) + 0.0
 
             print("label 0 length", length_0, "label 1 length", length_1)
+
+            if model_path is not None:
+                saver = tf.train.Saver()
+                saver.save(sess, model_path)
+
             count += 1
 
     communication.send_training_finish_message()

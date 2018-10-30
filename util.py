@@ -4,9 +4,19 @@ import random
 
 import numpy as np
 import tensorflow as tf
-import label_tester as lt
 from matplotlib import pyplot as plt
+
+import label_tester as lt
 from prj_test import formula
+
+
+def move(point, direction, step):
+    direction_len = calculate_vector_size(direction)
+    new_point = []
+    for j in range(len(point)):
+        new_point = point[j] + direction[j] * (step / direction_len)
+
+    return new_point
 
 
 def reset_random_seed():

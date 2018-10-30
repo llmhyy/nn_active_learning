@@ -1,38 +1,42 @@
 import tensorflow as tf
 
-from prj_test import formula
+import cluster as cl
 import network_structure as ns
 import util
 
 
-def boundary_explore(train_set_X, train_set_Y, label, iteration, formu, lower_bound, upper_bound, learning_rate,
-                     training_epochs):
-    while True:
-        point_added_number = len(train_set_X)
-        assumption_points_label = 1 - label
-        assumption_points_X, assumption_points_Y = append_assumption_points(assumption_points_label, point_added_number,
-                                                                            formu, lower_bound, upper_bound)
-        train_set_X = train_set_X + assumption_points_X
-        train_set_Y = train_set_Y + assumption_points_Y
-        net_stru = ns.NNStructure(train_set_X[0], learning_rate)
-        with tf.Session() as sess:
-            sess.run(net_stru.init)
-            for epoch in range(training_epochs):
-                _, c = sess.run([net_stru.train_op, net_stru.loss_op],
-                                feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
+def boundary_explore(data_set, label, model_path, label_tester, iterations):
+    sample_point = data_set[0]
+    dimension = len(sample_point)
+    other_side_data = []
 
-        ##TODO add point near boundary
+    with tf.Session() as sess:
+        net = ns.NNStructure(dimension, 0.01)
+        saver = tf.train.import_meta_graph(model_path + '.meta')
+        saver.restore(sess, tf.train.latest_checkpoint('./'))
+
+        for k in range(iterations):
+            new_points = []
+            centers, border_points_group, cluster_group = cl.cluster_points(data_set, 5, 3)
+            for i in range(len(centers)):
+                center = centers[i]
+                border_points = border_points_group[i]
+
+                step = util.calculate_std_dev(border_points)
+                for border_point in border_points:
+                    direction = border_point - center
+                    new_point = util.move(border_point, direction, step)
+
+                    if is_point_valid(new_point, net):
+                        new_points.append(new_point)
+
+            labels = label_tester.test_label(new_points)
+            for i in range(len(labels)):
+                if labels[i] != label:
+                    other_side_data.append(new_points[i])
+
+    return other_side_data
 
 
-def append_assumption_points(assumption_points_label, point_added_number, formu, lower_bound, upper_bound):
-    category = formu.get_category()
-    if (category == formula.POLYNOMIAL):
-        newPointsX, newPointsY = util.generate_polynomial_points(formu, point_added_number, lower_bound, upper_bound)
-        for i in newPointsY:
-            i[0] = assumption_points_label
-        return newPointsX, newPointsY
-    elif (category == formula.POLYHEDRON):
-        newPointsX, newPointsY = util.generate_polyhedron_points(formu, point_added_number, lower_bound, upper_bound)
-        for i in newPointsY:
-            i[0] = assumption_points_label
-        return newPointsX, newPointsY
+def is_point_valid(new_point, net):
+    pass

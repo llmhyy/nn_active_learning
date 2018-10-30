@@ -1,9 +1,47 @@
 import json
+import os
 from sys import stdout
+
 import variable as v
 
 
-# input = {"BRANCH_ID": "2-3",
+# input = {
+#          "METHOD_ID": "com.test.Class.method()",
+#          "BRANCH_ID": "2-3",
+#          "DATA": [
+#              [{"VALUE": "877", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "0", "TYPE": "PRIMITIVE", "NAME": "b"}],
+#              [{"VALUE": "548", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "969", "TYPE": "PRIMITIVE", "NAME": "b"}]
+#          ]}
+#
+# test_data = [[1, 2], [3, 4], [5, 6]]
+def parse_boundary_exploration(message):
+    model_folder = message["METHOD_ID"]
+    model_file_name = message["BRANCH_ID"]
+
+    model_path = os.path.join(model_folder, model_file_name)
+
+    data = message["DATA"]
+
+    sample_point = data[0]
+    variables = []
+    for dimension in sample_point:
+        variable = v.Variable(dimension["NAME"], dimension["TYPE"])
+        variables.append(variable)
+
+    data_set = []
+    for point in data:
+        point = []
+        for dimension in point:
+            point.append(int(dimension["VALUE"]))
+
+        data_set.append(point)
+
+    return data_set, model_path
+
+
+# input = {
+#           "METHOD_ID": "com.test.Class.method()",
+#           "BRANCH_ID": "2-3",
 #
 #          "POSITIVE_DATA": [
 #              [{"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "b"}]],
@@ -15,7 +53,9 @@ import variable as v
 #
 # test_data = [[1, 2], [3, 4], [5, 6]]
 def parse_training_message_body(message):
-    print("starting parse data from java")
+    model_folder = message["METHOD_ID"]
+    model_file_name = message["BRANCH_ID"]
+    model_path = os.path.join(model_folder, model_file_name)
 
     train_set_X = []
     train_set_Y = []
@@ -50,7 +90,7 @@ def parse_training_message_body(message):
     # print(train_set_X)
     # print(train_set_Y)
     print("parsing finished")
-    return train_set_X, train_set_Y, variables
+    return train_set_X, train_set_Y, variables, model_path
 
 
 def generate_label_request(train_set_X, variables):
@@ -62,8 +102,7 @@ def generate_label_request(train_set_X, variables):
             var_name = variables[index].var_name
             var_type = variables[index].var_type
 
-            tmp_dic = {}
-            tmp_dic["NAME"] = var_name
+            tmp_dic = {"NAME": var_name}
             if var_type == "INTEGER":
                 dimension = int(round(dimension))
             tmp_dic["VALUE"] = str(dimension)
@@ -78,7 +117,8 @@ def generate_label_request(train_set_X, variables):
 
 # parse_training_message_body(input)
 # generate_label_request(test_data,"PRIMITIVE",["a","b"])
-# label_input = {"RESULT": [[{"LABEL": True, "VALUE": 1, "TYPE": "INTEGER", "NAME": "a"},
+# label_input = {
+#                  "RESULT": [[{"LABEL": True, "VALUE": 1, "TYPE": "INTEGER", "NAME": "a"},
 #                            {"LABEL": True, "VALUE": 2, "TYPE": "INTEGER", "NAME": "b"}],
 #                           [{"LABEL": True, "VALUE": 3, "TYPE": "INTEGER", "NAME": "a"},
 #                            {"LABEL": True, "VALUE": 4, "TYPE": "INTEGER", "NAME": "b"}],

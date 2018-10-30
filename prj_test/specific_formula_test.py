@@ -10,7 +10,8 @@ def generate_specific_formula():
     formulas = formula.Formulas()
     formu = formula.Formula(
         # [[[-2, 60], [163, -899]], [485, 430]], formula.POLYHEDRON)
-        [[[-700, -700], [700, 700], [-700, 700], [700, -700]], [300, 300, 300, 300]], formula.POLYHEDRON)
+        # [[[-700, -700], [700, 700], [-700, 700], [700, -700]], [300, 300, 300, 300]], formula.POLYHEDRON)
+        [[[-254, 438], [-83, -272], [138, 680]], [419, 478, 404]], formula.POLYHEDRON)
         # [[[0, 0]], [500]], formula.POLYHEDRON)
     # [[[-571, 31]], [445]], formula.POLYHEDRON)
     # [[[0, 0]], [500]], formula.POLYHEDRON)
