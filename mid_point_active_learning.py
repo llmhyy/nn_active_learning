@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import operator
 import random
 
 import numpy as np
@@ -80,13 +79,14 @@ def filter_distant_point_pair(label_0, label_1, threshold):
 
 
 def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs,
-                      lower_bound, upper_bound, use_bagging, label_tester, point_number_limit, model_path):
+                      lower_bound, upper_bound, use_bagging, label_tester, point_number_limit, model_folder,
+                      model_file):
     print("=========MID_POINT===========")
 
     mid_point_limit = 10
     generalization_valid_limit = 10
 
-    net = ns.NNStructure(train_set_x[0], learning_rate)
+    net = ns.NNStructure(len(train_set_x[0]), learning_rate)
     aggregated_network = None
 
     train_acc_list = []
@@ -129,7 +129,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
                                                                       train_set_x, train_set_y, training_epochs,
                                                                       lower_bound, upper_bound)
             else:
-                sess.run(net.init)
+                sess.run(net.w_init)
                 for epoch in range(training_epochs):
                     _, c = sess.run([net.train_op, net.loss_op],
                                     feed_dict={net.X: train_set_x, net.Y: train_set_y})
@@ -203,10 +203,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
 
             print("label 0 length", length_0, "label 1 length", length_1)
 
-            if model_path is not None:
-                saver = tf.train.Saver()
-                saver.save(sess, model_path)
-
+            util.save_model(sess, model_folder, model_file)
             count += 1
 
     communication.send_training_finish_message()
@@ -265,7 +262,7 @@ def train_bootstrap_model(all_data_x, all_data_y, total_appended_x, total_append
         all_weights_dict.append(weights_dict)
         all_biases_dict.append(bias_dict)
 
-    aggregated_network = ns.AggregateNNStructure(train_set_x[0], all_weights_dict, all_biases_dict)
+    aggregated_network = ns.AggregateNNStructure(len(train_set_x[0]), all_weights_dict, all_biases_dict)
 
     sess.run(aggregated_network.init)
     train_y = sess.run(aggregated_network.probability, feed_dict={

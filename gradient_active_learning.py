@@ -164,7 +164,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
         train_set_X = inputX
         train_set_Y = inputY
 
-    net_stru = ns.NNStructure(train_set_X[0], learning_rate)
+    net_stru = ns.NNStructure(len(train_set_X[0]), learning_rate)
 
     newgrads = tf.gradients(net_stru.probability, net_stru.X)
 
@@ -185,7 +185,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             print("training set size", len(train_set_X))
             # ten times training
 
-            sess.run(net_stru.init)
+            sess.run(net_stru.w_init)
             label_0 = []
             label_1 = []
 
@@ -218,7 +218,7 @@ def generate_accuracy(inputX, inputY, train_path, test_path, formula, category, 
             if use_bagging:
                 for parts in range(parts_num):
                     best_accuracy = 0
-                    sess.run(net_stru.init)
+                    sess.run(net_stru.w_init)
                     for epoch in range(training_epochs):
                         _, c = sess.run([net_stru.train_op, net_stru.loss_op],
                                         feed_dict={net_stru.X: all_data_X[parts], net_stru.Y: all_data_Y[parts]})

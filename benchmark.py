@@ -1,25 +1,23 @@
 from __future__ import print_function
 
 import tensorflow as tf
-
+import os
 import network_structure as ns
 import util
 
 
 def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs, lower_bound,
-                      upper_bound):
+                      upper_bound, model_folder, model_file):
     print("=========BENCH_MARK===========")
 
-    net = ns.NNStructure(train_set_x[0], learning_rate)
+    net = ns.NNStructure(len(train_set_x[0]), learning_rate)
     train_acc = 0
     test_acc = 0
 
     with tf.Session() as sess:
         sess.run(net.init)
-
         data_size = len(train_set_x)
 
-        best_accuracy = 0
         loss_list = []
         predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
 
@@ -32,11 +30,15 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             print("loss: ", loss, "temp: ")
             loss_list.append(loss)
 
+        p = sess.run(net.probability, feed_dict={net.X: [[325, -302]]})
+
         util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
                                     train_set_x[:data_size], train_set_y[:data_size],
                                     lower_bound, upper_bound, 0)
-        # saver = tf.train.Saver()
-        # saver.restore(sess, "./models/benchmark.ckpt")
+        util.save_model(sess, model_folder, model_file)
+        # for op in tf.get_default_graph().get_operations():
+        #     print(str(op.name))
+        net.print_parameters(sess)
 
         train_y = sess.run(net.probability, feed_dict={net.X: train_set_x})
         train_acc = util.calculate_accuracy(train_y, train_set_y, False)

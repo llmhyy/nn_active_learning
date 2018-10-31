@@ -4,6 +4,7 @@ from sys import stdin
 from sys import stdout
 
 import json_handler
+import os
 import label_tester as lt
 import mid_point_active_learning
 
@@ -27,6 +28,7 @@ try:
         if request_type == "$TRAINING":
             train_set_X, train_set_Y, variables, model_path = json_handler.parse_training_message_body(
                 message_body)
+            model_path = os.path.join("models", model_path)
             label_tester = lt.CoverageLabelTester(variables)
             mid_point_active_learning.generate_accuracy(train_set_X, train_set_Y,
                                                         learning_rate, training_epochs,
@@ -34,7 +36,7 @@ try:
                                                         label_tester, model_path)
         elif request_type == "$BOUNDARY_EXPLORATION":
             data_set, model_path = json_handler.parse_boundary_exploration(message_body)
-
+            model_path = os.path.join("models", model_path)
 
         stdout.flush()
         print("finished!")
