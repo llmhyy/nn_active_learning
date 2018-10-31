@@ -129,7 +129,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
                                                                       train_set_x, train_set_y, training_epochs,
                                                                       lower_bound, upper_bound)
             else:
-                sess.run(net.w_init)
+                sess.run(net.init)
                 for epoch in range(training_epochs):
                     _, c = sess.run([net.train_op, net.loss_op],
                                     feed_dict={net.X: train_set_x, net.Y: train_set_y})
