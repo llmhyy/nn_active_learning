@@ -1,6 +1,3 @@
-import os
-
-import numpy as np
 import tensorflow as tf
 
 
@@ -21,38 +18,44 @@ class NNStructure():
         self.Y = tf.placeholder("float", [None, n_classes], name="Y")
 
         # Store layers weight & bias
-        with tf.variable_scope("foo", reuse=tf.AUTO_REUSE):
-            self.weights = {
-                'h1': tf.get_variable(name="h1", shape=[n_input, n_hidden_1], initializer=self.w_init),
-                'h2': tf.get_variable(name="h2", shape=[n_hidden_1, n_hidden_2], initializer=self.w_init),
-                'hout': tf.get_variable(name="hout", shape=[n_hidden_2, n_classes], initializer=self.w_init)
-            }
+        # with tf.variable_scope("foo", reuse=tf.AUTO_REUSE):
+        self.weights = {
+            'h1': tf.get_variable(name="h1", shape=[n_input, n_hidden_1], initializer=self.w_init),
+            'h2': tf.get_variable(name="h2", shape=[n_hidden_1, n_hidden_2], initializer=self.w_init),
+            'hout': tf.get_variable(name="hout", shape=[n_hidden_2, n_classes], initializer=self.w_init)
+        }
 
-            self.biases = {
-                'b1': tf.get_variable(name="b1", shape=[n_hidden_1], initializer=self.w_init),
-                'b2': tf.get_variable(name="b2", shape=[n_hidden_2], initializer=self.w_init),
-                'bout': tf.get_variable(name="bout", shape=[n_classes], initializer=self.w_init)
-                # 'b1': tf.Variable(tf.random_normal([n_hidden_1]), name="b1"),
-                # 'b2': tf.Variable(tf.random_normal([n_hidden_2]), name="b2"),
-                # 'bout': tf.Variable(tf.random_normal([n_classes]), name="bout")
-            }
+        self.biases = {
+            'b1': tf.get_variable(name="b1", shape=[n_hidden_1], initializer=self.w_init),
+            'b2': tf.get_variable(name="b2", shape=[n_hidden_2], initializer=self.w_init),
+            'bout': tf.get_variable(name="bout", shape=[n_classes], initializer=self.w_init)
+            # 'b1': tf.Variable(tf.random_normal([n_hidden_1]), name="b1"),
+            # 'b2': tf.Variable(tf.random_normal([n_hidden_2]), name="b2"),
+            # 'bout': tf.Variable(tf.random_normal([n_classes]), name="bout")
+        }
 
-            self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
-            self.probability = tf.nn.sigmoid(self.logits)
-            self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
-            self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
-            self.train_op = self.optimizer.minimize(self.loss_op)
+        self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
+        self.probability = tf.nn.sigmoid(self.logits)
+        self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
+        self.train_op = self.optimizer.minimize(self.loss_op)
 
         self.init = tf.global_variables_initializer()
 
-    def restore(self):
+    def restore_parameter(self):
         graph = tf.get_default_graph()
         self.X = graph.get_tensor_by_name("X:0")
         self.Y = graph.get_tensor_by_name("Y:0")
         for key in self.weights:
-            self.weights[key] = graph.get_tensor_by_name("foo/"+key+":0")
+            self.weights[key] = graph.get_tensor_by_name(key+":0")
         for key in self.biases:
-            self.biases[key] = graph.get_tensor_by_name("foo/"+key+":0")
+            self.biases[key] = graph.get_tensor_by_name(key+":0")
+        # self.X = tf.get_collection("X")[0]
+        # self.Y = tf.get_collection("Y")[0]
+        # for key in self.weights:
+        #     self.weights[key] = tf.get_collection(key)[0]
+        # for key in self.biases:
+        #     self.biases[key] = tf.get_collection(key)[0]
 
         self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
         self.probability = tf.nn.sigmoid(self.logits)
@@ -62,11 +65,18 @@ class NNStructure():
     def print_parameters(self, sess):
         for key in self.weights:
             print(key, self.weights[key])
-            print(key, sess.run(self.weights[key]))
+            print(sess.run(self.weights[key]))
         for key in self.biases:
             print(key, self.biases[key])
-            print(key, sess.run(self.biases[key]))
+            print(sess.run(self.biases[key]))
 
+    def save_parameters(self):
+        tf.add_to_collection("X", self.X)
+        tf.add_to_collection("Y", self.Y)
+        for key in self.weights:
+            tf.add_to_collection(key, self.weights[key])
+        for key in self.biases:
+            tf.add_to_collection(key, self.biases[key])
 
     # Create model
     def multilayer_perceptron(self, x, weights, biases):

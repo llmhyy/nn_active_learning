@@ -17,7 +17,8 @@ def save_model(sess, model_folder, model_file):
             os.makedirs(model_folder)
     model_path = os.path.join(model_folder, model_file)
     saver = tf.train.Saver()
-    saver.save(sess, model_path)
+    p = saver.save(sess, model_path)
+    return p
 
 
 def move(point, direction, step):

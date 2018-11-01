@@ -97,8 +97,8 @@ def cluster_points(data_set, border_point_number, maximum_num_cluster):
         else:
             maximum_num_cluster -= 1
 
-    print("Final number of clusters: ", maximum_num_cluster)
-    print(sep_clusters)
+    # print("Final number of clusters: ", maximum_num_cluster)
+    # print(sep_clusters)
     centers = []
     border_points_group = []
     cluster_group = []

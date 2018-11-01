@@ -2,14 +2,15 @@ import os
 import random
 
 import numpy as np
+import network_structure as ns
 import tensorflow as tf
 
 import cluster as cl
-import network_structure as ns
 import util
 
 
-def boundary_explore(data_set, parent_branch_label, child_branch_label, model_folder, model_file, child_label_tester, iterations):
+def boundary_explore(data_set, parent_branch_label, child_branch_label, model_folder, model_file, child_label_tester,
+                     iterations):
     sample_point = data_set[0]
     other_side_data = []
 
@@ -17,28 +18,31 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
     net = None
 
     if model_folder is not None and os.path.exists(model_folder):
-        model_path = os.path.join(model_folder, model_file + ".meta")
-        if os.path.exists(model_path):
+        model_path = os.path.join(model_folder, model_file)
+        if os.path.exists(model_path + ".meta"):
+            tf.reset_default_graph()
             net = ns.NNStructure(len(sample_point), 0.01)
+
             sess = tf.Session()
-            saver = tf.train.import_meta_graph(model_path)
-            saver.restore(sess, tf.train.latest_checkpoint(model_folder))
-            net.restore()
+            saver = tf.train.Saver()
+            saver.restore(sess, model_path)
+
+            net.print_parameters(sess)
+
             p = sess.run(net.probability, feed_dict={net.X: [[325, -302]]})
-            print(sess.run(net.weights["h1"]))
             pass
 
     for k in range(iterations):
         new_points = []
         centers, border_points_group, cluster_group = cl.cluster_points(data_set, 20, 3)
-        util.plot_clustering_result(cluster_group, -1000, 1000, k+1)
+        util.plot_clustering_result(cluster_group, -1000, 1000, k + 1)
         for i in range(len(centers)):
             center = centers[i]
             border_points = border_points_group[i]
 
             std_dev = util.calculate_std_dev(border_points)
             step = random.uniform(0, std_dev)
-            step = 5
+            # step = 5
             for border_point in border_points:
                 direction = (np.array(border_point) - np.array(center)).tolist()
                 new_point = util.move(border_point, direction, step)

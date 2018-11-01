@@ -2,6 +2,7 @@ import benchmark
 import label_tester as lt
 import util
 import boundary_exploration as be
+import tensorflow as tf
 from prj_test import formula_data_point_generation, formula
 
 
@@ -49,9 +50,9 @@ util.reset_random_seed()
 model_folder = "models/test-method/test-branch"
 model_file = "test-branch"
 
-util.reset_random_seed()
-train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
-                                                  training_epochs, lower_bound, upper_bound, model_folder, model_file)
+# util.reset_random_seed()
+# train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
+#                                                   training_epochs, lower_bound, upper_bound, model_folder, model_file)
 
 child_label_tester = lt.FormulaLabelTester(child_formula)
 train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partitioned_data(
