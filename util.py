@@ -39,10 +39,11 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
     train_set_X = []
     train_set_Y = []
 
-    for key in clusters:
-        train_set_X = train_set_X + clusters[key]
-        for i in range(len(clusters[key])):
-            train_set_Y.append(key + 1)
+    for i in range(len(clusters)):
+        cluster = clusters[i]
+        train_set_X = train_set_X + cluster
+        for j in range(len(clusters[i])):
+            train_set_Y.append(i + 1)
 
     X = np.array(train_set_X)
     Y = np.array(train_set_Y)
@@ -54,7 +55,7 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
     plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
-    file_name = 'picture/clustering' + str(iteration + 1) + '.png'
+    file_name = 'picture/clustering' + str(iteration) + '.png'
     plt.savefig(file_name)
     pass
 
@@ -91,7 +92,7 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
     plt.ylim(lower_bound, upper_bound)
     plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.coolwarm)
     # plt.show()
-    file_name = 'picture/test' + str(iteration + 1) + '.png'
+    file_name = 'picture/test' + str(iteration) + '.png'
     plt.savefig(file_name)
     pass
 

@@ -8,8 +8,8 @@ class NNStructure():
         self.learning_rate = learning_rate
 
         # Network Parameters
-        n_hidden_1 = 128  # 1st layer number of neurons
-        n_hidden_2 = 16  # 2nd layer number of neurons
+        n_hidden_1 = 8  # 1st layer number of neurons
+        n_hidden_2 = 4  # 2nd layer number of neurons
         n_input = len(data_size)
         n_classes = 1
 
@@ -102,10 +102,14 @@ class AggregateNNStructure():
         for i in range(aggregate_num):
             weights_dict = self.weights_dict_list[i]
             bias_dict = self.biases_dict_list[i]
-            layer_relu = tf.nn.relu(tf.add(tf.matmul(x0, weights_dict['h1']), bias_dict['b1']))
-            layer_batch_norm = tf.nn.batch_normalization(layer_relu, mean=0.01, variance=1, offset=0, scale=1,
+            layer_relu1 = tf.nn.relu(tf.add(tf.matmul(x0, weights_dict['h1']), bias_dict['b1']))
+            layer_batch_norm1 = tf.nn.batch_normalization(layer_relu1, mean=0.01, variance=1, offset=0, scale=1,
                                                          variance_epsilon=0.001)
-            layer_sigmoid = tf.nn.sigmoid(tf.matmul(layer_batch_norm, weights_dict['out']) + bias_dict['out'])
+            layer_relu2 = tf.nn.relu(tf.add(tf.matmul(layer_batch_norm1, weights_dict['h2']), bias_dict['b2']))
+            layer_batch_norm2 = tf.nn.batch_normalization(layer_relu2, mean=0.01, variance=1, offset=0, scale=1,
+                                                          variance_epsilon=0.001)
+
+            layer_sigmoid = tf.nn.sigmoid(tf.matmul(layer_batch_norm2, weights_dict['out']) + bias_dict['out'])
             sig_list.append(layer_sigmoid)
 
         output = sig_list[0]
