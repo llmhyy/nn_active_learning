@@ -51,7 +51,7 @@ train_set_x, train_set_y, test_set_x, test_set_y = formula_data_point_generation
                                                                                                            50, 50)
 
 label_tester = lt.FormulaLabelTester(f)
-point_number_limit = 100
+point_number_limit = 150
 util.reset_random_seed()
 train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mal.generate_accuracy(train_set_x[0:50],
                                                                                                    train_set_y[0:50],
