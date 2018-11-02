@@ -1,12 +1,34 @@
 import csv
 import math
+import os
 import random
 
 import numpy as np
 import tensorflow as tf
-import label_tester as lt
 from matplotlib import pyplot as plt
+
+import label_tester as lt
 from prj_test import formula
+
+
+def save_model(sess, model_folder, model_file):
+    if model_folder is not None:
+        if not os.path.exists(model_folder):
+            os.makedirs(model_folder)
+    model_path = os.path.join(model_folder, model_file)
+    saver = tf.train.Saver()
+    p = saver.save(sess, model_path)
+    return p
+
+
+def move(point, direction, step):
+    direction_len = calculate_vector_size(direction)
+    new_point = []
+    for j in range(len(point)):
+        d = point[j] + direction[j] * (step / direction_len)
+        new_point.append(d)
+
+    return new_point
 
 
 def reset_random_seed():

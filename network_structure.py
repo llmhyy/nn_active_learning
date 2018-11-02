@@ -1,56 +1,82 @@
-import numpy as np
 import tensorflow as tf
 
 
 class NNStructure():
 
-    def __init__(self, data_size, learning_rate):
+    def __init__(self, input_dimension, learning_rate):
         self.learning_rate = learning_rate
-
+        self.w_init = tf.contrib.layers.variance_scaling_initializer(uniform=False, factor=2.0, mode='FAN_IN',
+                                                                     dtype=tf.float32)
         # Network Parameters
         n_hidden_1 = 8  # 1st layer number of neurons
         n_hidden_2 = 4  # 2nd layer number of neurons
-        n_input = len(data_size)
+        n_input = input_dimension
         n_classes = 1
 
         # tf Graph input
-        self.X = tf.placeholder("float", [None, n_input])
-        self.Y = tf.placeholder("float", [None, n_classes])
+        self.X = tf.placeholder("float", [None, n_input], name="X")
+        self.Y = tf.placeholder("float", [None, n_classes], name="Y")
 
         # Store layers weight & bias
+        # with tf.variable_scope("foo", reuse=tf.AUTO_REUSE):
         self.weights = {
-            'h1': tf.Variable(tf.random_normal([n_input, n_hidden_1], mean=0)) / np.sqrt(n_input/2),
-            'h2': tf.Variable(tf.random_normal([n_hidden_1, n_hidden_2], mean=0)) / np.sqrt(n_hidden_1/2),
-            'out': tf.Variable(tf.random_normal([n_hidden_2, n_classes], mean=0)) / np.sqrt(n_hidden_2/2)
-        }
-        self.biases = {
-            'b1': tf.Variable(tf.random_normal([n_hidden_1])),
-            'b2': tf.Variable(tf.random_normal([n_hidden_2])),
-            'out': tf.Variable(tf.random_normal([n_classes]))
+            'h1': tf.get_variable(name="h1", shape=[n_input, n_hidden_1], initializer=self.w_init),
+            'h2': tf.get_variable(name="h2", shape=[n_hidden_1, n_hidden_2], initializer=self.w_init),
+            'hout': tf.get_variable(name="hout", shape=[n_hidden_2, n_classes], initializer=self.w_init)
         }
 
-        # Construct model
+        self.biases = {
+            'b1': tf.get_variable(name="b1", shape=[n_hidden_1], initializer=self.w_init),
+            'b2': tf.get_variable(name="b2", shape=[n_hidden_2], initializer=self.w_init),
+            'bout': tf.get_variable(name="bout", shape=[n_classes], initializer=self.w_init)
+            # 'b1': tf.Variable(tf.random_normal([n_hidden_1]), name="b1"),
+            # 'b2': tf.Variable(tf.random_normal([n_hidden_2]), name="b2"),
+            # 'bout': tf.Variable(tf.random_normal([n_classes]), name="bout")
+        }
+
         self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
         self.probability = tf.nn.sigmoid(self.logits)
-
-        # Define loss and optimizer
         self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
-
-        # self.logits = tf.nn.sigmoid(self.logits)
-        # self.sig = - self.Y * tf.log(self.logits) - (1-self.Y) * tf.log(1-self.logits)
-        # self.loss_op = tf.reduce_mean(self.sig)
-
-        # self.A = tf   .square(self.logits - self.Y)
-        # self.loss_op = tf.reduce_sum(tf.square(self.logits - self.Y))
-        # self.loss_op = tf.reduce_mean(tf.square(self.logits - self.Y))
-        # self.loss_op = tf.losses.mean_squared_error(labels=self.Y, predictions=self.logits)
-
-        # self.optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
-        # Initializing the variables
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.train_op = self.optimizer.minimize(self.loss_op)
-        # Initializing the variables
+
         self.init = tf.global_variables_initializer()
+
+    def restore_parameter(self):
+        graph = tf.get_default_graph()
+        self.X = graph.get_tensor_by_name("X:0")
+        self.Y = graph.get_tensor_by_name("Y:0")
+        for key in self.weights:
+            self.weights[key] = graph.get_tensor_by_name(key+":0")
+        for key in self.biases:
+            self.biases[key] = graph.get_tensor_by_name(key+":0")
+        # self.X = tf.get_collection("X")[0]
+        # self.Y = tf.get_collection("Y")[0]
+        # for key in self.weights:
+        #     self.weights[key] = tf.get_collection(key)[0]
+        # for key in self.biases:
+        #     self.biases[key] = tf.get_collection(key)[0]
+
+        self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
+        self.probability = tf.nn.sigmoid(self.logits)
+        self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
+
+    def print_parameters(self, sess):
+        for key in self.weights:
+            print(key, self.weights[key])
+            print(sess.run(self.weights[key]))
+        for key in self.biases:
+            print(key, self.biases[key])
+            print(sess.run(self.biases[key]))
+
+    def save_parameters(self):
+        tf.add_to_collection("X", self.X)
+        tf.add_to_collection("Y", self.Y)
+        for key in self.weights:
+            tf.add_to_collection(key, self.weights[key])
+        for key in self.biases:
+            tf.add_to_collection(key, self.biases[key])
 
     # Create model
     def multilayer_perceptron(self, x, weights, biases):
@@ -66,17 +92,18 @@ class NNStructure():
         # Hidden fully connected layer with 256 neurons
         self.layer_2 = tf.nn.relu(tf.add(tf.matmul(self.layer_1, weights['h2']), biases['b2']))
 
-        self.layer_2 = tf.nn.batch_normalization(self.layer_2, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
+        self.layer_2 = tf.nn.batch_normalization(self.layer_2, mean=0.01, variance=1, offset=0, scale=1,
+                                                 variance_epsilon=0.001)
         # layer2_out = tf.sigmoid(layer_2)
 
         # Output fully connected layer with a neuron for each class
-        out_layer = tf.matmul(self.layer_2, weights['out']) + biases['out']
+        out_layer = tf.matmul(self.layer_2, weights['hout']) + biases['bout']
         return out_layer
 
 
 class AggregateNNStructure():
-    def __init__(self, data_size, weights_dict_list, biases_dict_list):
-        n_input = len(data_size)
+    def __init__(self, input_dimension, weights_dict_list, biases_dict_list):
+        n_input = input_dimension
         n_classes = 1
 
         # tf Graph input
@@ -104,12 +131,12 @@ class AggregateNNStructure():
             bias_dict = self.biases_dict_list[i]
             layer_relu1 = tf.nn.relu(tf.add(tf.matmul(x0, weights_dict['h1']), bias_dict['b1']))
             layer_batch_norm1 = tf.nn.batch_normalization(layer_relu1, mean=0.01, variance=1, offset=0, scale=1,
-                                                         variance_epsilon=0.001)
+                                                          variance_epsilon=0.001)
             layer_relu2 = tf.nn.relu(tf.add(tf.matmul(layer_batch_norm1, weights_dict['h2']), bias_dict['b2']))
             layer_batch_norm2 = tf.nn.batch_normalization(layer_relu2, mean=0.01, variance=1, offset=0, scale=1,
                                                           variance_epsilon=0.001)
 
-            layer_sigmoid = tf.nn.sigmoid(tf.matmul(layer_batch_norm2, weights_dict['out']) + bias_dict['out'])
+            layer_sigmoid = tf.nn.sigmoid(tf.matmul(layer_batch_norm2, weights_dict['hout']) + bias_dict['bout'])
             sig_list.append(layer_sigmoid)
 
         output = sig_list[0]

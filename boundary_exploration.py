@@ -1,38 +1,74 @@
+import os
+import random
+
+import numpy as np
+import network_structure as ns
 import tensorflow as tf
 
-from prj_test import formula
-import network_structure as ns
+import cluster as cl
 import util
 
 
-def boundary_explore(train_set_X, train_set_Y, label, iteration, formu, lower_bound, upper_bound, learning_rate,
-                     training_epochs):
-    while True:
-        point_added_number = len(train_set_X)
-        assumption_points_label = 1 - label
-        assumption_points_X, assumption_points_Y = append_assumption_points(assumption_points_label, point_added_number,
-                                                                            formu, lower_bound, upper_bound)
-        train_set_X = train_set_X + assumption_points_X
-        train_set_Y = train_set_Y + assumption_points_Y
-        net_stru = ns.NNStructure(train_set_X[0], learning_rate)
-        with tf.Session() as sess:
-            sess.run(net_stru.init)
-            for epoch in range(training_epochs):
-                _, c = sess.run([net_stru.train_op, net_stru.loss_op],
-                                feed_dict={net_stru.X: train_set_X, net_stru.Y: train_set_Y})
+def boundary_explore(data_set, parent_branch_label, child_branch_label, model_folder, model_file, child_label_tester,
+                     iterations):
+    sample_point = data_set[0]
+    other_side_data = []
 
-        ##TODO add point near boundary
+    sess = None
+    net = None
+
+    if model_folder is not None and os.path.exists(model_folder):
+        model_path = os.path.join(model_folder, model_file)
+        if os.path.exists(model_path + ".meta"):
+            tf.reset_default_graph()
+            net = ns.NNStructure(len(sample_point), 0.01)
+
+            sess = tf.Session()
+            saver = tf.train.Saver()
+            saver.restore(sess, model_path)
+
+            net.print_parameters(sess)
+
+            p = sess.run(net.probability, feed_dict={net.X: [[325, -302]]})
+            pass
+
+    for k in range(iterations):
+        new_points = []
+        centers, border_points_group, cluster_group = cl.cluster_points(data_set, 20, 3)
+        util.plot_clustering_result(cluster_group, -1000, 1000, k + 1)
+        for i in range(len(centers)):
+            center = centers[i]
+            border_points = border_points_group[i]
+
+            std_dev = util.calculate_std_dev(border_points)
+            step = random.uniform(0, std_dev)
+            # step = 5
+            for border_point in border_points:
+                direction = (np.array(border_point) - np.array(center)).tolist()
+                new_point = util.move(border_point, direction, step)
+
+                if is_point_inside_boundary(sess, new_point, net, parent_branch_label):
+                    new_points.append(new_point)
+
+        if len(new_points) > 0:
+            labels = child_label_tester.test_label(new_points)
+            for i in range(len(labels)):
+                if labels[i] != child_branch_label:
+                    other_side_data.append(new_points[i])
+                else:
+                    data_set.append(new_points[i])
+
+    if sess is not None:
+        sess.close()
+
+    return other_side_data
 
 
-def append_assumption_points(assumption_points_label, point_added_number, formu, lower_bound, upper_bound):
-    category = formu.get_category()
-    if (category == formula.POLYNOMIAL):
-        newPointsX, newPointsY = util.generate_polynomial_points(formu, point_added_number, lower_bound, upper_bound)
-        for i in newPointsY:
-            i[0] = assumption_points_label
-        return newPointsX, newPointsY
-    elif (category == formula.POLYHEDRON):
-        newPointsX, newPointsY = util.generate_polyhedron_points(formu, point_added_number, lower_bound, upper_bound)
-        for i in newPointsY:
-            i[0] = assumption_points_label
-        return newPointsX, newPointsY
+def is_point_inside_boundary(sess, new_point, net, parent_branch_label):
+    if sess is None:
+        return True
+    prob = sess.run(net.probability, feed_dict={net.X: [new_point]})
+    prediction = 0
+    if prob[0] >= 0.5:
+        prediction = 1
+    return prediction == parent_branch_label
