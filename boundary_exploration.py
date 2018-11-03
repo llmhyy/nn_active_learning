@@ -27,8 +27,7 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
             saver = tf.train.Saver()
             saver.restore(sess, model_path)
 
-            net.print_parameters(sess)
-
+            # net.print_parameters(sess)
             p = sess.run(net.probability, feed_dict={net.X: [[325, -302]]})
             pass
 

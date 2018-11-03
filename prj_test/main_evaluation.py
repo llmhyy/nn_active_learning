@@ -1,10 +1,10 @@
-
-import util
-from prj_test import formula_data_point_generation, formula, formula_generator as fg
 import xlwt
-import mid_point_active_learning as mal
+
 import benchmark
 import label_tester as lt
+import mid_point_active_learning as mal
+import util
+from prj_test import formula_data_point_generation, formula, formula_generator as fg
 
 category = formula.POLYHEDRON
 number = 20
@@ -37,24 +37,25 @@ ws.write(0, 7, "mal")
 
 model_folder = "models/test-method/test-branch"
 model_file = "test-branch"
-def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train,gra_list_test, mid_list_train,mid_list_test, index):
-    #TODO
-    ws.write(index+1, 0, str(f))
-    ws.write(index+1, 1, ben_train_acc)
-    ws.write(index+1, 2, ben_test_acc)
+
+
+def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test, mid_list_train, mid_list_test, index):
+    # TODO
+    ws.write(index + 1, 0, str(f))
+    ws.write(index + 1, 1, ben_train_acc)
+    ws.write(index + 1, 2, ben_test_acc)
 
     # ws.write(index+1, 3, gra_list_train[-1])
     # ws.write(index+1, 4, gra_list_test[-1])
     # ws.write(index+1, 5, gra_list_train)
     # ws.write(index+1, 6, gra_list_test)
 
-    ws.write(index+1, 7, mid_list_train[-1])
-    ws.write(index+1, 8, mid_list_test[-1])
-    ws.write(index+1, 9, str(mid_list_train))
-    ws.write(index+1, 10, str(mid_list_test))
+    ws.write(index + 1, 7, mid_list_train[-1])
+    ws.write(index + 1, 8, mid_list_test[-1])
+    ws.write(index + 1, 9, str(mid_list_train))
+    ws.write(index + 1, 10, str(mid_list_test))
 
     wb.save("polynomial_result.xls")
-
 
     # wb.save("polynomial_result.xls")
 
@@ -70,6 +71,7 @@ def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train,gra_list_test,
 
     # print()
 
+
 index = 0
 util.reset_random_seed()
 for f in formula_list:
@@ -80,7 +82,7 @@ for f in formula_list:
                                                                                                                upper_bound,
                                                                                                                50, 50)
     label_tester = lt.FormulaLabelTester(f)
-    point_number_limit = 150
+    point_number_limit = 100
     util.reset_random_seed()
     train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mal.generate_accuracy(
         train_set_x[0:50],
@@ -96,14 +98,12 @@ for f in formula_list:
         model_folder,
         model_file)
     util.reset_random_seed()
-    index+=1
+    index += 1
     train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
                                                       training_epochs, lower_bound, upper_bound, model_folder,
                                                       model_file)
 
-
-
-    write_to_excel(f.get_formula(),train_acc,test_acc,[],[],train_acc_list,test_acc_list,index)
+    write_to_excel(f.get_formula(), train_acc, test_acc, [], [], train_acc_list, test_acc_list, index)
     '''
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc

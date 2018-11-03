@@ -50,15 +50,15 @@ util.reset_random_seed()
 model_folder = "models/test-method/test-branch"
 model_file = "test-branch"
 
-# util.reset_random_seed()
-# train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
-#                                                   training_epochs, lower_bound, upper_bound, model_folder, model_file)
-
-child_label_tester = lt.FormulaLabelTester(child_formula)
-train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partitioned_data(
-    child_formula, category,
-    -400,
-    400,
-    0, 50)
-
-be.boundary_explore(train_set_x1, 1, 0, model_folder, model_file, child_label_tester, 10)
+util.reset_random_seed()
+train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
+                                                  training_epochs, lower_bound, upper_bound, model_folder, model_file)
+print("GPU", tf.test.is_gpu_available())
+# child_label_tester = lt.FormulaLabelTester(child_formula)
+# train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partitioned_data(
+#     child_formula, category,
+#     -400,
+#     400,
+#     0, 50)
+#
+# be.boundary_explore(train_set_x1, 1, 0, model_folder, model_file, child_label_tester, 10)
