@@ -73,8 +73,8 @@ def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test
 
 
 index = 0
-util.reset_random_seed()
 for f in formula_list:
+    util.reset_random_seed()
     print(f.get_formula())
     train_set_x, train_set_y, test_set_x, test_set_y = formula_data_point_generation.generate_partitioned_data(f,
                                                                                                                category,
