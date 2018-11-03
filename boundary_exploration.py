@@ -33,11 +33,14 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
 
     for k in range(iterations):
         new_points = []
-        centers, border_points_group, cluster_group = cl.cluster_points(data_set, 20, 3)
+        centers, _, cluster_group = cl.cluster_points(data_set, 1, 5)
         util.plot_clustering_result(cluster_group, -1000, 1000, k + 1)
         for i in range(len(centers)):
             center = centers[i]
-            border_points = border_points_group[i]
+            cluster = cluster_group[i]
+
+            distance_from_farthest_border = cl.calculate_distance_from_farthest_border(cluster)
+            border_points = cl.random_border_points(center, distance_from_farthest_border, 3)
 
             std_dev = util.calculate_std_dev(border_points)
             step = random.uniform(0, std_dev)
@@ -45,6 +48,10 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
             for border_point in border_points:
                 direction = (np.array(border_point) - np.array(center)).tolist()
                 new_point = util.move(border_point, direction, step)
+
+                label = child_label_tester.test_label([new_point])[0]
+                if label == 1:
+                    print(k, "th iteration", new_point)
 
                 if is_point_inside_boundary(sess, new_point, net, parent_branch_label):
                     new_points.append(new_point)
@@ -60,6 +67,7 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
     if sess is not None:
         sess.close()
 
+    print(other_side_data)
     return other_side_data
 
 

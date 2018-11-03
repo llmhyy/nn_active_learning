@@ -1,7 +1,6 @@
 import math
-import random
-import util
 
+import numpy as np
 # import matplotlib.pyplot as plt
 from sklearn.cluster import AgglomerativeClustering
 
@@ -10,20 +9,36 @@ def calculate_radius(cluster):
     dimension = len(cluster[0])
     num_of_points = len(cluster)
     center = calculate_center(cluster)
-    # largest = 0
-    sum = 0
+    total_sum = 0
     for i in range(num_of_points):
         tmp = 0
         for j in range(dimension):
-            tmp += (cluster[i][j] - center[j])**2
+            tmp += (cluster[i][j] - center[j]) ** 2
         tmp = math.sqrt(tmp)
-        # if tmp > largest:
-        #     largest = tmp
-        sum = sum + tmp
+        total_sum = total_sum + tmp
 
-    average = sum / num_of_points;
+    average = total_sum / num_of_points;
 
     return average
+
+
+def calculate_distance_from_farthest_border(cluster):
+    dimension = len(cluster[0])
+    num_of_points = len(cluster)
+    center = calculate_center(cluster)
+    largest_distance = 0
+    for i in range(num_of_points):
+        tmp = 0
+        for j in range(dimension):
+            tmp += (cluster[i][j] - center[j]) ** 2
+        distance = math.sqrt(tmp)
+        if distance > largest_distance:
+            largest_distance = distance
+
+    if largest_distance == 0:
+        largest_distance = np.random.uniform(0, 10)
+
+    return largest_distance
 
 
 def calculate_center(cluster):
@@ -62,7 +77,7 @@ def is_clustering_valid(clusters, cluster_distance_threshold):
     for j in range(len(clusters)):
         center_distance = 0
         for i in range(len(clusters[key][0])):
-            center_distance += (centers[j][i] - centers[j + 1][i])**2
+            center_distance += (centers[j][i] - centers[j + 1][i]) ** 2
         center_distance = math.sqrt(center_distance)
 
         if radius_list[j] * cluster_distance_threshold > center_distance \
@@ -135,3 +150,29 @@ def calculate_n_border_points(cluster, center, n):
             result.append(cluster[i])
 
     return result
+
+
+def random_border_points(center, radius, border_point_number):
+    border_points = []
+
+    while len(border_points) < border_point_number:
+        border_point = []
+        value = 0
+        for j in range(len(center) - 1):
+            x = center[j]
+            y = np.random.uniform(x - radius, x + radius)
+            border_point.append(y)
+
+            value += (x - y) ** 2
+
+        diff = radius ** 2 - value
+        if diff > 0:
+            last_dim = math.sqrt(diff)
+            r = np.random.uniform(0, 1)
+            if r < 0.5:
+                last_dim = -last_dim
+
+            border_point.append(last_dim)
+            border_points.append(border_point)
+
+    return border_points
