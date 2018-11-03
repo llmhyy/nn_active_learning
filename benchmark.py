@@ -30,11 +30,11 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             # print("loss: ", loss, "temp: ")
             loss_list.append(loss)
 
-        p = sess.run(net.probability, feed_dict={net.X: [[325, -302]]})
 
-        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
-                                    train_set_x[:data_size], train_set_y[:data_size],
-                                    lower_bound, upper_bound, 0)
+        #
+        # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
+        #                             train_set_x[:data_size], train_set_y[:data_size],
+        #                             lower_bound, upper_bound, 0)
 
         util.save_model(sess, model_folder, model_file)
         # for op in tf.get_default_graph().get_operations():

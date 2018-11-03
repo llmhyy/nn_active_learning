@@ -40,7 +40,7 @@ def generate_polyhedron(category):
     num_of_center = random.randint(3, 5)
     num_of_dimension = random.randint(3, 5)
     num_of_center = 2
-    num_of_dimension = 2
+    num_of_dimension = 7
     centers = []
     radiuses = []
     for i in range(num_of_center):
