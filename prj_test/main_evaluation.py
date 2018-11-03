@@ -4,6 +4,7 @@ import benchmark
 import label_tester as lt
 import mid_point_active_learning as mal
 import util
+import tensorflow as tf
 from prj_test import formula_data_point_generation, formula, formula_generator as fg
 
 category = formula.POLYHEDRON
@@ -97,6 +98,8 @@ for f in formula_list:
         point_number_limit,
         model_folder,
         model_file)
+
+    tf.reset_default_graph()
     util.reset_random_seed()
     index += 1
     train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,

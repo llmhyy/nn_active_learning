@@ -82,7 +82,7 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
                       lower_bound, upper_bound, use_bagging, label_tester, point_number_limit, model_folder,
                       model_file):
     print("=========MID_POINT===========")
-    tf.reset_default_graph()
+    # tf.reset_default_graph()
     mid_point_limit = 10
     generalization_valid_limit = 10
 
@@ -163,8 +163,8 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             #                                                      label_tester)
 
             predicted = tf.cast(aggregated_network.probability > 0.5, dtype=tf.float32)
-            # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
-            #                             train_set_x, train_set_y, lower_bound, upper_bound, count)
+            util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
+                                        train_set_x, train_set_y, lower_bound, upper_bound, count)
 
             if len(train_set_x) > point_number_limit:
                 break
