@@ -1,9 +1,6 @@
 import xlwt
 
-import benchmark
-import label_tester as lt
-import mid_point_active_learning as mal
-import util
+from main import benchmark, label_tester as lt, mid_point_active_learning as mal, util
 import tensorflow as tf
 from prj_test import formula_data_point_generation, formula, formula_generator as fg
 

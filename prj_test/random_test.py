@@ -1,8 +1,4 @@
-import label_tester as lt
-import mid_point_active_learning as mal
-import util
-import random
-import benchmark
+from main import benchmark, label_tester as lt, mid_point_active_learning as mal, util
 from prj_test import formula_data_point_generation, formula_generator,formula
 
 number=1

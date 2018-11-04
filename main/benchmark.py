@@ -2,8 +2,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 
-import network_structure as ns
-import util
+from main import util, network_structure as ns
 
 
 def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs, lower_bound,

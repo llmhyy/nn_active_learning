@@ -1,8 +1,4 @@
-import benchmark
-import label_tester as lt
-import util
-import boundary_exploration as be
-import tensorflow as tf
+from main import benchmark, boundary_exploration as be, label_tester as lt, util
 from prj_test import formula_data_point_generation, formula
 
 
@@ -59,6 +55,6 @@ train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partit
     child_formula, category,
     -400,
     400,
-    0, 50)
+    0, 20)
 
 be.boundary_explore(train_set_x1, 1, 0, model_folder, model_file, child_label_tester, 10)

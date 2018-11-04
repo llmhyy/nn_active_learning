@@ -1,4 +1,4 @@
-import util
+from main import util
 
 
 class DataPair:

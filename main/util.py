@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
-import label_tester as lt
+from main import label_tester as lt
 from prj_test import formula
 
 

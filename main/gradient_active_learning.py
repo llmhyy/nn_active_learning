@@ -4,11 +4,8 @@ import random
 
 import tensorflow as tf
 
-import boundary_remaining as br
-import gradient_combination
-import network_structure as ns
+from main import boundary_remaining as br, util, network_structure as ns
 import testing_function
-import util
 
 
 def partition_data(label_0, label_1, parts_num):

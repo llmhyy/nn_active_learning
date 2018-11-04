@@ -2,11 +2,9 @@ import os
 import random
 
 import numpy as np
-import network_structure as ns
 import tensorflow as tf
 
-import cluster as cl
-import util
+from main import util, cluster as cl, network_structure as ns
 
 
 def boundary_explore(data_set, parent_branch_label, child_branch_label, model_folder, model_file, child_label_tester,
