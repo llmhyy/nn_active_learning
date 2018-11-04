@@ -5,7 +5,7 @@ import random
 
 import numpy as np
 import tensorflow as tf
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
 from main import label_tester as lt
 from prj_test import formula
