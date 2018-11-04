@@ -1,5 +1,5 @@
 import xlwt
-
+import time
 import benchmark
 import label_tester as lt
 import mid_point_active_learning as mal
@@ -19,10 +19,8 @@ parts_num = 5
 
 formulas = fg.generate_formula(category, number)
 formula_list = formulas.get(category)
-
 wb = xlwt.Workbook()
 ws = wb.add_sheet(category)
-
 ws.write(1, 0, "formula")
 ws.write(0, 1, "benchmark")
 ws.write(1, 1, "train")
@@ -32,6 +30,9 @@ ws.write(1, 4, "test")
 # ws.write(1, 5, "iterations")
 ws.write(1, 7, "train")
 ws.write(1, 8, "test")
+ws.write(1,9,"train best")
+ws.write(1,10,"test best")
+ws.write(1,13,"time")
 # ws.write(1, 9, "iterations")
 ws.write(0, 3, "gal")
 ws.write(0, 7, "mal")
@@ -40,7 +41,7 @@ model_folder = "models/test-method/test-branch"
 model_file = "test-branch"
 
 
-def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test, mid_list_train, mid_list_test, index):
+def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test, mid_list_train, mid_list_test, time,index):
     # TODO
     ws.write(index + 1, 0, str(f))
     ws.write(index + 1, 1, ben_train_acc)
@@ -53,10 +54,12 @@ def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test
 
     ws.write(index + 1, 7, mid_list_train[-1])
     ws.write(index + 1, 8, mid_list_test[-1])
-    ws.write(index + 1, 9, str(mid_list_train))
-    ws.write(index + 1, 10, str(mid_list_test))
-
-    wb.save("polynomial_result.xls")
+    ws.write(index+1,9,max(mid_list_train))
+    ws.write(index+1,10,max(mid_list_test))
+    ws.write(index + 1, 11, str(mid_list_train))
+    ws.write(index + 1, 12, str(mid_list_test))
+    ws.write(index+1,13,time)
+    wb.save("polyhedral_result.xls")
 
     # wb.save("polynomial_result.xls")
 
@@ -75,6 +78,7 @@ def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test
 
 index = 0
 for f in formula_list:
+    start_time=time.time()
     util.reset_random_seed()
     print(f.get_formula())
     train_set_x, train_set_y, test_set_x, test_set_y = formula_data_point_generation.generate_partitioned_data(f,
@@ -105,8 +109,9 @@ for f in formula_list:
     train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
                                                       training_epochs, lower_bound, upper_bound, model_folder,
                                                       model_file)
-
-    write_to_excel(f.get_formula(), train_acc, test_acc, [], [], train_acc_list, test_acc_list, index)
+    end_time=time.time()
+    time_used=end_time-start_time
+    write_to_excel(f.get_formula(), train_acc, test_acc, [], [], train_acc_list, test_acc_list, time_used,index)
     '''
     ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
