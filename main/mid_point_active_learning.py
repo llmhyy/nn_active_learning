@@ -108,16 +108,14 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             if length_0 == 0 or length_1 == 0:
                 raise Exception("Cannot be classified")
 
-            smaller_set_size = min(len(label_0), len(label_1))
-            larger_set_size = max(len(label_0), len(label_1))
-            parts_num = int(larger_set_size / smaller_set_size)
-
-            all_data_x, all_data_y = partition_data(label_0, label_1, parts_num)
-            tmp = list(zip(all_data_x, all_data_y))
-            random.shuffle(tmp)
-            all_data_x, all_data_y = zip(*tmp)
-
             if use_bagging:
+                smaller_set_size = min(len(label_0), len(label_1))
+                larger_set_size = max(len(label_0), len(label_1))
+                parts_num = int(larger_set_size / smaller_set_size)
+                all_data_x, all_data_y = partition_data(label_0, label_1, parts_num)
+                tmp = list(zip(all_data_x, all_data_y))
+                random.shuffle(tmp)
+                all_data_x, all_data_y = zip(*tmp)
                 aggregated_network, train_acc = train_bootstrap_model(all_data_x, all_data_y,
                                                                       total_appended_x,
                                                                       total_appended_y,
@@ -426,11 +424,11 @@ def calculate_decided_direction(aggregated_network, point, center, gradient, ses
         direction = util.calculate_orthogonal_direction(g[0].tolist())
     elif vector_length != 0 and g_length == 0:
         direction = vector
-        print("point", point, "leaving center direction", direction, "center is", center)
+        # print("point", point, "leaving center direction", direction, "center is", center)
         pass
     else:
         direction = util.calculate_vector_projection(vector, g[0].tolist())
-        print("point", point, "move towards direction", direction, "center is", center)
+        # print("point", point, "move towards direction", direction, "center is", center)
         pass
 
     decided_gradient = [direction]
@@ -488,7 +486,7 @@ def append_mid_points(sess, aggregated_network, pair_list,
                 # print()
                 pass
 
-    print("sampled mid points", unconfident_points)
+    # print("sampled mid points", unconfident_points)
 
     appended_x = []
     appended_y = []
