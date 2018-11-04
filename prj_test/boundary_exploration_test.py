@@ -16,7 +16,7 @@ def generate_formulas():
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
     formu1 = formula.Formula(
-        [[[500, 0]], [30]], formula.POLYHEDRON)
+        [[[500, 0]], [50]], formula.POLYHEDRON)
     formulas.put(formu1.get_category(), formu1)
     return formulas
 
