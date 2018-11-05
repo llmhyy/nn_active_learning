@@ -6,10 +6,36 @@ from main import variable as v
 
 
 # input = {
+#          "BRANCH_ID": "2-3",
+#           "METHOD_ID": "com.method.XX",}
+#
+# test_data = [[1, 2], [3, 4], [5, 6]]
+def parse_model_check(message_body):
+    branch_id = message_body["BRANCH_ID"]
+    method_id = message_body["METHOD_ID"]
+    return branch_id, method_id
+
+
+def generate_model_check_response(message_content):
+    return {"existence": message_content}
+
+
+def parse_value_with_data_type(value, data_type):
+    if data_type == "INTEGER":
+        return int(value)
+    elif data_type == "DOUBLE" or data_type == "FLOAT":
+        return float(value)
+    elif data_type == "CHAR":
+        return int(value)
+
+    return value
+
+
+# input = {
 #          "METHOD_ID": "com.test.Class.method()",
 #          "BRANCH_ID": "2-3",
 #          "DATA": [
-#              [{"VALUE": "877", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "0", "TYPE": "PRIMITIVE", "NAME": "b"}],
+#              [{"VALUE": "877", "TYPE": "INTEGER", "NAME": "a"}, {"VALUE": "0", "TYPE": "PRIMITIVE", "NAME": "b"}],
 #              [{"VALUE": "548", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "969", "TYPE": "PRIMITIVE", "NAME": "b"}]
 #          ]}
 #
@@ -18,9 +44,9 @@ def parse_boundary_exploration(message):
     model_folder = message["METHOD_ID"]
     model_file_name = message["BRANCH_ID"]
 
-    model_path = os.path.join(model_folder, model_file_name)
+    model_folder = os.path.join(model_folder, model_file_name)
 
-    data = message["DATA"]
+    data = message["TEST_DATA"]
 
     sample_point = data[0]
     variables = []
@@ -29,14 +55,15 @@ def parse_boundary_exploration(message):
         variables.append(variable)
 
     data_set = []
-    for point in data:
+    for d in data:
         point = []
-        for dimension in point:
-            point.append(int(dimension["VALUE"]))
+        for dimension in d:
+            value = parse_value_with_data_type(dimension["VALUE"], dimension["TYPE"])
+            point.append(value)
 
         data_set.append(point)
 
-    return data_set, model_path
+    return data_set, model_folder, model_file_name, variables
 
 
 # input = {

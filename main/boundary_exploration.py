@@ -32,7 +32,7 @@ def boundary_explore(data_set, model_folder, model_file, child_label_tester,
     for k in range(iterations):
         print(k+1, "th iteration")
         new_points = []
-        centers, _, cluster_group = cl.cluster_points(data_set, 1, 10)
+        centers, _, cluster_group = cl.cluster_points(data_set, 1, 5)
         util.plot_clustering_result(cluster_group, -1000, 1000, k + 1)
         for i in range(len(centers)):
             center = centers[i]
