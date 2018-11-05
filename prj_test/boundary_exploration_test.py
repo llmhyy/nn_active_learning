@@ -12,7 +12,7 @@ def generate_formulas():
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
     formu1 = formula.Formula(
-        [[[500, 0]], [50]], formula.POLYHEDRON)
+        [[[500, 0]], [100]], formula.POLYHEDRON)
     formulas.put(formu1.get_category(), formu1)
     return formulas
 
@@ -57,4 +57,4 @@ train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partit
     400,
     0, 20)
 
-be.boundary_explore(train_set_x1, 1, 0, model_folder, model_file, child_label_tester, 10)
+be.boundary_explore(train_set_x1, model_folder, model_file, child_label_tester, 10)
