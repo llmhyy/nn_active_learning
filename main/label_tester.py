@@ -83,7 +83,7 @@ class CoverageLabelTester(LabelTester):
         self.vars = variables
 
     def test_label(self, points):
-        request_string = json_handler.generate_label_request(points, self.variables)
+        request_string = json_handler.generate_label_request(points, self.vars)
         communication.send_label_request(request_string)
 
         message_type = stdin.readline()
