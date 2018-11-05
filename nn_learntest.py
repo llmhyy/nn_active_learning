@@ -1,13 +1,13 @@
 import json
+import os
 import traceback
 from sys import stdin
 from sys import stdout
 
-import os
 from main import label_tester as lt, mid_point_active_learning, json_handler, communication, boundary_exploration as be
 
-lower_bound = -10
-upper_bound = 10
+lower_bound = -1000
+upper_bound = 1000
 
 learning_rate = 0.01
 training_epochs = 1000
@@ -24,19 +24,19 @@ try:
         message_body = json.loads(message_body)
 
         if request_type == "$TRAINING":
-            train_set_X, train_set_Y, variables, model_folder = json_handler.parse_training_message_body(
-                message_body)
+            train_set_X, train_set_Y, variables, model_folder, model_file_name, point_number_limit \
+                = json_handler.parse_training_message_body(message_body)
             model_folder = os.path.join("models", model_folder)
             label_tester = lt.CoverageLabelTester(variables)
-            mid_point_active_learning.generate_accuracy(train_set_X, train_set_Y,
+            mid_point_active_learning.generate_accuracy(train_set_X, train_set_Y, None, None,
                                                         learning_rate, training_epochs,
                                                         lower_bound, upper_bound, False,
-                                                        label_tester, model_folder)
+                                                        label_tester, point_number_limit, model_folder, model_file_name)
         elif request_type == "$BOUNDARY_EXPLORATION":
             data_set, model_folder, model_file_name, variables = json_handler.parse_boundary_exploration(message_body)
             model_folder = os.path.join("models", model_folder)
             label_tester = lt.CoverageLabelTester(variables)
-            be.boundary_explore(data_set, model_folder, model_file_name, label_tester, 10)
+            be.boundary_explore(data_set, model_folder, model_file_name, label_tester, 5)
             communication.send_exploration_finish_message()
         elif request_type == "$MODEL_CHECK":
             branch_id, method_id = json_handler.parse_model_check(message_body)

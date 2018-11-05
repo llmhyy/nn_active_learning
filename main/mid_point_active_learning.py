@@ -141,12 +141,13 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
 
             train_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: train_set_x})
             train_acc = util.calculate_accuracy(train_y, train_set_y, False)
-
-            test_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: test_set_x})
-            test_acc = util.calculate_accuracy(test_y, test_set_y, False)
-
             train_acc_list.append(train_acc)
-            test_acc_list.append(test_acc)
+
+            if test_set_x is not None:
+                test_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: test_set_x})
+                test_acc = util.calculate_accuracy(test_y, test_set_y, False)
+                test_acc_list.append(test_acc)
+
             data_point_number_list.append(len(train_set_x))
 
             # new_grads = tf.gradients(net.probability, net.X)

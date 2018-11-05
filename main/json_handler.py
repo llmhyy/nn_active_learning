@@ -17,7 +17,7 @@ def parse_model_check(message_body):
 
 
 def generate_model_check_response(message_content):
-    return {"existence": message_content}
+    return {"EXISTENCE": message_content}
 
 
 def parse_value_with_data_type(value, data_type):
@@ -69,7 +69,7 @@ def parse_boundary_exploration(message):
 # input = {
 #           "METHOD_ID": "com.test.Class.method()",
 #           "BRANCH_ID": "2-3",
-#
+#           "POINT_NUMBER_LIMIT": 100
 #          "POSITIVE_DATA": [
 #              [{"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "a"}, {"VALUE": "1", "TYPE": "PRIMITIVE", "NAME": "b"}]],
 #
@@ -82,7 +82,9 @@ def parse_boundary_exploration(message):
 def parse_training_message_body(message):
     model_folder = message["METHOD_ID"]
     model_file_name = message["BRANCH_ID"]
-    model_path = os.path.join(model_folder, model_file_name)
+    model_folder = os.path.join(model_folder, model_file_name)
+
+    point_number_limit = message["POINT_NUMBER_LIMIT"]
 
     train_set_X = []
     train_set_Y = []
@@ -99,8 +101,8 @@ def parse_training_message_body(message):
     for points in positive_data:
         tmp_point = []
         for point in points:
-            if type == "INTEGER":
-                tmp_point.append(int(point["VALUE"]))
+            value = parse_value_with_data_type(point["VALUE"],  point["TYPE"])
+            tmp_point.append(value)
 
         train_set_X.append(tmp_point)
         train_set_Y.append([1])
@@ -108,8 +110,8 @@ def parse_training_message_body(message):
     for points in negative_data:
         tmp_point = []
         for point in points:
-            if type == "INTEGER":
-                tmp_point.append(int(point["VALUE"]))
+            value = parse_value_with_data_type(point["VALUE"], point["TYPE"])
+            tmp_point.append(value)
 
         train_set_X.append(tmp_point)
         train_set_Y.append([0])
@@ -117,7 +119,7 @@ def parse_training_message_body(message):
     # print(train_set_X)
     # print(train_set_Y)
     print("parsing finished")
-    return train_set_X, train_set_Y, variables, model_path
+    return train_set_X, train_set_Y, variables, model_folder, model_file_name, point_number_limit
 
 
 def generate_label_request(train_set_X, variables):

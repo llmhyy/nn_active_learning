@@ -48,11 +48,11 @@ def boundary_explore(data_set, model_folder, model_file, child_label_tester,
                 direction = (np.array(border_point) - np.array(center)).tolist()
                 new_point = util.move(border_point, direction, step)
 
-                label = child_label_tester.test_label([new_point])[0]
-                if label == 1:
-                    print("center", center)
-                    print("border point", border_point)
-                    print("new point", new_point)
+                # label = child_label_tester.test_label([new_point])[0]
+                # if label == 1:
+                #     print("center", center)
+                #     print("border point", border_point)
+                #     print("new point", new_point)
 
                 if is_point_inside_boundary(sess, new_point, net):
                     is_too_close = check_closeness(new_point, cluster_group)
