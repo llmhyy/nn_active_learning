@@ -1,6 +1,7 @@
 import json
 import os
 import traceback
+import tensorflow as tf
 from sys import stdin
 from sys import stdout
 
@@ -22,6 +23,8 @@ try:
         stdout.flush()
         print("message body", message_body)
         message_body = json.loads(message_body)
+
+        tf.reset_default_graph()
 
         if request_type == "$TRAINING":
             train_set_X, train_set_Y, variables, model_folder, model_file_name, point_number_limit \
