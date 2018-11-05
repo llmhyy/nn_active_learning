@@ -7,7 +7,7 @@ import tensorflow as tf
 from main import util, cluster as cl, network_structure as ns
 
 
-def boundary_explore(data_set, parent_branch_label, child_branch_label, model_folder, model_file, child_label_tester,
+def boundary_explore(data_set, model_folder, model_file, child_label_tester,
                      iterations):
     sample_point = data_set[0]
     other_side_data = []
@@ -54,7 +54,7 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
                     print("border point", border_point)
                     print("new point", new_point)
 
-                if is_point_inside_boundary(sess, new_point, net, parent_branch_label):
+                if is_point_inside_boundary(sess, new_point, net):
                     is_too_close = check_closeness(new_point, cluster_group)
                     if not is_too_close:
                         new_points.append(new_point)
@@ -64,7 +64,7 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
         if len(new_points) > 0:
             labels = child_label_tester.test_label(new_points)
             for i in range(len(labels)):
-                if labels[i] != child_branch_label:
+                if labels[i] == 1:
                     other_side_data.append(new_points[i])
                 else:
                     data_set.append(new_points[i])
@@ -76,14 +76,14 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
     return other_side_data
 
 
-def is_point_inside_boundary(sess, new_point, net, parent_branch_label):
+def is_point_inside_boundary(sess, new_point, net):
     if sess is None:
         return True
     prob = sess.run(net.probability, feed_dict={net.X: [new_point]})
     prediction = 0
     if prob[0] >= 0.5:
         prediction = 1
-    return prediction == parent_branch_label
+    return prediction == 1
 
 
 def check_closeness(new_point, cluster_group):
