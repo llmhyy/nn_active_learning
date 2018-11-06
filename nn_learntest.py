@@ -39,7 +39,7 @@ try:
             data_set, model_folder, model_file_name, variables = json_handler.parse_boundary_exploration(message_body)
             model_folder = os.path.join("models", model_folder)
             label_tester = lt.CoverageLabelTester(variables)
-            be.boundary_explore(data_set, model_folder, model_file_name, label_tester, 5)
+            be.boundary_explore(data_set, model_folder, model_file_name, label_tester, 2)
             communication.send_exploration_finish_message()
         elif request_type == "$MODEL_CHECK":
             branch_id, method_id = json_handler.parse_model_check(message_body)

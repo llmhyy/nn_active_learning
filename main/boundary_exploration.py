@@ -26,7 +26,7 @@ def boundary_explore(data_set, model_folder, model_file, child_label_tester,
             saver.restore(sess, model_path)
 
             # net.print_parameters(sess)
-            p = sess.run(net.probability, feed_dict={net.X: [[325, -302]]})
+            # p = sess.run(net.probability, feed_dict={net.X: [[325, -302]]})
             pass
 
     for k in range(iterations):
