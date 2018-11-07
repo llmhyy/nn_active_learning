@@ -3,10 +3,11 @@ import math
 import os
 import random
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
+import domain_names as dn
 from main import label_tester as lt
 from prj_test import formula
 
@@ -57,7 +58,30 @@ def direction_combination(n):
         return binary_combination
 
 
+def generate_mask_matrix(train_set_x_info):
+    mask_matrix = []
+    for train_point_x_info in train_set_x_info:
+        mask_vector = []
+        for dim in train_point_x_info:
+            if not dim[dn.MODIFIABLE] or dim[dn.IS_PADDING]:
+                mask_vector.append(0)
+            else:
+                mask_vector.append(1)
+        mask_matrix.append(mask_vector)
+    return mask_matrix
+
+
+def convert_with_mask(train_set_x, train_set_x_info):
+    mask_matrix = generate_mask_matrix(train_set_x_info)
+    new_matrix = np.multiply(np.array(mask_matrix), np.array(train_set_x))
+    train_set_x_prime = new_matrix.tolist()
+    return train_set_x_prime
+
+
 def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
+    if len(clusters[0][0]) != 2:
+        return
+
     train_set_X = []
     train_set_Y = []
 
@@ -83,6 +107,9 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
 
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
+    if len(train_set_X[0]) != 2:
+        return
+
     # Set min and max values and give it some padding
     x_min = lower_bound
     y_min = lower_bound

@@ -62,6 +62,7 @@ def parse_boundary_exploration(message):
         variables.append(variable)
 
     data_set = []
+    data_set_info = []
     for d in data:
         point = []
         for dimension in d:
@@ -69,8 +70,9 @@ def parse_boundary_exploration(message):
             point.append(value)
 
         data_set.append(point)
+        data_set_info.append(d)
 
-    return data_set, model_folder, model_file_name, variables
+    return data_set_info, data_set, model_folder, model_file_name, variables
 
 
 # input = {
@@ -93,9 +95,9 @@ def parse_training_message_body(message):
 
     point_number_limit = message[dn.POINT_NUMBER_LIMIT]
 
-    train_set_X_info = []
-    train_set_X = []
-    train_set_Y = []
+    train_set_x_info = []
+    train_set_x = []
+    train_set_y = []
 
     positive_data = message[dn.POSITIVE_DATA]
     negative_data = message[dn.NEGATIVE_DATA]
@@ -112,9 +114,9 @@ def parse_training_message_body(message):
             value = parse_value_with_data_type(dim[dn.VALUE],  dim[dn.TYPE])
             point.append(value)
 
-        train_set_X_info.append(positive_point)
-        train_set_X.append(point)
-        train_set_Y.append([1])
+        train_set_x_info.append(positive_point)
+        train_set_x.append(point)
+        train_set_y.append([1])
 
     for negative_point in negative_data:
         point = []
@@ -122,14 +124,12 @@ def parse_training_message_body(message):
             value = parse_value_with_data_type(dim[dn.VALUE], dim[dn.TYPE])
             point.append(value)
 
-        train_set_X_info.append(negative_point)
-        train_set_X.append(point)
-        train_set_Y.append([0])
+        train_set_x_info.append(negative_point)
+        train_set_x.append(point)
+        train_set_y.append([0])
 
-    # print(train_set_X)
-    # print(train_set_Y)
     print("parsing finished")
-    return train_set_X_info, train_set_X, train_set_Y, variables, model_folder, model_file_name, point_number_limit
+    return train_set_x_info, train_set_x, train_set_y, variables, model_folder, model_file_name, point_number_limit
 
 
 def generate_label_request(train_set_X, variables):
