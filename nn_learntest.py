@@ -27,11 +27,11 @@ try:
         tf.reset_default_graph()
 
         if request_type == "$TRAINING":
-            train_set_X, train_set_Y, variables, model_folder, model_file_name, point_number_limit \
+            train_set_X_info, train_set_X, train_set_Y, variables, model_folder, model_file_name, point_number_limit \
                 = json_handler.parse_training_message_body(message_body)
             model_folder = os.path.join("models", model_folder)
             label_tester = lt.CoverageLabelTester(variables)
-            mid_point_active_learning.generate_accuracy(train_set_X, train_set_Y, None, None,
+            mid_point_active_learning.generate_accuracy(train_set_X_info, train_set_X, train_set_Y, None, None,
                                                         learning_rate, training_epochs,
                                                         lower_bound, upper_bound, False,
                                                         label_tester, point_number_limit, model_folder, model_file_name)

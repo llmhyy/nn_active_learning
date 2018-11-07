@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 import random
-
+import domain_names as dn
 import numpy as np
 import tensorflow as tf
 
@@ -74,7 +74,8 @@ def filter_distant_point_pair(label_0, label_1, threshold):
     return pair_list
 
 
-def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate, training_epochs,
+def generate_accuracy(train_set_x_info, train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
+                      training_epochs,
                       lower_bound, upper_bound, use_bagging, label_tester, point_number_limit, model_folder,
                       model_file):
     print("=========MID_POINT===========")
@@ -125,8 +126,11 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
             else:
                 sess.run(net.init)
                 for epoch in range(training_epochs):
-                    _, c = sess.run([net.train_op, net.loss_op],
-                                    feed_dict={net.X: train_set_x, net.Y: train_set_y})
+                    for i in range(len(train_set_x)):
+                        train_point_x = train_set_x[i]
+                        train_point_y = train_set_y[i]
+                        train_point_x_info = train_set_x_info[i]
+                        train_wrt_structure(sess, net, train_point_x, train_point_x_info, train_point_y)
 
                 # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
                 #                             train_set_x, train_set_y, lower_bound, upper_bound, count)
@@ -204,6 +208,28 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
     communication.send_training_finish_message()
     # tf.reset_default_graph()
     return train_acc_list, test_acc_list, data_point_number_list, appended_point_list
+
+
+def train_wrt_structure(sess, net, train_point_x, train_point_x_info, train_point_y):
+    weights = sess.run(net.weights["h1"])
+    # print(sess.run(net.weights["h1"]))
+    kept_weights = {}
+    for i in range(len(train_point_x_info)):
+        dim = train_point_x_info[i]
+        if not dim[dn.MODIFIABLE] or dim[dn.IS_PADDING]:
+            kept_weights[i] = weights[i]
+
+    sess.run([net.train_op, net.loss_op],
+             feed_dict={net.X: [train_point_x], net.Y: [train_point_y]})
+    # print(sess.run(net.weights["h1"]))
+
+    new_weights = sess.run(net.weights["h1"])
+    for key in kept_weights:
+        new_weights[key] = kept_weights[key]
+
+    net.weights["h1"].load(new_weights, sess)
+    # print(sess.run(net.weights["h1"]))
+    # pass
 
 
 def select_point_pair(centers, centers_label, clusters, mid_point_limit):
