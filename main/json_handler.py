@@ -1,6 +1,7 @@
 import json
 import os
 import domain_names as dn
+import util
 from sys import stdout
 
 from main import variable as v
@@ -19,23 +20,6 @@ def parse_model_check(message_body):
 
 def generate_model_check_response(message_content):
     return {dn.EXISTENCE: message_content}
-
-
-def parse_value_with_data_type(value, data_type):
-    if data_type == dn.INTEGER or data_type == dn.BYTE or data_type == dn.CHAR or data_type == dn.LONG or data_type == dn.SHORT:
-        return int(value)
-    elif data_type == dn.DOUBLE or data_type == dn.FLOAT:
-        return float(value)
-    elif data_type == dn.CHAR:
-        return int(value)
-    elif data_type == dn.BOOLEAN:
-        if value == "true":
-            return 1
-        else:
-            return 0
-    else:
-        # array or reference
-        return int(value)
 
 
 # input = {
@@ -66,7 +50,7 @@ def parse_boundary_exploration(message):
     for d in data:
         point = []
         for dimension in d:
-            value = parse_value_with_data_type(dimension[dn.VALUE], dimension[dn.TYPE])
+            value = util.parse_value_with_data_type(dimension[dn.VALUE], dimension[dn.TYPE])
             point.append(value)
 
         data_set.append(point)
@@ -111,7 +95,7 @@ def parse_training_message_body(message):
     for positive_point in positive_data:
         point = []
         for dim in positive_point:
-            value = parse_value_with_data_type(dim[dn.VALUE],  dim[dn.TYPE])
+            value = util.parse_value_with_data_type(dim[dn.VALUE],  dim[dn.TYPE])
             point.append(value)
 
         train_set_x_info.append(positive_point)
@@ -121,7 +105,7 @@ def parse_training_message_body(message):
     for negative_point in negative_data:
         point = []
         for dim in negative_point:
-            value = parse_value_with_data_type(dim[dn.VALUE], dim[dn.TYPE])
+            value = util.parse_value_with_data_type(dim[dn.VALUE], dim[dn.TYPE])
             point.append(value)
 
         train_set_x_info.append(negative_point)

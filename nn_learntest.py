@@ -4,13 +4,11 @@ import traceback
 from sys import stdin
 from sys import stdout
 
-import numpy as np
 import tensorflow as tf
 
 import util
 from main import label_tester as lt, mid_point_active_learning, json_handler, communication, boundary_exploration as be, \
     info_checker as ic
-
 
 lower_bound = -1000
 upper_bound = 1000
@@ -40,11 +38,14 @@ try:
             info_checker = ic.CoverageInfoChecker(variables)
 
             train_set_x = util.convert_with_mask(train_set_x, train_set_x_info)
-            mid_point_active_learning.generate_accuracy(train_set_x, train_set_y, None, None,
-                                                        learning_rate, training_epochs,
-                                                        lower_bound, upper_bound, False,
-                                                        label_tester, info_checker, point_number_limit, model_folder,
-                                                        model_file_name)
+            mid_point_learner = mid_point_active_learning.MidPointActiveLearner(train_set_x_info, train_set_x,
+                                                                                train_set_y, None, None,
+                                                                                learning_rate, training_epochs,
+                                                                                lower_bound, upper_bound, False,
+                                                                                label_tester, info_checker,
+                                                                                point_number_limit, model_folder,
+                                                                                model_file_name)
+            mid_point_learner.generate_accuracy()
         elif request_type == "$BOUNDARY_EXPLORATION":
             data_set_info, data_set, model_folder, model_file_name, variables = json_handler.parse_boundary_exploration(
                 message_body)
@@ -53,7 +54,8 @@ try:
             label_tester = lt.CoverageLabelTester(variables)
             info_checker = ic.CoverageInfoChecker(variables)
 
-            be.boundary_explore(data_set, model_folder, model_file_name, label_tester, info_checker, 3)
+            boundary_explorer = be.BoundaryExplorer(data_set_info, data_set, model_folder, model_file_name, label_tester, info_checker, 3)
+            boundary_explorer.boundary_explore()
             communication.send_exploration_finish_message()
         elif request_type == "$MODEL_CHECK":
             branch_id, method_id = json_handler.parse_model_check(message_body)
@@ -76,5 +78,3 @@ except Exception as e:
 finally:
     # sess.close()
     print("finished!")
-
-

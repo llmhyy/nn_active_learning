@@ -55,6 +55,7 @@ point_number_limit = 100
 
 util.reset_random_seed()
 mid_point_learner = mal.MidPointActiveLearner(
+    train_set_x_info,
     train_set_x[0:50],
     train_set_y[0:50],
     test_set_x,

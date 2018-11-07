@@ -1,4 +1,4 @@
-from main import benchmark, boundary_exploration as be, label_tester as lt, util
+from main import benchmark, boundary_exploration as be, label_tester as lt, util, info_checker as ic
 from prj_test import formula_data_point_generation, formula
 
 
@@ -57,4 +57,9 @@ train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partit
     400,
     0, 20)
 
-be.boundary_explore(train_set_x1, model_folder, model_file, child_label_tester, 10)
+info_checker = ic.FormulaInfoChecker()
+train_set_x_info = info_checker.check_info(train_set_x1)
+
+boundary_explorer = be.BoundaryExplorer(train_set_x_info, train_set_x1, model_folder, model_file, child_label_tester,
+                                        info_checker, 10)
+boundary_explorer.boundary_explore()

@@ -341,6 +341,53 @@ def data_partition(train_set_X, train_set_Y):
     return label_0, label_1
 
 
+def convert_with_data_type(point, train_set_x_info):
+    new_point = []
+    sample_info = train_set_x_info[0]
+    for i in range(len(sample_info)):
+        dimension = sample_info[i]
+        value = parse_value_with_data_type(point[i], dimension[dn.TYPE])
+        new_point.append(value)
+
+    return new_point
+
+
+def parse_value_with_data_type(value, data_type):
+    if data_type == dn.INTEGER or data_type == dn.CHAR or data_type == dn.LONG or data_type == dn.SHORT:
+        return int(value)
+    elif data_type == dn.DOUBLE or data_type == dn.FLOAT:
+        return float(value)
+    elif data_type == dn.BYTE:
+        value = int(value)
+        if value < -128:
+            value = 128
+        elif value > 127:
+            value = 127
+        return value
+    elif data_type == dn.CHAR:
+        value = int(value)
+        if value < 0:
+            value = 0
+        elif value > 127:
+            value = 127
+        return value
+    elif data_type == dn.BOOLEAN:
+        if type(value) is float:
+            if value >= 1:
+                value = 1
+            else:
+                value = 0
+        else:
+            if value == "true":
+                value = 1
+            else:
+                value = 0
+        return value
+    else:
+        # array or reference
+        return int(value)
+
+
 def add_distance_values(number, distance_list, selected_list, pointer):
     pivot = 0
     while pivot < number:

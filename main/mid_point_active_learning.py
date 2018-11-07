@@ -9,11 +9,12 @@ from main import data_pair, communication, util, cluster, network_structure as n
 
 
 class MidPointActiveLearner:
-    def __init__(self, train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
+    def __init__(self, train_set_x_info, train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
                  training_epochs,
                  lower_bound, upper_bound, use_bagging, label_tester, info_checker, point_number_limit,
                  model_folder,
                  model_file):
+        self.train_set_x_info = train_set_x_info
         self.train_set_x = train_set_x
         self.train_set_y = train_set_y
         self.test_set_x = test_set_x
@@ -363,7 +364,7 @@ class MidPointActiveLearner:
                     for j in range(len(border_point)):
                         new_value = border_point[j] + decided_direction[0][j] * (step / gradient_length)
                         new_point.append(new_value)
-                    # TODO reset new point with its data type
+                    new_point = util.convert_with_data_type(new_point, self.train_set_x_info)
 
                     probability = sess.run(aggregated_network.probability,
                                            feed_dict={aggregated_network.X: [new_point]})
@@ -480,7 +481,7 @@ class MidPointActiveLearner:
             else:
                 pair = data_pair.DataPair(pair.point_x, mid_point)
             mid_point = pair.calculate_mid_point()
-            # TODO reset mid point with data type
+            mid_point = util.convert_with_data_type(mid_point, self.train_set_x_info)
             probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [mid_point]})
 
         return mid_point
