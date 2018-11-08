@@ -51,7 +51,7 @@ info_checker = ic.FormulaInfoChecker()
 train_set_x_info = info_checker.check_info(train_set_x)
 
 label_tester = lt.FormulaLabelTester(f)
-point_number_limit = 100
+point_number_limit = 200
 
 util.reset_random_seed()
 mid_point_learner = mal.MidPointActiveLearner(

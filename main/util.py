@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-import domain_names as dn
+from main import domain_names as dn
 from main import label_tester as lt
 from prj_test import formula
 

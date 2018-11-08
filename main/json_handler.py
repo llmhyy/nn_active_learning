@@ -1,7 +1,7 @@
 import json
 import os
-import domain_names as dn
-import util
+from main import domain_names as dn
+from main import util
 from sys import stdout
 
 from main import variable as v

@@ -1,5 +1,5 @@
-import communication
-import json_handler
+from main import communication
+from main import json_handler
 import json
 from sys import stdin
 
