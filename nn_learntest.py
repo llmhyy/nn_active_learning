@@ -6,8 +6,7 @@ from sys import stdout
 
 import tensorflow as tf
 
-import util
-from main import label_tester as lt, mid_point_active_learning, json_handler, communication, boundary_exploration as be
+from main import util, label_tester as lt, mid_point_active_learning, json_handler, communication, boundary_exploration as be
 
 lower_bound = -1000
 upper_bound = 1000
