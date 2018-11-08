@@ -95,7 +95,7 @@ def parse_training_message_body(message):
     for positive_point in positive_data:
         point = []
         for dim in positive_point:
-            value = util.parse_value_with_data_type(dim[dn.VALUE],  dim[dn.TYPE])
+            value = util.parse_value_with_data_type(dim[dn.VALUE], dim[dn.TYPE])
             point.append(value)
 
         train_set_x_info.append(positive_point)
@@ -116,9 +116,9 @@ def parse_training_message_body(message):
     return train_set_x_info, train_set_x, train_set_y, variables, model_folder, model_file_name, point_number_limit
 
 
-def generate_label_request(train_set_X, variables):
+def generate_label_request(train_set_x, variables):
     output_list = []
-    for point in train_set_X:
+    for point in train_set_x:
         tmp_list = []
         for dimension in point:
             index = point.index(dimension)
@@ -138,10 +138,31 @@ def generate_label_request(train_set_X, variables):
     return output_string
 
 
+def generate_point_info_request(train_set_x, variables):
+    output_list = []
+    for point in train_set_x:
+        tmp_list = []
+        for dimension in point:
+            index = point.index(dimension)
+            var_name = variables[index].var_name
+            var_type = variables[index].var_type
+
+            tmp_dic = {dn.NAME: var_name}
+            if var_type == dn.INTEGER:
+                dimension = int(round(dimension))
+            tmp_dic[dn.VALUE] = str(dimension)
+            tmp_dic[dn.TYPE] = var_type
+
+            tmp_list.append(tmp_dic)
+        output_list.append(tmp_list)
+
+    output_string = json.dumps(output_list)
+    return output_string
+
 # parse_training_message_body(input)
 # generate_label_request(test_data,"PRIMITIVE",["a","b"])
 # label_input = {
-#                  dn.RESULT: [[{dn.LABEL: True, dn.VALUE: 1, dn.TYPE: dn.INTEGER, dn.NAME: "a"},
+#                  dn.RESULT: [[{dn.LABEL: True, dn.VALUE: 1, dn.TYPE: dn.INTEGER, dn.NAME: "a", "IS_PADDING": TRUE, "MODIFIABLE": TRUE},
 #                            {dn.LABEL: True, dn.VALUE: 2, dn.TYPE: dn.INTEGER, dn.NAME: "b"}],
 #                           [{dn.LABEL: True, dn.VALUE: 3, dn.TYPE: dn.INTEGER, dn.NAME: "a"},
 #                            {dn.LABEL: True, dn.VALUE: 4, dn.TYPE: dn.INTEGER, dn.NAME: "b"}],
@@ -150,16 +171,35 @@ def generate_label_request(train_set_X, variables):
 
 def parse_label(label_input):
     label_list = label_input[dn.RESULT]
-    output = []
+    labels = []
     for point in label_list:
-
         label = point[0][dn.LABEL]
         if label:
-            output.append(1)
+            labels.append(1)
         else:
-            output.append(0)
-    print(output)
-    stdout.flush()
-    return output
+            labels.append(0)
+
+    return labels
 
 # parse_label(label_input)
+
+
+# parse_training_message_body(input)
+# generate_label_request(test_data,"PRIMITIVE",["a","b"])
+# label_input = {
+#                  dn.RESULT: [[{dn.VALUE: 1, dn.TYPE: dn.INTEGER, dn.NAME: "a", "IS_PADDING": TRUE, "MODIFIABLE": TRUE},
+#                            {dn.VALUE: 2, dn.TYPE: dn.INTEGER, dn.NAME: "b"}],
+#                           [{dn.VALUE: 3, dn.TYPE: dn.INTEGER, dn.NAME: "a"},
+#                            {dn.VALUE: 4, dn.TYPE: dn.INTEGER, dn.NAME: "b"}],
+#                           [{dn.VALUE: 5, dn.TYPE: dn.INTEGER, dn.NAME: "a"},
+#                            {dn.VALUE: 6, dn.TYPE: dn.INTEGER, dn.NAME: "b"}]]}
+def parse_point_info(data):
+    label_list = data[dn.RESULT]
+    info = []
+    for point in label_list:
+        dictionary = {dn.IS_PADDING: point[0][dn.IS_PADDING],
+                      dn.MODIFIABLE: point[0][dn.MODIFIABLE]
+                      }
+        info.append(dictionary)
+
+    return info

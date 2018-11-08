@@ -11,7 +11,7 @@ from main import data_pair, communication, util, cluster, network_structure as n
 class MidPointActiveLearner:
     def __init__(self, train_set_x_info, train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
                  training_epochs,
-                 lower_bound, upper_bound, use_bagging, label_tester, info_checker, point_number_limit,
+                 lower_bound, upper_bound, use_bagging, label_tester, point_number_limit,
                  model_folder,
                  model_file):
         self.train_set_x_info = train_set_x_info
@@ -25,7 +25,6 @@ class MidPointActiveLearner:
         self.upper_bound = upper_bound
         self.use_bagging = use_bagging
         self.label_tester = label_tester
-        self.info_checker = info_checker
         self.point_number_limit = point_number_limit
         self.model_folder = model_folder
         self.model_file = model_file
@@ -327,9 +326,6 @@ class MidPointActiveLearner:
             for label in labels:
                 appended_y.append([label])
 
-            appended_x_info = self.info_checker.check_info(appended_x)
-            appended_x = util.convert_with_mask(appended_x, appended_x_info)
-
         return appended_x, appended_y
 
     def search_validation_points(self, aggregated_network, border_points_groups, centers, centers_label, clusters,
@@ -364,8 +360,7 @@ class MidPointActiveLearner:
                     for j in range(len(border_point)):
                         new_value = border_point[j] + decided_direction[0][j] * (step / gradient_length)
                         new_point.append(new_value)
-                    new_point = util.convert_with_data_type(new_point, self.train_set_x_info)
-
+                    new_point = util.convert_with_data_type_and_mask(new_point, self.train_set_x_info, self.label_tester)
                     probability = sess.run(aggregated_network.probability,
                                            feed_dict={aggregated_network.X: [new_point]})
 
@@ -481,7 +476,7 @@ class MidPointActiveLearner:
             else:
                 pair = data_pair.DataPair(pair.point_x, mid_point)
             mid_point = pair.calculate_mid_point()
-            mid_point = util.convert_with_data_type(mid_point, self.train_set_x_info)
+            mid_point = util.convert_with_data_type_and_mask(mid_point, self.train_set_x_info, self.label_tester)
             probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [mid_point]})
 
         return mid_point
@@ -498,15 +493,12 @@ class MidPointActiveLearner:
         appended_x = []
         appended_y = []
         if len(unconfident_points) != 0:
-            results = self.label_tester.test_label(unconfident_points)
-            for i in range(len(results)):
-                result = results[i]
+            labels = self.label_tester.test_label(unconfident_points)
+            for i in range(len(labels)):
+                result = labels[i]
                 middle_point = unconfident_points[i]
                 if middle_point not in self.train_set_x:
                     appended_x.append(middle_point)
                     appended_y.append([result])
-
-            appended_x_info = self.info_checker.check_info(appended_x)
-            appended_x = util.convert_with_mask(appended_x, appended_x_info)
 
         return appended_x, appended_y

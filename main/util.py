@@ -330,24 +330,27 @@ def calculate_std_dev(train_set_x):
     return std_dev
 
 
-def data_partition(train_set_X, train_set_Y):
+def data_partition(train_set_x, train_set_y):
     label_0 = []
     label_1 = []
-    for i in range(len(train_set_X)):
-        if (train_set_Y[i][0] == 0):
-            label_0.append(train_set_X[i])
-        elif (train_set_Y[i][0] == 1):
-            label_1.append(train_set_X[i])
+    for i in range(len(train_set_x)):
+        if train_set_y[i][0] == 0:
+            label_0.append(train_set_x[i])
+        elif train_set_y[i][0] == 1:
+            label_1.append(train_set_x[i])
     return label_0, label_1
 
 
-def convert_with_data_type(point, train_set_x_info):
+def convert_with_data_type_and_mask(point, train_set_x_info, label_tester):
     new_point = []
     sample_info = train_set_x_info[0]
     for i in range(len(sample_info)):
         dimension = sample_info[i]
         value = parse_value_with_data_type(point[i], dimension[dn.TYPE])
         new_point.append(value)
+
+    mask = label_tester.check_info([new_point])
+    new_point = convert_with_mask([new_point], mask)[0]
 
     return new_point
 

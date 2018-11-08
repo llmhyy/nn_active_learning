@@ -17,6 +17,12 @@ def send_label_request(request_string):
     stdout.flush()
 
 
+def send_point_info_request(request_string):
+    print("$REQUEST_MASK_RESULT")
+    print(request_string)
+    stdout.flush()
+
+
 def send_model_check_response(response_content):
     print("$MODEL_CHECK")
     print(response_content)

@@ -8,14 +8,13 @@ from main import util, cluster as cl, network_structure as ns
 
 
 class BoundaryExplorer:
-    def __init__(self, data_set_info, data_set, model_folder, model_file, label_tester, info_checker,
+    def __init__(self, data_set_info, data_set, model_folder, model_file, label_tester,
                  iterations):
         self.data_set_info = data_set_info
         self.data_set = data_set
         self.model_folder = model_folder
         self.model_file = model_file
         self.label_tester = label_tester
-        self.info_checker = info_checker
         self.iterations = iterations
 
     def boundary_explore(self):
@@ -58,11 +57,8 @@ class BoundaryExplorer:
                 for border_point in border_points:
                     direction = (np.array(border_point) - np.array(center)).tolist()
                     new_point = util.move(border_point, direction, step)
-                    new_point = util.convert_with_data_type(new_point, self.data_set_info)
+                    new_point = util.convert_with_data_type_and_mask(new_point, self.data_set_info, self.label_tester)
                     new_point_list.append(new_point)
-
-                new_point_list_info = self.info_checker.check_info(new_point_list)
-                new_point_list = util.convert_with_mask(new_point_list, new_point_list_info)
 
                 for new_point in new_point_list:
                     if self.is_point_inside_boundary(sess, new_point, net):
