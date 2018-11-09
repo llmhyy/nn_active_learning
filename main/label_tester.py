@@ -109,7 +109,7 @@ class CoverageLabelTester(LabelTester):
         data = stdin.readline()
         data = data.strip("\n")
         data = json.loads(data)
-        labels, info = json_handler.parse_label(data)
+        labels = json_handler.parse_label(data)
 
         print(labels)
         print("receive data: ", data)
