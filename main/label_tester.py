@@ -1,9 +1,8 @@
 import json
 import math
 from sys import stdin
-from sys import stdout
 
-from main import communication, json_handler
+from main import communication, json_handler, domain_names as dn
 from prj_test import formula
 
 
@@ -16,6 +15,7 @@ class LabelTester:
 
     def check_info(self, points):
         pass
+
 
 class FormulaLabelTester(LabelTester):
     def __init__(self, test_formula):
@@ -63,9 +63,10 @@ class FormulaLabelTester(LabelTester):
         for i in range(size):
             info_list = []
             for j in range(dimension_length):
-                dictionary = {'IS_PADDING': False, 'INFLUENTIAL_END': -1, 'MODIFIABLE': True, 'INFLUENTIAL_START': -1,
-                              'VALUE': 0,
-                              'TYPE': 'DOUBLE', 'NAME': 'a'}
+                dictionary = {dn.IS_PADDING: False, dn.INFLUENTIAL_END: -1, dn.MODIFIABLE: True,
+                              dn.INFLUENTIAL_START: -1,
+                              dn.VALUE: 0,
+                              dn.TYPE: 'DOUBLE', dn.NAME: 'a'}
                 info_list.append(dictionary)
             total_list.append(info_list)
         return total_list

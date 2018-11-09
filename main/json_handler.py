@@ -1,9 +1,8 @@
 import json
 import os
+
 from main import domain_names as dn
 from main import util
-from sys import stdout
-
 from main import variable as v
 
 
@@ -125,11 +124,8 @@ def generate_label_request(train_set_x, variables):
             var_name = variables[index].var_name
             var_type = variables[index].var_type
 
-            tmp_dic = {dn.NAME: var_name}
-            if var_type == dn.INTEGER:
-                dimension = int(round(dimension))
-            tmp_dic[dn.VALUE] = str(dimension)
-            tmp_dic[dn.TYPE] = var_type
+            used_value = util.parse_value_with_data_type(dimension, var_type)
+            tmp_dic = {dn.NAME: var_name, dn.VALUE: used_value, dn.TYPE: var_type}
 
             tmp_list.append(tmp_dic)
         output_list.append(tmp_list)
@@ -159,6 +155,7 @@ def generate_point_info_request(train_set_x, variables):
     output_string = json.dumps(output_list)
     return output_string
 
+
 # parse_training_message_body(input)
 # generate_label_request(test_data,"PRIMITIVE",["a","b"])
 # label_input = {
@@ -181,6 +178,7 @@ def parse_label(label_input):
 
     return labels
 
+
 # parse_label(label_input)
 
 
@@ -197,9 +195,6 @@ def parse_point_info(data):
     label_list = data[dn.RESULT]
     info = []
     for point in label_list:
-        dictionary = {dn.IS_PADDING: point[0][dn.IS_PADDING],
-                      dn.MODIFIABLE: point[0][dn.MODIFIABLE]
-                      }
-        info.append(dictionary)
+        info.append(point)
 
     return info
