@@ -184,6 +184,7 @@ class MidPointActiveLearner:
                 centers, centers_label, clusters, border_points_groups = self.cluster_training_data(2, 5)
 
                 appending_dict = {}
+                print("start generalization validation")
                 appended_x, appended_y = self.append_generalization_validation_points(sess, aggregated_network,
                                                                                       std_dev,
                                                                                       centers,
@@ -196,6 +197,7 @@ class MidPointActiveLearner:
                 total_appended_y += appended_y
                 appending_dict["generalization_validation"] = appended_x
 
+                print("start midpoint selection")
                 pair_list = self.select_point_pair(centers, centers_label, clusters, mid_point_limit)
                 appended_x, appended_y = self.append_mid_points(sess, aggregated_network, pair_list)
                 total_appended_x += appended_x
@@ -319,6 +321,7 @@ class MidPointActiveLearner:
                                                    gradient, sess, std_dev,
                                                    generalization_valid_limit,
                                                    )
+        appended_x = util.convert_with_data_type_and_mask(appended_x, self.train_set_x_info, self.label_tester)
 
         appended_y = []
         if len(appended_x) != 0:
@@ -360,7 +363,7 @@ class MidPointActiveLearner:
                     for j in range(len(border_point)):
                         new_value = border_point[j] + decided_direction[0][j] * (step / gradient_length)
                         new_point.append(new_value)
-                    new_point = util.convert_with_data_type_and_mask(new_point, self.train_set_x_info, self.label_tester)
+                    # new_point = util.convert_with_data_type_and_mask(new_point, self.train_set_x_info, self.label_tester)
                     probability = sess.run(aggregated_network.probability,
                                            feed_dict={aggregated_network.X: [new_point]})
 
@@ -476,7 +479,6 @@ class MidPointActiveLearner:
             else:
                 pair = data_pair.DataPair(pair.point_x, mid_point)
             mid_point = pair.calculate_mid_point()
-            mid_point = util.convert_with_data_type_and_mask(mid_point, self.train_set_x_info, self.label_tester)
             probability = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [mid_point]})
 
         return mid_point
@@ -493,6 +495,8 @@ class MidPointActiveLearner:
         appended_x = []
         appended_y = []
         if len(unconfident_points) != 0:
+            unconfident_points = util.convert_with_data_type_and_mask(unconfident_points, self.train_set_x_info,
+                                                                      self.label_tester)
             labels = self.label_tester.test_label(unconfident_points)
             for i in range(len(labels)):
                 result = labels[i]

@@ -53,14 +53,10 @@ class BoundaryExplorer:
                 std_dev = util.calculate_std_dev(border_points)
                 step = random.uniform(0, std_dev)
                 # step = 5
-                new_point_list = []
                 for border_point in border_points:
                     direction = (np.array(border_point) - np.array(center)).tolist()
                     new_point = util.move(border_point, direction, step)
-                    new_point = util.convert_with_data_type_and_mask(new_point, self.data_set_info, self.label_tester)
-                    new_point_list.append(new_point)
 
-                for new_point in new_point_list:
                     if self.is_point_inside_boundary(sess, new_point, net):
                         is_too_close = self.check_closeness(new_point, cluster_group)
                         if not is_too_close:
@@ -69,6 +65,7 @@ class BoundaryExplorer:
         print("added new points", len(new_points))
         print(new_points)
         if len(new_points) > 0:
+            new_points = util.convert_with_data_type_and_mask(new_points, self.data_set_info, self.label_tester)
             labels = self.label_tester.test_label(new_points)
             for i in range(len(labels)):
                 if labels[i] == 1:

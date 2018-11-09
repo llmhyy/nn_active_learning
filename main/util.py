@@ -341,18 +341,19 @@ def data_partition(train_set_x, train_set_y):
     return label_0, label_1
 
 
-def convert_with_data_type_and_mask(point, train_set_x_info, label_tester):
-    new_point = []
+def convert_with_data_type_and_mask(points, train_set_x_info, label_tester):
     sample_info = train_set_x_info[0]
-    for i in range(len(sample_info)):
-        dimension = sample_info[i]
-        value = parse_value_with_data_type(point[i], dimension[dn.TYPE])
-        new_point.append(value)
+    for j in range(len(points)):
+        point = points[j]
+        for i in range(len(sample_info)):
+            dimension = sample_info[i]
+            value = parse_value_with_data_type(point[i], dimension[dn.TYPE])
+            points[j][i] = value
 
-    mask = label_tester.check_info([new_point])
-    new_point = convert_with_mask([new_point], mask)[0]
+    mask = label_tester.check_info(points)
+    new_points = convert_with_mask(points, mask)
 
-    return new_point
+    return new_points
 
 
 def parse_value_with_data_type(value, data_type):
@@ -376,10 +377,10 @@ def parse_value_with_data_type(value, data_type):
         return value
     elif data_type == dn.BOOLEAN:
         if type(value) is float:
-            if value >= 1:
-                value = 1
+            if value >= 0.5:
+                value = int(1)
             else:
-                value = 0
+                value = int(0)
         else:
             if value == "true":
                 value = 1
