@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import traceback
 from sys import stdin
 from sys import stdout
@@ -69,8 +70,7 @@ try:
         stdout.flush()
         print("finished!")
 except Exception as e:
-    print(e)
-    traceback.print_exc()
+    print(traceback.format_exc())
     stdout.flush()
 finally:
     # sess.close()
