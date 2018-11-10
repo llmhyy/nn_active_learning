@@ -5,7 +5,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from main import data_pair, communication, util, cluster, network_structure as ns
+from main import data_pair, communication, util, cluster, network_structure as ns, gradient_util
 
 
 class MidPointActiveLearner:
@@ -395,40 +395,11 @@ class MidPointActiveLearner:
         #
         # return False
 
-    def confirm_gradient_direction(self, sess, point, aggregated_network, gradient):
-        delta = 10E-6
-        point_add = []
-        point_minus = []
-
-        for i in range(len(point)):
-            value = point[i]
-            g = gradient[0][i]
-            value_add = value + delta * g
-            value_minus = value - delta * g
-
-            point_add.append(value_add)
-            point_minus.append(value_minus)
-
-        y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [point]})[0]
-        y_add = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [point_add]})[0]
-        y_minus = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [point_minus]})[0]
-
-        if y < 0.5:
-            if y_add > y_minus:
-                return gradient
-            else:
-                return -gradient
-        else:
-            if y_add > y_minus:
-                return -gradient
-            else:
-                return gradient
-
     def calculate_decided_direction(self, aggregated_network, point, center, gradient, sess):
         vector = util.calculate_direction(point, center)
         vector_length = util.calculate_vector_size(vector)
-        g = sess.run(gradient, feed_dict={aggregated_network.X: [point]})[0]
-        g = self.confirm_gradient_direction(sess, point, aggregated_network, g)
+        g = sess.run(gradient, feed_dict={aggregated_network.X: [point]})
+        g = gradient_util.confirm_gradient_direction(sess, [point], aggregated_network, g)[0]
         g_length = util.calculate_vector_size(g[0].tolist())
 
         if vector_length == 0 and g_length == 0:
