@@ -1,3 +1,7 @@
+import numpy as np
+import math
+import util
+
 def confirm_gradient_direction(sess, points, aggregated_network, gradients):
     delta = 10E-6
 
@@ -5,12 +9,12 @@ def confirm_gradient_direction(sess, points, aggregated_network, gradients):
     points_minus = []
     for k in range(len(points)):
         point = points[k]
-        gradient = gradients[k]
+        gradient = gradients[0][k]
         point_add = []
         point_minus = []
         for i in range(len(point)):
             value = point[i]
-            g = gradient[0][i]
+            g = gradient[i]
             value_add = value + delta * g
             value_minus = value - delta * g
 
@@ -29,7 +33,7 @@ def confirm_gradient_direction(sess, points, aggregated_network, gradients):
         y = ys[i]
         y_add = ys_add[i]
         y_minus = ys_minus[i]
-        gradient = gradients[i]
+        gradient = gradients[0][i]
         if y < 0.5:
             if y_add > y_minus:
                 returned_gradients.append(gradient)
@@ -42,3 +46,28 @@ def confirm_gradient_direction(sess, points, aggregated_network, gradients):
                 returned_gradients.append(gradient)
 
     return returned_gradients
+
+
+def calculate_opposite_vector(vector):
+    dimension_length = len(vector)
+    if dimension_length == 1:
+        return [0]
+
+    random_vector = np.random.randn(dimension_length)
+    vector_size = util.calculate_vector_size(vector)
+    if vector_size == 0:
+        return random_vector.tolist()
+
+    vector = np.array(vector)
+    while True:
+        value = np.dot(random_vector, vector)
+        random_vector_size = util.calculate_vector_size(random_vector)
+        cosine = value/(random_vector_size*vector_size)
+
+        if -math.pi/2 < cosine <= 0:
+            return random_vector.tolist()
+        else:
+            random_vector = np.random.randn(dimension_length)
+
+    return random_vector.tolist()
+
