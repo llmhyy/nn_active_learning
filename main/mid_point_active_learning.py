@@ -170,9 +170,9 @@ class MidPointActiveLearner:
                 #                                                      label_tester)
 
                 predicted = tf.cast(aggregated_network.probability > 0.5, dtype=tf.float32)
-                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
-                                            self.train_set_x, self.train_set_y, self.lower_bound, self.upper_bound,
-                                            count)
+                # util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
+                #                             self.train_set_x, self.train_set_y, self.lower_bound, self.upper_bound,
+                #                             count)
 
                 if len(self.train_set_x) > self.point_number_limit:
                     break
