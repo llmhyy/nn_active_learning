@@ -405,13 +405,13 @@ class MidPointActiveLearner:
         if vector_length == 0 and g_length == 0:
             direction = np.random.randn(len(point)).tolist()
         elif vector_length == 0 and g_length != 0:
-            direction = util.calculate_orthogonal_direction(g[0].tolist())
+            direction = util.calculate_orthogonal_direction(g.tolist())
         elif vector_length != 0 and g_length == 0:
             direction = vector
             # print("point", point, "leaving center direction", direction, "center is", center)
             pass
         else:
-            direction = util.calculate_vector_projection(vector, g[0].tolist())
+            direction = util.calculate_vector_projection(vector, g.tolist())
             # print("point", point, "move towards direction", direction, "center is", center)
             pass
 

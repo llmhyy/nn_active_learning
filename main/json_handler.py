@@ -59,6 +59,43 @@ def parse_boundary_exploration(message):
 
 
 # input = {
+#          dn.METHOD_ID: "com.test.Class.method.lineNo",
+#          dn.BRANCH_ID: "2-3",
+#          "TEST_DATA": [
+#              [{dn.VALUE: "877", dn.TYPE: dn.INTEGER, dn.NAME: "a"}, {dn.VALUE: "0", dn.TYPE: "PRIMITIVE", dn.NAME: "b"}],
+#              [{dn.VALUE: "548", dn.TYPE: "PRIMITIVE", dn.NAME: "a"}, {dn.VALUE: "969", dn.TYPE: "PRIMITIVE", dn.NAME: "b"}]
+#          ]}
+#
+# test_data = [[1, 2], [3, 4], [5, 6]]
+def parse_boundary_remaining(message):
+    model_folder = message[dn.METHOD_ID]
+    model_file_name = message[dn.BRANCH_ID]
+
+    model_folder = os.path.join(model_folder, model_file_name)
+
+    data = message[dn.TEST_DATA]
+    sample_point = data[0]
+    variables = []
+    for dimension in sample_point:
+        variable = v.Variable(dimension[dn.NAME], dimension[dn.TYPE])
+        variables.append(variable)
+
+    data_set = []
+    data_set_info = []
+    for d in data:
+        point = []
+        for dimension in d:
+            value = util.parse_value_with_data_type(dimension[dn.VALUE], dimension[dn.TYPE])
+            point.append(value)
+
+        data_set.append(point)
+        data_set_info.append(d)
+
+    return data_set_info, data_set, model_folder, model_file_name, variables
+
+
+
+# input = {
 #           dn.METHOD_ID: "com.test.Class.method()",
 #           dn.BRANCH_ID: "2-3",
 #           dn.POINT_NUMBER_LIMIT: 100
@@ -127,6 +164,24 @@ def generate_label_request(train_set_x, variables):
             used_value = util.parse_value_with_data_type(value, var_type)
             tmp_dic = {dn.NAME: var_name, dn.VALUE: used_value, dn.TYPE: var_type}
 
+            tmp_list.append(tmp_dic)
+        output_list.append(tmp_list)
+
+    output_string = json.dumps(output_list)
+    return output_string
+
+
+def generate_boundary_remaining_message(new_point_list, variables):
+    output_list = []
+    for point in new_point_list:
+        tmp_list = []
+        for index in range(len(point)):
+            value = point[index]
+            var_name = variables[index].var_name
+            var_type = variables[index].var_type
+
+            used_value = util.parse_value_with_data_type(value, var_type)
+            tmp_dic = {dn.NAME: var_name, dn.VALUE: used_value, dn.TYPE: var_type}
             tmp_list.append(tmp_dic)
         output_list.append(tmp_list)
 

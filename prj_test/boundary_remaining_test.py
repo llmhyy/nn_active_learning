@@ -59,7 +59,7 @@ for i in range(len(train_set_x)):
 positive_x_info = label_tester.check_info(positive_x)
 
 boundary_remainer = br.BoundaryRemainer(positive_x_info, positive_x, model_folder, model_file, 10)
-new_point_list = boundary_remainer.search_remaining_boundary_points
+new_point_list = boundary_remainer.search_remaining_boundary_points()
 
 labels = label_tester.test_label(new_point_list)
 count = 0

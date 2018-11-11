@@ -1,4 +1,5 @@
 from sys import stdout
+from main import json_handler
 
 
 def send_training_finish_message():
@@ -26,4 +27,11 @@ def send_point_info_request(request_string):
 def send_model_check_response(response_content):
     print("$MODEL_CHECK")
     print(response_content)
+    stdout.flush()
+
+
+def send_boundary_remaining_points(new_point_list, variables):
+    message = json_handler.generate_boundary_remaining_message(new_point_list, variables)
+    print("$SEND_BOUNDARY_REMAINING_POINTS")
+    print(message)
     stdout.flush()

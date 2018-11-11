@@ -1,13 +1,13 @@
 import json
 import os
-import sys
 import traceback
 from sys import stdin
 from sys import stdout
 
 import tensorflow as tf
 
-from main import util, label_tester as lt, mid_point_active_learning, json_handler, communication, boundary_exploration as be
+from main import util, label_tester as lt, mid_point_active_learning, json_handler, communication, \
+    boundary_exploration as be, boundary_remaining as br
 
 lower_bound = -1000
 upper_bound = 1000
@@ -66,9 +66,17 @@ try:
                 response_content = "TRUE"
             message_string = json_handler.generate_model_check_response(response_content)
             communication.send_model_check_response(message_string)
+        elif request_type == "$BOUNDARY_REMAINING":
+            positive_data_info, positive_data, model_folder, model_file_name, variables = json_handler.parse_boundary_remaining(
+                message_body)
+            data_set = util.convert_with_mask(positive_data, positive_data_info)
+            model_folder = os.path.join("models", model_folder)
 
+            boundary_remainer = br.BoundaryRemainer(positive_data_info, positive_data, model_folder, model_file_name,
+                                                    10)
+            points = boundary_remainer.search_remaining_boundary_points()
+            communication.send_boundary_remaining_points(points, variables)
         stdout.flush()
-        print("finished!")
 except Exception as e:
     print(traceback.format_exc())
     stdout.flush()

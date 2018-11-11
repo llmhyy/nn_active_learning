@@ -1,6 +1,9 @@
-import numpy as np
 import math
-import util
+
+import numpy as np
+
+from main import util
+
 
 def confirm_gradient_direction(sess, points, aggregated_network, gradients):
     delta = 10E-6
@@ -62,12 +65,11 @@ def calculate_opposite_vector(vector):
     while True:
         value = np.dot(random_vector, vector)
         random_vector_size = util.calculate_vector_size(random_vector)
-        cosine = value/(random_vector_size*vector_size)
+        cosine = value / (random_vector_size * vector_size)
 
-        if -math.pi/2 < cosine <= 0:
+        if -math.pi / 2 < cosine <= 0:
             return random_vector.tolist()
         else:
             random_vector = np.random.randn(dimension_length)
 
     return random_vector.tolist()
-

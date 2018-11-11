@@ -16,17 +16,15 @@ class BoundaryRemainer:
         self.model_file = model_file
         self.selected_point_number = selected_point_number
 
-    @property
     def search_remaining_boundary_points(self):
-        input_dimension = len(self.positive_points[0])
-
-        if self.model_folder is not None and os.path.exists(self.model_folder):
-            model_path = os.path.join(self.model_folder, self.model_file)
-            if not os.path.exists(model_path + ".meta"):
-                return None
-
         new_point_list = []
+        if self.model_folder is None or not os.path.exists(self.model_folder):
+            return new_point_list
+        model_path = os.path.join(self.model_folder, self.model_file)
+        if not os.path.exists(model_path + ".meta"):
+            return new_point_list
 
+        input_dimension = len(self.positive_points[0])
         tf.reset_default_graph()
         with tf.Session() as sess:
             net = ns.NNStructure(input_dimension, 0.01)
