@@ -342,6 +342,9 @@ def data_partition(train_set_x, train_set_y):
 
 
 def convert_with_data_type_and_mask(points, train_set_x_info, label_tester):
+    if len(points) == 0:
+        return []
+
     sample_info = train_set_x_info[0]
     for j in range(len(points)):
         point = points[j]

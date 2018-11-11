@@ -257,16 +257,24 @@ def generate_partitioned_random_points_for_sphere(single_formula, lower_bound, u
 
 
 def generate_testing_point(single_formula, category, dimension, number, lower_bound, large_bound):
-    number_of_point = int(round(math.pow(number, (1.0 / dimension))))
-    step = (large_bound - lower_bound) / float(number_of_point)
-    x_list = []
-    for i in range(number_of_point):
-        x_list.append(lower_bound + i * step)
+    number_of_point = int(math.pow(number, (1.0 / dimension)))
+    output = []
+    if number_of_point == 1:
+        for i in range(number):
+            point = []
+            for j in range(dimension):
+                value = np.random.uniform(lower_bound, large_bound)
+                point.append(value)
+            output.append(point)
+    else:
+        step = (large_bound - lower_bound) / float(number_of_point)
+        x_list = []
+        for i in range(number_of_point):
+            x_list.append(lower_bound + i * step)
+        output = list(product(x_list, repeat=dimension))
 
     label_list = []
     point_list = []
-
-    output = list(product(x_list, repeat=dimension))
     for i in output:
         i = list(i)
         formula_tester = lt.FormulaLabelTester(single_formula)
