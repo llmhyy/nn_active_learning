@@ -1,14 +1,12 @@
 import xlwt
 import time
-import benchmark
-import label_tester as lt
-import mid_point_active_learning as mal
-import util
+from main import benchmark,label_tester as lt,mid_point_active_learning as mal,util
+
 import tensorflow as tf
 from prj_test import formula_data_point_generation, formula, formula_generator as fg
 
 category = formula.POLYHEDRON
-number = 20
+number = 100
 
 upper_bound = 1000
 lower_bound = -1000
@@ -89,6 +87,7 @@ for f in formula_list:
     label_tester = lt.FormulaLabelTester(f)
     point_number_limit = 100
     util.reset_random_seed()
+    tf.reset_default_graph()
     train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mal.generate_accuracy(
         train_set_x[0:50],
         train_set_y[0:50],
