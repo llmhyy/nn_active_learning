@@ -19,9 +19,9 @@ def generate_formula(category, number):
 def generate_polynomial(category):
     # TODO variable number is up to 10
     y = random.randint(-10, 10)
-    variableNumber = random.randint(3, 5)
+    variable_number = random.randint(3, 5)
     coefficientList = []
-    for i in range(variableNumber):
+    for i in range(variable_number):
         powerNumber = random.randint(1, 4)
 
         tmpList = []

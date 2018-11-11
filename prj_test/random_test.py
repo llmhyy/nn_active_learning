@@ -1,14 +1,14 @@
 from main import benchmark, label_tester as lt, mid_point_active_learning as mal, util
-from prj_test import formula_data_point_generation, formula_generator,formula
+from prj_test import formula_data_point_generation, formula_generator, formula
 
-number=1
-category=formula.POLYHEDRON
-formula=formula_generator.generate_formula(category,number)
+number = 1
+category = formula.POLYHEDRON
+formula = formula_generator.generate_formula(category, number)
 formula_list = formula.get(category)
 
-f=formula_list[0]
+f = formula_list[0]
 
-print (f.get_formula())
+print(f.get_formula())
 lower_bound = -1000
 upper_bound = 1000
 
@@ -46,7 +46,7 @@ print("midpoint test accuracy", test_acc_list)
 print("midpoint data point number", data_point_number_list)
 for i in range(len(appended_point_list)):
     appending_dict = appended_point_list[i]
-    print("the", i+1, "th iteration:")
+    print("the", i + 1, "th iteration:")
     print("  generalization_validation", appending_dict["generalization_validation"])
     print("  mid_point", appending_dict["mid_point"])
 
