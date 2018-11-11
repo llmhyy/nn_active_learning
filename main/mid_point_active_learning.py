@@ -140,15 +140,12 @@ class MidPointActiveLearner:
                     random.shuffle(tmp)
                     all_data_x, all_data_y = zip(*tmp)
                     aggregated_network, train_acc = self.train_bootstrap_model(all_data_x, all_data_y,
-                                                                               total_appended_x,
-                                                                               total_appended_y,
                                                                                net, parts_num, sess)
                 else:
                     sess.run(net.init)
                     for epoch in range(self.training_epochs):
                         sess.run([net.train_op, net.loss_op],
                                  feed_dict={net.X: self.train_set_x, net.Y: self.train_set_y})
-
                     aggregated_network = net
 
                 train_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: self.train_set_x})
@@ -161,13 +158,6 @@ class MidPointActiveLearner:
                     test_acc_list.append(test_acc)
 
                 data_point_number_list.append(len(self.train_set_x))
-
-                # new_grads = tf.gradients(net.probability, net.X)
-                # appended_x, appended_y = br.apply_boundary_remaining(sess, new_grads, net.X, net.Y, length_0, length_1,
-                #                                                      net.probability, train_set_x,
-                #                                                      train_set_y,
-                #                                                      to_be_appended_boundary_remaining_points_number,
-                #                                                      label_tester)
 
                 predicted = tf.cast(aggregated_network.probability > 0.5, dtype=tf.float32)
                 util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
@@ -219,7 +209,6 @@ class MidPointActiveLearner:
                 count += 1
 
         communication.send_training_finish_message()
-        # tf.reset_default_graph()
         return train_acc_list, test_acc_list, data_point_number_list, appended_point_list
 
     def select_point_pair(self, centers, centers_label, clusters, mid_point_limit):
