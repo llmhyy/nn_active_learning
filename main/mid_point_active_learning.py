@@ -5,11 +5,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-import cluster
-import communication
-import data_pair
-import network_structure as ns
-import util
+from main import data_pair, communication, util, cluster, network_structure as ns
 
 
 def partition_data(label_0, label_1, parts_num):

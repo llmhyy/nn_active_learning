@@ -1,8 +1,4 @@
-import benchmark
-import label_tester as lt
-import util
-import boundary_exploration as be
-import tensorflow as tf
+from main import benchmark, boundary_exploration as be, label_tester as lt, util
 from prj_test import formula_data_point_generation, formula
 
 
@@ -16,7 +12,7 @@ def generate_formulas():
     # formulas.put([[[12,0],[-12,0]],[4,4]])
 
     formu1 = formula.Formula(
-        [[[500, 0]], [20]], formula.POLYHEDRON)
+        [[[500, 0]], [50]], formula.POLYHEDRON)
     formulas.put(formu1.get_category(), formu1)
     return formulas
 
@@ -53,12 +49,12 @@ model_file = "test-branch"
 util.reset_random_seed()
 train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
                                                   training_epochs, lower_bound, upper_bound, model_folder, model_file)
-print("GPU", tf.test.is_gpu_available())
-# child_label_tester = lt.FormulaLabelTester(child_formula)
-# train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partitioned_data(
-#     child_formula, category,
-#     -400,
-#     400,
-#     0, 50)
-#
-# be.boundary_explore(train_set_x1, 1, 0, model_folder, model_file, child_label_tester, 10)
+
+child_label_tester = lt.FormulaLabelTester(child_formula)
+train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partitioned_data(
+    child_formula, category,
+    -400,
+    400,
+    0, 20)
+
+be.boundary_explore(train_set_x1, 1, 0, model_folder, model_file, child_label_tester, 10)

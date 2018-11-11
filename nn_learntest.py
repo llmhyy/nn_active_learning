@@ -3,10 +3,8 @@ import traceback
 from sys import stdin
 from sys import stdout
 
-import json_handler
 import os
-import label_tester as lt
-import mid_point_active_learning
+from main import label_tester as lt, mid_point_active_learning, json_handler
 
 lower_bound = -1000
 upper_bound = 1000

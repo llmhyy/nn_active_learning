@@ -2,8 +2,7 @@ import json
 import math
 from sys import stdin
 
-import communication
-import json_handler
+from main import communication, json_handler
 from prj_test import formula
 
 

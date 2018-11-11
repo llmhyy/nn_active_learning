@@ -2,7 +2,7 @@ import json
 import os
 from sys import stdout
 
-import variable as v
+from main import variable as v
 
 
 # input = {

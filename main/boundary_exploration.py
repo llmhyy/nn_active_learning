@@ -2,11 +2,9 @@ import os
 import random
 
 import numpy as np
-import network_structure as ns
 import tensorflow as tf
 
-import cluster as cl
-import util
+from main import util, cluster as cl, network_structure as ns
 
 
 def boundary_explore(data_set, parent_branch_label, child_branch_label, model_folder, model_file, child_label_tester,
@@ -32,12 +30,16 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
             pass
 
     for k in range(iterations):
+        print(k+1, "th iteration")
         new_points = []
-        centers, border_points_group, cluster_group = cl.cluster_points(data_set, 20, 3)
+        centers, _, cluster_group = cl.cluster_points(data_set, 1, 10)
         util.plot_clustering_result(cluster_group, -1000, 1000, k + 1)
         for i in range(len(centers)):
             center = centers[i]
-            border_points = border_points_group[i]
+            cluster = cluster_group[i]
+
+            distance_from_farthest_border = cl.calculate_distance_from_farthest_border(cluster)
+            border_points = cl.random_border_points(center, distance_from_farthest_border, 5)
 
             std_dev = util.calculate_std_dev(border_points)
             step = random.uniform(0, std_dev)
@@ -46,9 +48,19 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
                 direction = (np.array(border_point) - np.array(center)).tolist()
                 new_point = util.move(border_point, direction, step)
 
-                if is_point_inside_boundary(sess, new_point, net, parent_branch_label):
-                    new_points.append(new_point)
+                label = child_label_tester.test_label([new_point])[0]
+                if label == 1:
+                    print("center", center)
+                    print("border point", border_point)
+                    print("new point", new_point)
 
+                if is_point_inside_boundary(sess, new_point, net, parent_branch_label):
+                    is_too_close = check_closeness(new_point, cluster_group)
+                    if not is_too_close:
+                        new_points.append(new_point)
+
+        print("added new points", len(new_points))
+        print(new_points)
         if len(new_points) > 0:
             labels = child_label_tester.test_label(new_points)
             for i in range(len(labels)):
@@ -60,6 +72,7 @@ def boundary_explore(data_set, parent_branch_label, child_branch_label, model_fo
     if sess is not None:
         sess.close()
 
+    print(other_side_data)
     return other_side_data
 
 
@@ -71,3 +84,14 @@ def is_point_inside_boundary(sess, new_point, net, parent_branch_label):
     if prob[0] >= 0.5:
         prediction = 1
     return prediction == parent_branch_label
+
+
+def check_closeness(new_point, cluster_group):
+    for cluster in cluster_group:
+        center = cl.calculate_center(cluster)
+        boundary_distance = cl.calculate_distance_from_farthest_border(cluster)
+        distance = util.calculate_distance(center, new_point)
+        if distance < boundary_distance:
+            return True
+
+    return False

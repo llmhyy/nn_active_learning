@@ -5,7 +5,7 @@ from itertools import product
 
 import numpy as np
 
-import label_tester as lt
+from main import label_tester as lt
 from prj_test import formula
 
 

@@ -3,9 +3,8 @@
 import math
 import random
 
-import gradient_combination
 import testing_function
-import util
+from main import util
 import numpy as np
 
 
