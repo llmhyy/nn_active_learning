@@ -160,6 +160,24 @@ def generate_random_points_for_polynomial(single_formula, lower_bound, upper_bou
     return data_list, label_list
 
 
+def read_from_file(path):
+    train_set_x = []
+    train_set_y = []
+
+    with open(path, 'rt') as f:
+        reader = csv.reader(f)
+
+        for row in reader:
+            label = float(row[0][0])
+            train_set_y.append(label)
+
+            point = []
+            for i in range(len(row)-1):
+                point.append(float(row[0][i+1]))
+            train_set_x.append(point)
+
+    return train_set_x, train_set_y
+
 def write_to_file(positive_list, negative_list, path):
     with open(path, 'w', newline='') as csv_file:
         train = csv.writer(csv_file)
@@ -178,7 +196,7 @@ def write_to_file(data_list, label_list, path):
         train = csv.writer(csv_file)
         for i in range(len(data_list)):
             point = data_list[i]
-            label = label_list[i]
+            label = label_list[i][0]
             opt_list = [label]
             opt_list += point
             train.writerow(opt_list)

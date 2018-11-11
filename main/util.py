@@ -3,10 +3,11 @@ import math
 import os
 import random
 
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 
+from main import domain_names as dn
 from main import label_tester as lt
 from prj_test import formula
 
@@ -57,7 +58,30 @@ def direction_combination(n):
         return binary_combination
 
 
+def generate_mask_matrix(train_set_x_info):
+    mask_matrix = []
+    for train_point_x_info in train_set_x_info:
+        mask_vector = []
+        for dim in train_point_x_info:
+            if not dim[dn.MODIFIABLE] or dim[dn.IS_PADDING]:
+                mask_vector.append(0)
+            else:
+                mask_vector.append(1)
+        mask_matrix.append(mask_vector)
+    return mask_matrix
+
+
+def convert_with_mask(train_set_x, train_set_x_info):
+    mask_matrix = generate_mask_matrix(train_set_x_info)
+    new_matrix = np.multiply(np.array(mask_matrix), np.array(train_set_x))
+    train_set_x_prime = new_matrix.tolist()
+    return train_set_x_prime
+
+
 def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
+    if len(clusters[0][0]) != 2:
+        return
+
     train_set_X = []
     train_set_Y = []
 
@@ -83,6 +107,9 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
 
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
+    if len(train_set_X[0]) != 2:
+        return
+
     # Set min and max values and give it some padding
     x_min = lower_bound
     y_min = lower_bound
@@ -303,15 +330,66 @@ def calculate_std_dev(train_set_x):
     return std_dev
 
 
-def data_partition(train_set_X, train_set_Y):
+def data_partition(train_set_x, train_set_y):
     label_0 = []
     label_1 = []
-    for i in range(len(train_set_X)):
-        if (train_set_Y[i][0] == 0):
-            label_0.append(train_set_X[i])
-        elif (train_set_Y[i][0] == 1):
-            label_1.append(train_set_X[i])
+    for i in range(len(train_set_x)):
+        if train_set_y[i][0] == 0:
+            label_0.append(train_set_x[i])
+        elif train_set_y[i][0] == 1:
+            label_1.append(train_set_x[i])
     return label_0, label_1
+
+
+def convert_with_data_type_and_mask(points, train_set_x_info, label_tester):
+    sample_info = train_set_x_info[0]
+    for j in range(len(points)):
+        point = points[j]
+        for i in range(len(sample_info)):
+            dimension = sample_info[i]
+            value = parse_value_with_data_type(point[i], dimension[dn.TYPE])
+            points[j][i] = value
+
+    mask = label_tester.check_info(points)
+    new_points = convert_with_mask(points, mask)
+
+    return new_points
+
+
+def parse_value_with_data_type(value, data_type):
+    if data_type == dn.INTEGER or data_type == dn.CHAR or data_type == dn.LONG or data_type == dn.SHORT:
+        return int(value)
+    elif data_type == dn.DOUBLE or data_type == dn.FLOAT:
+        return float(value)
+    elif data_type == dn.BYTE:
+        value = int(value)
+        if value < -128:
+            value = 128
+        elif value > 127:
+            value = 127
+        return value
+    elif data_type == dn.CHAR:
+        value = int(value)
+        if value < 0:
+            value = 0
+        elif value > 127:
+            value = 127
+        return value
+    elif data_type == dn.BOOLEAN:
+        if type(value) is float:
+            if value >= 0.5:
+                value = int(1)
+            else:
+                value = int(0)
+        else:
+            if value == "true":
+                value = 1
+            else:
+                value = 0
+        return value
+    else:
+        # array or reference
+        return int(value)
 
 
 def add_distance_values(number, distance_list, selected_list, pointer):

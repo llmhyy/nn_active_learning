@@ -1,4 +1,4 @@
-from main import benchmark, boundary_exploration as be, label_tester as lt, util
+from main import benchmark, boundary_remaining as br, label_tester as lt, util
 from prj_test import formula_data_point_generation, formula
 
 
@@ -46,19 +46,25 @@ util.reset_random_seed()
 model_folder = "models/test-method/test-branch"
 model_file = "test-branch"
 
-util.reset_random_seed()
-train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
-                                                  training_epochs, lower_bound, upper_bound, model_folder, model_file)
+# util.reset_random_seed()
+# train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
+#                                                   training_epochs, lower_bound, upper_bound, model_folder, model_file)
 
-child_label_tester = lt.FormulaLabelTester(child_formula)
-train_set_x1, train_set_y1, _, _ = formula_data_point_generation.generate_partitioned_data(
-    child_formula, category,
-    -400,
-    400,
-    0, 20)
 
-train_set_x_info = label_tester.check_info(train_set_x1)
+positive_x = []
+for i in range(len(train_set_x)):
+    point = train_set_x[i]
+    if train_set_y[i][0] == 1:
+        positive_x.append(point)
+positive_x_info = label_tester.check_info(positive_x)
 
-boundary_explorer = be.BoundaryExplorer(train_set_x_info, train_set_x1, model_folder, model_file, child_label_tester,
-                                        10)
-boundary_explorer.boundary_explore()
+boundary_remainer = br.BoundaryRemainer(positive_x_info, positive_x, model_folder, model_file, 10)
+new_point_list = boundary_remainer.search_remaining_boundary_points()
+
+labels = label_tester.test_label(new_point_list)
+count = 0
+for i in range(len(labels)):
+    if labels[i] == 1:
+        count += 1
+
+print("accuracy", count/len(labels))

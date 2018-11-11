@@ -90,26 +90,28 @@ def is_clustering_valid(clusters, cluster_distance_threshold):
 def cluster_points(data_set, border_point_number, maximum_num_cluster):
     # X = [[55,55],[65,56],[5,6],[4,6],[75,44],[7,2],[89,55],[68,86]]
     # for each two cluster center, their threshold*radius should be larger than the center distance
-    cluster_distance_threshold = 2
+    if len(data_set) == 1:
+        sep_clusters = {0: data_set}
+    else:
+        cluster_distance_threshold = 2
+        if maximum_num_cluster > len(data_set):
+            maximum_num_cluster = len(data_set)
 
-    if maximum_num_cluster > len(data_set):
-        maximum_num_cluster = len(data_set)
+        while True:
+            cluster = AgglomerativeClustering(n_clusters=maximum_num_cluster, affinity='euclidean', linkage='average')
+            cluster.fit_predict(data_set)
 
-    while True:
-        cluster = AgglomerativeClustering(n_clusters=maximum_num_cluster, affinity='euclidean', linkage='average')
-        cluster.fit_predict(data_set)
+            sep_clusters = {}
+            for i in range(len(data_set)):
+                sep_clusters[cluster.labels_[i]] = []
 
-        sep_clusters = {}
-        for i in range(len(data_set)):
-            sep_clusters[cluster.labels_[i]] = []
+            for i in range(len(data_set)):
+                sep_clusters[cluster.labels_[i]].append(data_set[i])
 
-        for i in range(len(data_set)):
-            sep_clusters[cluster.labels_[i]].append(data_set[i])
-
-        if is_clustering_valid(sep_clusters, cluster_distance_threshold):
-            break
-        else:
-            maximum_num_cluster -= 1
+            if is_clustering_valid(sep_clusters, cluster_distance_threshold):
+                break
+            else:
+                maximum_num_cluster -= 1
 
     # print("Final number of clusters: ", maximum_num_cluster)
     # print(sep_clusters)
