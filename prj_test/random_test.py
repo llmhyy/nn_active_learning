@@ -24,6 +24,8 @@ train_set_x, train_set_y, test_set_x, test_set_y = formula_data_point_generation
                                                                                                            lower_bound,
                                                                                                            upper_bound,
                                                                                                            50, 50)
+print (train_set_x)
+print (train_set_y)
 label_tester = lt.FormulaLabelTester(f)
 train_set_x_info = label_tester.check_info(train_set_x)
 point_number_limit = 200
