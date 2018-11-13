@@ -3,13 +3,19 @@ import tensorflow as tf
 
 class NNStructure():
 
-    def __init__(self, input_dimension, learning_rate):
+    # def decide_neuron_number(self, input_dimension):
+    #     if(input_dimension<=10):
+    #         return 8, 4
+    #     else
+    #         first_layer_number = input_dimension
+
+    def __init__(self, input_dimension, learning_rate=0.01, n_hidden_1=8, n_hidden_2=4):
         self.learning_rate = learning_rate
         self.w_init = tf.contrib.layers.variance_scaling_initializer(uniform=False, factor=2.0, mode='FAN_IN',
                                                                      dtype=tf.float32)
         # Network Parameters
-        n_hidden_1 = 8  # 1st layer number of neurons
-        n_hidden_2 = 4  # 2nd layer number of neurons
+        # n_hidden_1 = 8  # 1st layer number of neurons
+        # n_hidden_2 = 4  # 2nd layer number of neurons
         n_input = input_dimension
         n_classes = 1
 
