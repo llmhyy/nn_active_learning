@@ -34,6 +34,7 @@ lower_bound = -1000
 learning_rate = 0.01
 training_epochs = 5000
 dimension_range = 2
+util.PLOT_MODEL = False
 
 for dimension in range(dimension_range):
     dimension += 1
