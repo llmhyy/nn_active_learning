@@ -239,9 +239,23 @@ def generate_partitioned_random_points_for_sphere(single_formula, lower_bound, u
     negative_list = []
     while len(positive_list) < positive_num or len(negative_list) < negative_num:
         data_point = []
+
+        center = random.choice(formu_list[0])
+        index = formu_list[0].index(center)
+        radius = formu_list[1][index]
+        move = math.sqrt(radius**2 / dim)
+
+        r = random.uniform(0, 1)
+
         point = []
         for i in range(dim):
-            point.append(random.uniform(lower_bound, upper_bound))
+            length = random.uniform(0, move)
+            if r > 0.5:
+                step = length
+                value = center[i] + step
+            else:
+                value = random.uniform(lower_bound, upper_bound)
+            point.append(value)
 
         formula_tester = lt.FormulaLabelTester(single_formula)
         label = formula_tester.polycircle_model(formu_list[0], formu_list[1], point)

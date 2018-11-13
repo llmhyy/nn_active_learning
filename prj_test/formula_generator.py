@@ -3,20 +3,20 @@ import random
 from prj_test import formula
 
 
-def generate_formula(category, number,dimension):
+def generate_formula(category, number, dimension):
     formulas = formula.Formulas()
     for i in range(number):
         if (category == formula.POLYNOMIAL):
-            f = generate_polynomial(category,dimension)
+            f = generate_polynomial(category, dimension)
             formulas.put(category, f)
         elif (category == formula.POLYHEDRON):
-            f = generate_polyhedron(category,dimension)
+            f = generate_polyhedron(category, dimension)
             formulas.put(category, f)
 
     return formulas
 
 
-def generate_polynomial(category,dimension):
+def generate_polynomial(category, dimension):
     # TODO variable number is up to 10
     y = random.randint(-10, 10)
     variableNumber = dimension
@@ -34,7 +34,7 @@ def generate_polynomial(category,dimension):
     return form
 
 
-def generate_polyhedron(category,dimension):
+def generate_polyhedron(category, dimension):
     # TODO variable number is up to 10
     # generate center point and radius and number of circles
     num_of_center = random.randint(2, 5)
