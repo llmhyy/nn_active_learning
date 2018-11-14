@@ -97,41 +97,33 @@ class MidPointActiveLearner:
 
     def train(self):
         print("=========MID_POINT===========")
-        # tf.reset_default_graph()
         train_acc_list = []
         test_acc_list = []
         data_point_number_list = []
         appended_point_list = []
+        total_appended_x = []
+        total_appended_y = []
 
-        count = 1
-        while len(self.train_set_x) < self.point_number_limit:
-            tf.reset_default_graph()
-            util.reset_random_seed()
+        tf.reset_default_graph()
+        util.reset_random_seed()
+
+        with tf.Session() as sess:
             net = ns.NNStructure(len(self.train_set_x[0]), self.learning_rate)
+            sess.run(net.init)
 
             aggregated_network = None
             predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
-
-            print("*******", count, "th loop:")
-            print("training set size", len(self.train_set_x))
-
-            with tf.Session() as sess:
+            count = 1
+            while len(self.train_set_x) < self.point_number_limit:
+                print("*******", count, "th loop:")
                 label_0, label_1 = util.data_partition(self.train_set_x, self.train_set_y)
+                print("label 0 length", len(label_0), "label 1 length", len(label_1))
 
-                # path = "./dataset/data" + str(count) + ".csv"
-                # dg.write_to_file(train_set_x, train_set_y, path)
-
-                length_0 = len(label_0) + 0.0
-                length_1 = len(label_1) + 0.0
-
-                print(length_0, length_1)
-                if length_0 == 0 or length_1 == 0:
-                    raise Exception("Cannot be classified")
-
-                sess.run(net.init)
                 for iteration in range(self.training_epochs):
+                    train_x_ = total_appended_x + self.train_set_x + total_appended_x
+                    train_y_ = total_appended_y + self.train_set_y + total_appended_y
                     sess.run([net.train_op, net.loss_op],
-                             feed_dict={net.X: self.train_set_x, net.Y: self.train_set_y})
+                             feed_dict={net.X: train_x_, net.Y: train_y_})
 
                 train_y = sess.run(net.probability, feed_dict={net.X: self.train_set_x})
                 train_acc = util.calculate_accuracy(train_y, self.train_set_y, False)
@@ -156,9 +148,6 @@ class MidPointActiveLearner:
                 if len(self.train_set_x) > self.point_number_limit:
                     break
 
-                total_appended_x = []
-                total_appended_y = []
-
                 std_dev = util.calculate_std_dev(self.train_set_x)
 
                 cluster_number_limit = 3
@@ -168,6 +157,10 @@ class MidPointActiveLearner:
 
                 appending_dict = {}
                 print("start generalization validation")
+
+                total_appended_x.clear()
+                total_appended_y.clear()
+
                 appended_x, appended_y = self.append_generalization_validation_points(sess, aggregated_network,
                                                                                       std_dev,
                                                                                       centers,
@@ -190,12 +183,6 @@ class MidPointActiveLearner:
 
                 appending_dict["mid_point"] = appended_x
                 appended_point_list.append(appending_dict)
-
-                label_0, label_1 = util.data_partition(self.train_set_x, self.train_set_y)
-                length_0 = len(label_0) + 0.0
-                length_1 = len(label_1) + 0.0
-
-                print("label 0 length", length_0, "label 1 length", length_1)
 
                 util.save_model(sess, self.model_folder, self.model_file)
                 count += 1
