@@ -13,7 +13,7 @@ class MidPointActiveLearner:
                  training_epochs,
                  lower_bound, upper_bound, use_bagging, label_tester, point_number_limit,
                  model_folder,
-                 model_file):
+                 model_file, mid_point_limit = 10, generalization_valid_limit = 10):
         self.train_set_x_info = train_set_x_info
         self.train_set_x = train_set_x
         self.train_set_y = train_set_y
@@ -28,6 +28,8 @@ class MidPointActiveLearner:
         self.point_number_limit = point_number_limit
         self.model_folder = model_folder
         self.model_file = model_file
+        self.mid_point_limit = mid_point_limit
+        self.generalization_valid_limit = generalization_valid_limit
 
     def partition_data(self, label_0, label_1, parts_num):
         result_x = []
@@ -93,20 +95,15 @@ class MidPointActiveLearner:
 
         return pair_list
 
-    def generate_accuracy(self):
+    def train(self):
         print("=========MID_POINT===========")
         # tf.reset_default_graph()
-        mid_point_limit = 10
-        generalization_valid_limit = 10
-
         train_acc_list = []
         test_acc_list = []
         data_point_number_list = []
         appended_point_list = []
 
         count = 1
-        total_appended_x = []
-        total_appended_y = []
         while len(self.train_set_x) < self.point_number_limit:
             tf.reset_default_graph()
             util.reset_random_seed()
@@ -150,12 +147,14 @@ class MidPointActiveLearner:
 
                 train_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: self.train_set_x})
                 train_acc = util.calculate_accuracy(train_y, self.train_set_y, False)
+                print("train_acc", train_acc)
                 train_acc_list.append(train_acc)
 
                 if self.test_set_x is not None:
                     test_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: self.test_set_x})
                     test_acc = util.calculate_accuracy(test_y, self.test_set_y, False)
                     test_acc_list.append(test_acc)
+                    print("test_acc", test_acc)
 
                 data_point_number_list.append(len(self.train_set_x))
 
@@ -171,7 +170,10 @@ class MidPointActiveLearner:
                 total_appended_y = []
 
                 std_dev = util.calculate_std_dev(self.train_set_x)
-                centers, centers_label, clusters, border_points_groups = self.cluster_training_data(2, 5)
+
+                cluster_number = 3
+                # border_number = (int)(generalization_valid_limit/(2*cluster_number))
+                centers, centers_label, clusters, border_points_groups = self.cluster_training_data(4, 3)
 
                 appending_dict = {}
                 print("start generalization validation")
@@ -181,14 +183,13 @@ class MidPointActiveLearner:
                                                                                       centers_label,
                                                                                       clusters,
                                                                                       border_points_groups,
-                                                                                      generalization_valid_limit,
                                                                                       )
                 total_appended_x += appended_x
                 total_appended_y += appended_y
                 appending_dict["generalization_validation"] = appended_x
 
                 print("start midpoint selection")
-                pair_list = self.select_point_pair(centers, centers_label, clusters, mid_point_limit)
+                pair_list = self.select_point_pair(centers, centers_label, clusters)
                 appended_x, appended_y = self.append_mid_points(sess, aggregated_network, pair_list)
                 total_appended_x += appended_x
                 total_appended_y += appended_y
@@ -211,7 +212,7 @@ class MidPointActiveLearner:
         communication.send_training_finish_message()
         return train_acc_list, test_acc_list, data_point_number_list, appended_point_list
 
-    def select_point_pair(self, centers, centers_label, clusters, mid_point_limit):
+    def select_point_pair(self, centers, centers_label, clusters):
         positive_clusters = []
         negative_clusters = []
         for i in range(len(centers_label)):
@@ -219,7 +220,7 @@ class MidPointActiveLearner:
                 positive_clusters.append(clusters[i])
             else:
                 negative_clusters.append(clusters[i])
-        max_per_pair_num = (int)(mid_point_limit / len(positive_clusters))
+        max_per_pair_num = (int)(self.mid_point_limit / len(positive_clusters))
 
         final_pair_list = []
         for positive_cluster in positive_clusters:
@@ -236,6 +237,17 @@ class MidPointActiveLearner:
                 final_pair_list += pair_list
             else:
                 final_pair_list += pair_list[0:2]
+
+        # if len(final_pair_list) < mid_point_limit:
+        #     iterations = mid_point_limit - len(final_pair_list)
+        #     for i in range(iterations):
+        #         positive_cluster = random.choice(positive_clusters)
+        #         positive_point = random.choice(positive_cluster)
+        #         negative_cluster = random.choice(negative_clusters)
+        #         negative_point = random.choice(negative_cluster)
+        #
+        #         p = data_pair.DataPair(negative_point, positive_point)
+        #         final_pair_list.append(p)
 
         return final_pair_list
 
@@ -299,17 +311,14 @@ class MidPointActiveLearner:
 
     def append_generalization_validation_points(self, sess, aggregated_network, std_dev,
                                                 centers, centers_label, clusters,
-                                                border_points_groups,
-                                                generalization_valid_limit):
+                                                border_points_groups):
         # pass in argument n
 
         gradient = tf.gradients(aggregated_network.probability, aggregated_network.X)
 
         appended_x = self.search_validation_points(aggregated_network, border_points_groups, centers,
                                                    centers_label, clusters,
-                                                   gradient, sess, std_dev,
-                                                   generalization_valid_limit,
-                                                   )
+                                                   gradient, sess, std_dev)
         appended_x = util.convert_with_data_type_and_mask(appended_x, self.train_set_x_info, self.label_tester)
 
         appended_y = []
@@ -320,23 +329,29 @@ class MidPointActiveLearner:
 
         return appended_x, appended_y
 
+    def random_step(self, cluster_dev, std_dev):
+        if cluster_dev == 0:
+            step = random.uniform(0, std_dev)
+        else:
+            step = random.uniform(0, cluster_dev)
+        return step
+
     def search_validation_points(self, aggregated_network, border_points_groups, centers, centers_label, clusters,
-                                 gradient, sess, std_dev, generalization_valid_limit):
+                                 gradient, sess, std_dev):
+        zip_list = list(zip(border_points_groups, centers, centers_label, clusters))
+        random.shuffle(zip_list)
+        border_points_groups, centers, centers_label, clusters = zip(*zip_list)
+
         appended_x = []
         for i in range(len(centers)):
             border_points = border_points_groups[i]
             center = centers[i]
             label = centers_label[i]
             single_cluster = clusters[i]
-
             cluster_dev = util.calculate_std_dev(single_cluster)
-            if cluster_dev == 0:
-                step = random.uniform(0, std_dev)
-            else:
-                step = random.uniform(0, cluster_dev)
-
+            step = self.random_step(cluster_dev, std_dev)
             for k in range(len(border_points)):
-                if len(appended_x) > generalization_valid_limit:
+                if len(appended_x) > self.generalization_valid_limit:
                     break
 
                 border_point = border_points[k]
@@ -420,7 +435,7 @@ class MidPointActiveLearner:
                     return False
             return True
 
-        return False
+        return True
 
     def calculate_unconfident_mid_point(self, sess, aggregated_network, pair):
         px = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_x]})[0]
