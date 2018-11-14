@@ -1,7 +1,9 @@
 import math
 
+import random
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
+from main import angle
 
 
 def calculate_radius(cluster):
@@ -130,28 +132,59 @@ def cluster_points(data_set, border_point_number, maximum_num_cluster):
 
 
 def calculate_n_border_points(cluster, center, n):
-    distance = []
-    result = []
-    dimension = len(cluster[0])
+    angle_list = []
     num_of_points = len(cluster)
+
+    if n >= num_of_points:
+        return cluster
+
+    if n == 1:
+        return [random.choice(cluster)]
+
     for i in range(num_of_points):
-        tmp = 0
-        for j in range(dimension):
-            tmp += (cluster[i][j] - center[j]) * (cluster[i][j] - center[j])
-        tmp = math.sqrt(tmp)
-        distance.append(tmp)
-    sorted_dist = sorted(distance)
+        for j in range(i+1, num_of_points):
+            point1 = cluster[i]
+            point2 = cluster[j]
+            single_angle = angle.Angle(center, point1, point2)
+            angle_list.append(single_angle)
 
-    if n > len(sorted_dist):
-        n = len(sorted_dist)
+        angle_list.sort(key=lambda x: x.angle, reverse=True)
 
-    threshold = sorted_dist[-n]
-    for i in range(len(distance)):
-        if distance[i] >= threshold:
-            result.append(cluster[i])
+    border_points = []
+    for single_angle in angle_list:
+        append_points(border_points, single_angle, angle_list)
+        if len(border_points) > n:
+            break;
 
-    return result
+    return border_points
 
+
+def append_points(border_points, single_angle, angle_list):
+    point1 = single_angle.point1
+    point2 = single_angle.point2
+    is_close = is_close_angle(border_points, point1, angle_list)
+    if not is_close:
+        border_points.append(point1)
+
+    is_close = is_close_angle(border_points, point2, angle_list)
+    if not is_close:
+        border_points.append(point2)
+
+
+def is_close_angle(border_points, point, angle_list):
+    if len(border_points) == 0:
+        return False
+
+    if point in border_points:
+        return True
+    else:
+        for border_point in border_points:
+            for single_angle in angle_list:
+                is_find = single_angle.find(border_point, point)
+                if is_find:
+                    if single_angle.angle < math.pi/4:
+                        return True
+        return False
 
 def random_border_points(center, radius, border_point_number):
     border_points = []

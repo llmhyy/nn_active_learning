@@ -171,9 +171,9 @@ class MidPointActiveLearner:
 
                 std_dev = util.calculate_std_dev(self.train_set_x)
 
-                cluster_number = 3
-                # border_number = (int)(generalization_valid_limit/(2*cluster_number))
-                centers, centers_label, clusters, border_points_groups = self.cluster_training_data(4, 3)
+                cluster_number_limit = 3
+                border_point_number = (int)(self.generalization_valid_limit/(2*cluster_number_limit)) + 1
+                centers, centers_label, clusters, border_points_groups = self.cluster_training_data(border_point_number, cluster_number_limit)
 
                 appending_dict = {}
                 print("start generalization validation")

@@ -11,6 +11,8 @@ from main import domain_names as dn
 from main import label_tester as lt
 from prj_test import formula
 
+PLOT_MODEL = True
+
 
 def save_model(sess, model_folder, model_file):
     if model_folder is not None:
@@ -82,6 +84,9 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
     if len(clusters[0][0]) != 2:
         return
 
+    if not PLOT_MODEL:
+        return
+
     train_set_X = []
     train_set_Y = []
 
@@ -108,6 +113,9 @@ def plot_clustering_result(clusters, lower_bound, upper_bound, iteration):
 
 def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upper_bound, iteration):
     if len(train_set_X[0]) != 2:
+        return
+
+    if not PLOT_MODEL:
         return
 
     # Set min and max values and give it some padding

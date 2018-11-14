@@ -43,7 +43,7 @@ try:
                                                                                 label_tester,
                                                                                 point_number_limit, model_folder,
                                                                                 model_file_name)
-            mid_point_learner.generate_accuracy()
+            mid_point_learner.train()
         elif request_type == "$BOUNDARY_EXPLORATION":
             data_set_info, data_set, model_folder, model_file_name, variables = json_handler.parse_boundary_exploration(
                 message_body)
