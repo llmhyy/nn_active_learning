@@ -26,3 +26,11 @@ class Angle:
             return True
 
         return False
+
+    def get_other_point(self, point):
+        if self.point1 == point:
+            return self.point2
+        elif self.point2 == point:
+            return self.point1
+        else:
+            return None

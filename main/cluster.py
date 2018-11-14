@@ -3,7 +3,7 @@ import math
 import random
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
-from main import angle
+from main import angle, util
 
 
 def calculate_radius(cluster):
@@ -156,7 +156,28 @@ def calculate_n_border_points(cluster, center, n):
         if len(border_points) > n:
             break;
 
+    extend_to_border(center, border_points, angle_list)
+
     return border_points
+
+
+def extend_to_border(center, border_points, angle_list):
+    for i in range(len(border_points)):
+        border_point = border_points[i]
+        bench_distance = util.calculate_distance(center, border_point)
+
+        best_candidate = []
+        distance = -1
+        for single_angle in angle_list:
+            other_point = single_angle.get_other_point(border_point)
+            if other_point is not None and single_angle.angle < math.pi/4:
+                other_distance = util.calculate_distance(center, other_point)
+                if other_distance > distance:
+                    distance = other_distance
+                    best_candidate = other_point
+
+        if distance > bench_distance:
+            border_points[i] = best_candidate
 
 
 def append_points(border_points, single_angle, angle_list):

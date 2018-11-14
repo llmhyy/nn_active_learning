@@ -316,7 +316,7 @@ def partition(alist, first, last):
 def calculate_distance(m, n):
     distance = 0
     for d in range(len(m)):
-        distance += (m[d] - n[d]) * (m[d] - n[d])
+        distance += (m[d] - n[d])**2
     distance = math.sqrt(distance)
     return distance
 

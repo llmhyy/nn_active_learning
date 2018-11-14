@@ -13,7 +13,7 @@ class MidPointActiveLearner:
                  training_epochs,
                  lower_bound, upper_bound, use_bagging, label_tester, point_number_limit,
                  model_folder,
-                 model_file, mid_point_limit = 10, generalization_valid_limit = 10):
+                 model_file, mid_point_limit=5, generalization_valid_limit=15):
         self.train_set_x_info = train_set_x_info
         self.train_set_x = train_set_x
         self.train_set_y = train_set_y
@@ -128,25 +128,15 @@ class MidPointActiveLearner:
                 if length_0 == 0 or length_1 == 0:
                     raise Exception("Cannot be classified")
 
-                if self.use_bagging:
-                    smaller_set_size = min(len(label_0), len(label_1))
-                    larger_set_size = max(len(label_0), len(label_1))
-                    parts_num = int(larger_set_size / smaller_set_size)
-                    all_data_x, all_data_y = self.partition_data(label_0, label_1, parts_num)
-                    tmp = list(zip(all_data_x, all_data_y))
-                    random.shuffle(tmp)
-                    all_data_x, all_data_y = zip(*tmp)
-                    aggregated_network, train_acc = self.train_bootstrap_model(all_data_x, all_data_y,
-                                                                               net, parts_num, sess)
-                else:
-                    sess.run(net.init)
-                    for epoch in range(self.training_epochs):
-                        sess.run([net.train_op, net.loss_op],
-                                 feed_dict={net.X: self.train_set_x, net.Y: self.train_set_y})
-                    aggregated_network = net
+                sess.run(net.init)
+                for iteration in range(self.training_epochs):
+                    sess.run([net.train_op, net.loss_op],
+                             feed_dict={net.X: self.train_set_x, net.Y: self.train_set_y})
 
-                train_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: self.train_set_x})
+                train_y = sess.run(net.probability, feed_dict={net.X: self.train_set_x})
                 train_acc = util.calculate_accuracy(train_y, self.train_set_y, False)
+
+                aggregated_network = net
                 print("train_acc", train_acc)
                 train_acc_list.append(train_acc)
 
@@ -172,8 +162,9 @@ class MidPointActiveLearner:
                 std_dev = util.calculate_std_dev(self.train_set_x)
 
                 cluster_number_limit = 3
-                border_point_number = (int)(self.generalization_valid_limit/(2*cluster_number_limit)) + 1
-                centers, centers_label, clusters, border_points_groups = self.cluster_training_data(border_point_number, cluster_number_limit)
+                border_point_number = (int)(self.generalization_valid_limit / (2 * cluster_number_limit)) + 1
+                centers, centers_label, clusters, border_points_groups = self.cluster_training_data(border_point_number,
+                                                                                                    cluster_number_limit)
 
                 appending_dict = {}
                 print("start generalization validation")
@@ -298,10 +289,10 @@ class MidPointActiveLearner:
         util.plot_clustering_result(clusters0, -1000, 1000, 2)
         centers_label0 = np.zeros(len(centers0)).tolist()
 
-        centers = centers0 + centers1
-        centers_label = centers_label0 + centers_label1
-        clusters = clusters0 + clusters1
-        border_points_groups = border_points_groups0 + border_points_groups1
+        centers = centers1 + centers0
+        centers_label = centers_label1 + centers_label0
+        clusters = clusters1 + clusters0
+        border_points_groups = border_points_groups1 + border_points_groups0
 
         # centers = centers1
         # centers_label = centers_label1
@@ -336,21 +327,35 @@ class MidPointActiveLearner:
             step = random.uniform(0, cluster_dev)
         return step
 
+    def compute_score(self, new_point, c, centers, centers_label, label):
+        s = 0
+        for i in range(len(centers)):
+            center = centers[i]
+            if centers_label[i] == label:
+                distance = util.calculate_distance(new_point, center)
+                if c == center:
+                    distance *= 3
+                s += distance
+        return s
+
     def search_validation_points(self, aggregated_network, border_points_groups, centers, centers_label, clusters,
                                  gradient, sess, std_dev):
-        zip_list = list(zip(border_points_groups, centers, centers_label, clusters))
-        random.shuffle(zip_list)
-        border_points_groups, centers, centers_label, clusters = zip(*zip_list)
+        # zip_list = list(zip(border_points_groups, centers, centers_label, clusters))
+        # random.shuffle(zip_list)
+        # border_points_groups, centers, centers_label, clusters = zip(*zip_list)
+
+        border_point_number_per_center = (int)(self.generalization_valid_limit/len(centers)) + 1
 
         appended_x = []
         for i in range(len(centers)):
-            border_points = border_points_groups[i]
+            index = min(border_point_number_per_center, len(border_points_groups[i]))
+            border_points = border_points_groups[i][0: index]
             center = centers[i]
             label = centers_label[i]
             single_cluster = clusters[i]
             cluster_dev = util.calculate_std_dev(single_cluster)
             step = self.random_step(cluster_dev, std_dev)
-            for k in range(len(border_points)):
+            for k in range(0, len(border_points)):
                 if len(appended_x) > self.generalization_valid_limit:
                     break
 
@@ -360,6 +365,7 @@ class MidPointActiveLearner:
                                                                      center, gradient, sess)
                 # move the point
                 best_point = []
+                best_score = -1
                 move_count = 0
                 while move_count < 10:
                     gradient_length = util.calculate_vector_size(decided_direction[0])
@@ -372,7 +378,14 @@ class MidPointActiveLearner:
                                            feed_dict={aggregated_network.X: [new_point]})
 
                     if self.is_point_valid(new_point, probability, label):
-                        best_point = new_point
+                        if len(best_point) == 0:
+                            best_point = new_point
+                            best_score = self.compute_score(new_point, center, centers, centers_label, label)
+                        else:
+                            score = self.compute_score(new_point, center, centers, centers_label, label)
+                            if score > best_score:
+                                best_point = new_point
+                                best_score = score
                     else:
                         break
 
