@@ -8,7 +8,7 @@ class NNStructure():
     #         return 8, 4
     #     else
     #         first_layer_number = input_dimension
-
+    beta=0.01
     def __init__(self, input_dimension, learning_rate=0.01, n_hidden_1=8, n_hidden_2=4):
         self.learning_rate = learning_rate
         self.w_init = tf.contrib.layers.variance_scaling_initializer(uniform=False, factor=2.0, mode='FAN_IN',
@@ -22,7 +22,8 @@ class NNStructure():
         # tf Graph input
         self.X = tf.placeholder("float", [None, n_input], name="X")
         self.Y = tf.placeholder("float", [None, n_classes], name="Y")
-
+        self.keep_prob1=tf.placeholder("float")
+        self.keep_prob2=tf.placeholder("float")
         # Store layers weight & bias
         # with tf.variable_scope("foo", reuse=tf.AUTO_REUSE):
         self.weights = {
@@ -40,9 +41,11 @@ class NNStructure():
             # 'bout': tf.Variable(tf.random_normal([n_classes]), name="bout")
         }
 
-        self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
+        self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases,self.keep_prob1,self.keep_prob2)
         self.probability = tf.nn.sigmoid(self.logits)
         self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+        self.regularizer=tf.nn.l2_loss(self.weights['h1'])+tf.nn.l2_loss(self.weights['h2'])+tf.nn.l2_loss(self.weights['hout'])
+        self.loss_op=tf.reduce_mean(self.loss_op+self.regularizer*self.beta)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
         self.train_op = self.optimizer.minimize(self.loss_op)
 
@@ -66,6 +69,8 @@ class NNStructure():
         self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
         self.probability = tf.nn.sigmoid(self.logits)
         self.loss_op = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
+        self.regularizer=tf.nn.l2_loss(self.weights['h1'])+tf.nn.l2_loss(self.weights['h2'])+tf.nn.l2_loss(self.weights['hout'])
+        self.loss_op=tf.reduce_mean(self.loss_op+self.regularizer*self.beta)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
 
     def print_parameters(self, sess):
@@ -85,7 +90,7 @@ class NNStructure():
             tf.add_to_collection(key, self.biases[key])
 
     # Create model
-    def multilayer_perceptron(self, x, weights, biases):
+    def multilayer_perceptron(self, x, weights, biases,keep_prob1,keep_prob2):
         # Hidden fully connected layer with 256 neurons
         # x0 = tf.nn.batch_normalization(x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
         x0 = x
@@ -95,6 +100,7 @@ class NNStructure():
                                                  variance_epsilon=0.001)
         # layer1_out = tf.sigmoid(layer_1)
 
+        self.layer_1=tf.nn.dropout(self.layer_1,keep_prob1)
         # Hidden fully connected layer with 256 neurons
         self.layer_2 = tf.nn.relu(tf.add(tf.matmul(self.layer_1, weights['h2']), biases['b2']))
 
@@ -102,6 +108,7 @@ class NNStructure():
                                                  variance_epsilon=0.001)
         # layer2_out = tf.sigmoid(layer_2)
 
+        self.layer_2=tf.nn.dropout(self.layer_2,keep_prob2)
         # Output fully connected layer with a neuron for each class
         out_layer = tf.matmul(self.layer_2, weights['hout']) + biases['bout']
         return out_layer
