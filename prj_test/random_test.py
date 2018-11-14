@@ -48,7 +48,7 @@ print (train_set_y)
 #     point_number_limit,
 #     model_folder,
 #     model_file)
-# train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mid_point_learner.generate_accuracy()
+# train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mid_point_learner.train()
 tf.reset_default_graph()
 util.reset_random_seed()
 

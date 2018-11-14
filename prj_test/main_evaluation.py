@@ -112,15 +112,15 @@ for f in formula_list:
     time_used=end_time-start_time
     write_to_excel(f.get_formula(), train_acc, test_acc, [], [], train_acc_list, test_acc_list, time_used,index)
     '''
-    ben_train_acc, ben_test_acc = benchmark.generate_accuracy(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
+    ben_train_acc, ben_test_acc = benchmark.train(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
     #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
     try:
-        gra_list = gal.generate_accuracy([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True,"", "", True)
+        gra_list = gal.train([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True,"", "", True)
     except:
         continue
     #TODO mid_list should contain a set of mid_train_acc and mid_test_acc
     try:
-        mid_list = mal.generate_accuracy([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)
+        mid_list = mal.train([],[],train_data_file, test_data_file, f, category, learning_rate, training_epochs, lower_bound, upper_bound, parts_num, True, "", "", True)
     except:
         continue
     index += 1
