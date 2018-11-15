@@ -1,8 +1,9 @@
-import xlwt
 import time
-from main import benchmark, label_tester as lt, mid_point_active_learning as mal, util
 
 import tensorflow as tf
+import xlwt
+
+from main import benchmark, label_tester as lt, mid_point_active_learning as mal, util
 from prj_test import formula_data_point_generation, formula, formula_generator as fg
 
 
@@ -27,13 +28,14 @@ def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test
     ws.write(index + 1, 13, time)
     wb.save(file_path)
 
+
 category = formula.POLYHEDRON
 formula_number = 100
 upper_bound = 1000
 lower_bound = -1000
 learning_rate = 0.01
 training_epochs = 1000
-dimension_range = [10, 20, 50, 100, 500, 1000]
+dimension_range = [2, 5, 10, 20, 50, 100]
 util.PLOT_MODEL = False
 
 for dimension in dimension_range:
@@ -63,16 +65,25 @@ for dimension in dimension_range:
     index = 0
     for f in formula_list:
         start_time = time.time()
-        util.reset_random_seed()
         print(f.get_formula())
+
         train_set_x, train_set_y, test_set_x, test_set_y = formula_data_point_generation.generate_partitioned_data(f,
                                                                                                                    category,
                                                                                                                    lower_bound,
                                                                                                                    upper_bound,
-                                                                                                                   75, 75)
+                                                                                                                   25,
+                                                                                                                   125)
+        tf.reset_default_graph()
+        util.reset_random_seed()
+        train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y,
+                                                          learning_rate,
+                                                          training_epochs, lower_bound, upper_bound, model_folder,
+                                                          model_file)
+
         label_tester = lt.FormulaLabelTester(f)
         train_set_x_info = label_tester.check_info(train_set_x)
         point_number_limit = 150
+
         tf.reset_default_graph()
         util.reset_random_seed()
         mid_point_learner = mal.MidPointActiveLearner(
@@ -88,21 +99,18 @@ for dimension in dimension_range:
             label_tester,
             point_number_limit,
             model_folder,
-            model_file, mid_point_limit=5, generalization_valid_limit=15)
+            model_file,
+            mid_point_limit=5, generalization_valid_limit=15)
         train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mid_point_learner.train()
 
-        tf.reset_default_graph()
-        util.reset_random_seed()
         index += 1
-        train_acc, test_acc = benchmark.generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning_rate,
-                                                          training_epochs, lower_bound, upper_bound, model_folder,
-                                                          model_file)
         end_time = time.time()
         time_used = end_time - start_time
 
         file_path = "result/" + "polysphere-" + str(dimension) + ".xls"
 
-        write_to_excel(f.get_formula(), train_acc, test_acc, [], [], train_acc_list, test_acc_list, time_used, index, file_path)
+        write_to_excel(f.get_formula(), train_acc, test_acc, [], [], train_acc_list, test_acc_list, time_used, index,
+                       file_path)
         '''
         ben_train_acc, ben_test_acc = benchmark.train(train_data_file, test_data_file,learning_rate, training_epochs, lower_bound, upper_bound)
         #TODO gra_list should contain a set of gra_train_acc and gra_test_acc
