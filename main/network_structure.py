@@ -16,7 +16,7 @@ class NNStructure():
                                                                      dtype=tf.float32)
         # Network Parameters
         if input_dimension >= 10:
-            index = math.log2(input_dimension)
+            index = (int)(math.log2(input_dimension))
             n_hidden_1 = 2**index
             n_hidden_2 = 2**(index-1)
 
