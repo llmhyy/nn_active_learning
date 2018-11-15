@@ -10,9 +10,6 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
     print("=========BENCH_MARK===========")
     # tf.reset_default_graph()
     net = ns.NNStructure(len(train_set_x[0]), learning_rate)
-    train_acc = 0
-    test_acc = 0
-
     with tf.Session() as sess:
         sess.run(net.init)
         data_size = len(train_set_x)
