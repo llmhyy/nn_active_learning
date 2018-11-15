@@ -28,20 +28,16 @@ def write_to_excel(f, ben_train_acc, ben_test_acc, gra_list_train, gra_list_test
     wb.save(file_path)
 
 category = formula.POLYHEDRON
-number = 100
+formula_number = 100
 upper_bound = 1000
 lower_bound = -1000
 learning_rate = 0.01
-training_epochs = 5000
-dimension_range = 2
+training_epochs = 1000
+dimension_range = [2, 5, 10, 20, 50, 100, 500, 1000]
 util.PLOT_MODEL = False
 
-for dimension in range(dimension_range):
-    dimension += 1
-    if dimension < 2:
-        continue
-
-    formulas = fg.generate_formula(category, number, dimension)
+for dimension in dimension_range:
+    formulas = fg.generate_formula(category, formula_number, dimension)
     formula_list = formulas.get(category)
     wb = xlwt.Workbook()
     ws = wb.add_sheet(category)
@@ -73,10 +69,10 @@ for dimension in range(dimension_range):
                                                                                                                    category,
                                                                                                                    lower_bound,
                                                                                                                    upper_bound,
-                                                                                                                   50, 50)
+                                                                                                                   75, 75)
         label_tester = lt.FormulaLabelTester(f)
         train_set_x_info = label_tester.check_info(train_set_x)
-        point_number_limit = 100
+        point_number_limit = 150
         tf.reset_default_graph()
         util.reset_random_seed()
         mid_point_learner = mal.MidPointActiveLearner(
@@ -92,7 +88,7 @@ for dimension in range(dimension_range):
             label_tester,
             point_number_limit,
             model_folder,
-            model_file)
+            model_file, mid_point_limit=5, generalization_valid_limit=15)
         train_acc_list, test_acc_list, data_point_number_list, appended_point_list = mid_point_learner.train()
 
         tf.reset_default_graph()
