@@ -184,26 +184,33 @@ def plot_decision_boundary(pred_func, train_set_X, train_set_Y, lower_bound, upp
 
 
 def calculate_accuracy(y, set_y, print_data_details):
-    test_correct = []
-    test_wrong = []
-    train_correct = []
-    train_wrong = []
-    for i in range(len(set_y)):
-        # if (print_data_details):
-        #     print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
-        if math.isnan(y[i][0]):
-            print(i, " predict:", y[i][0], " actual: ", set_y[i][0])
-        if y[i][0] > 0.5 and set_y[i][0] == 1:
-            test_correct.append(y[i])
-        elif y[i][0] > 0.5 and set_y[i][0] == 0:
-            test_wrong.append(y[i])
-        elif y[i][0] <= 0.5 and set_y[i][0] == 0:
-            test_correct.append(y[i])
-        else:
-            test_wrong.append(y[i])
-    # print (test_correct)
-    # print (test_wrong)
-    result = len(test_correct) / float(len(test_correct) + len(test_wrong))
+
+    predicted = np.where(np.array(y) > 0.5, 1, 0)
+    test = np.array(set_y)
+
+    s = np.sum(predicted == test)
+    result = s/len(y)
+
+    # test_correct = []
+    # test_wrong = []
+    # train_correct = []
+    # train_wrong = []
+    # for i in range(len(set_y)):
+    #     # if (print_data_details):
+    #     #     print(i, " predict:", y[i][0], " actual: ", set_Y[i][0])
+    #     if math.isnan(y[i][0]):
+    #         print(i, " predict:", y[i][0], " actual: ", set_y[i][0])
+    #     if y[i][0] > 0.5 and set_y[i][0] == 1:
+    #         test_correct.append(y[i])
+    #     elif y[i][0] > 0.5 and set_y[i][0] == 0:
+    #         test_wrong.append(y[i])
+    #     elif y[i][0] <= 0.5 and set_y[i][0] == 0:
+    #         test_correct.append(y[i])
+    #     else:
+    #         test_wrong.append(y[i])
+    # # print (test_correct)
+    # # print (test_wrong)
+    # result = len(test_correct) / float(len(test_correct) + len(test_wrong))
     # print(result)
     return result
 
