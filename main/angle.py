@@ -9,6 +9,7 @@ class Angle:
         self.vector1, self.vector2, self.angle = self.compute_angle()
 
     def compute_angle(self):
+
         dim = len(self.center)
         vector1 = []
         vector2 = []
@@ -16,7 +17,10 @@ class Angle:
             vector1.append(self.point1[i] - self.center[i])
             vector2.append(self.point2[i] - self.center[i])
 
-        angle = util.calculate_vector_angle(vector1, vector2)
+        if self.point1 == self.center or self.point2 == self.center:
+            angle = 0
+        else:
+            angle = util.calculate_vector_angle(vector1, vector2)
         return vector1, vector2, angle
 
     def find(self, point_x, point_y):
