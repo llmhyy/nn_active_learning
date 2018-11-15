@@ -10,7 +10,7 @@ from prj_test import formula
 
 
 def generate_partitioned_data(single_formula, category, lower_bound, upper_bound, positive_num, negative_num):
-    test_point_number = 10000
+    test_point_number = 100000
 
     train_positive_list = []
     train_negative_list = []
@@ -42,7 +42,7 @@ def generate_partitioned_data(single_formula, category, lower_bound, upper_bound
                                                                                                      lower_bound,
                                                                                                      upper_bound,
                                                                                                    test_point_number,
-                                                                                                   test_point_number)
+                                                                                                   4*test_point_number)
         # dim = len(single_formula.get_formula()[:-1])
 
     train_set_x = train_positive_list + train_negative_list
