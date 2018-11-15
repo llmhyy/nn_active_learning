@@ -215,7 +215,7 @@ def random_border_points(center, radius, border_point_number):
         value = 0
         for j in range(len(center) - 1):
             x = center[j]
-            y = np.random.uniform(x - radius, x + radius)
+            y = np.random.uniform(x - radius/math.sqrt(len(center)), x + radius/math.sqrt(len(center)))
             border_point.append(y)
 
             value += (x - y) ** 2
