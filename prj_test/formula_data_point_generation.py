@@ -10,24 +10,44 @@ from prj_test import formula
 
 
 def generate_partitioned_data(single_formula, category, lower_bound, upper_bound, positive_num, negative_num):
-    positive_list = []
-    negative_list = []
-    dim = 0
-    if category == formula.POLYHEDRON:
-        positive_list, negative_list = generate_partitioned_random_points_for_sphere(single_formula, lower_bound, upper_bound,
-                                                                                     positive_num,
-                                                                                     negative_num)
-        dim = len(single_formula.get_formula()[0][0])
-    elif category == formula.POLYNOMIAL:
-        positive_list, negative_list = generate_partitioned_random_points_for_polynomial(single_formula, lower_bound,
-                                                                                         upper_bound,
-                                                                                         positive_num,
-                                                                                         negative_num)
-        dim = len(single_formula.get_formula()[:-1])
+    test_point_number = 10000
 
-    train_set_x = positive_list + negative_list
-    train_set_y_1 = np.ones((len(positive_list), 1)).tolist()
-    train_set_y_0 = np.zeros((len(negative_list), 1)).tolist()
+    train_positive_list = []
+    train_negative_list = []
+
+    test_positive_list = []
+    test_negative_list = []
+
+    # dim = 0
+    if category == formula.POLYHEDRON:
+        train_positive_list, train_negative_list = generate_partitioned_random_points_for_sphere(single_formula,
+                                                                                                 lower_bound,
+                                                                                                 upper_bound,
+                                                                                                 positive_num,
+                                                                                                 negative_num)
+        test_positive_list, test_negative_list = generate_partitioned_random_points_for_sphere(single_formula,
+                                                                                               lower_bound,
+                                                                                               upper_bound,
+                                                                                               test_point_number,
+                                                                                               test_point_number)
+
+        # dim = len(single_formula.get_formula()[0][0])
+    elif category == formula.POLYNOMIAL:
+        train_positive_list, train_negative_list = generate_partitioned_random_points_for_polynomial(single_formula,
+                                                                                                     lower_bound,
+                                                                                                     upper_bound,
+                                                                                                     positive_num,
+                                                                                                     negative_num)
+        test_positive_list, test_negative_list = generate_partitioned_random_points_for_polynomial(single_formula,
+                                                                                                     lower_bound,
+                                                                                                     upper_bound,
+                                                                                                   test_point_number,
+                                                                                                   test_point_number)
+        # dim = len(single_formula.get_formula()[:-1])
+
+    train_set_x = train_positive_list + train_negative_list
+    train_set_y_1 = np.ones((len(train_positive_list), 1)).tolist()
+    train_set_y_0 = np.zeros((len(train_negative_list), 1)).tolist()
     train_set_y = train_set_y_1
     for y_0 in train_set_y_0:
         train_set_y.append(y_0)
@@ -38,10 +58,13 @@ def generate_partitioned_data(single_formula, category, lower_bound, upper_bound
     train_set_x = list(train_set_x)
     train_set_y = list(train_set_y)
 
-    total_num = 10000
-    test_set_x, test_set_y = generate_testing_point(single_formula, category, dim, total_num,
-                                                    lower_bound,
-                                                    upper_bound)
+    test_set_x = test_positive_list + test_negative_list
+    test_set_y_1 = np.ones((len(test_positive_list), 1)).tolist()
+    test_set_y_0 = np.zeros((len(test_negative_list), 1)).tolist()
+    test_set_y = test_set_y_1
+    for y_0 in test_set_y_0:
+        test_set_y.append(y_0)
+
     return train_set_x, train_set_y, test_set_x, test_set_y
 
 
@@ -172,11 +195,12 @@ def read_from_file(path):
             train_set_y.append(label)
 
             point = []
-            for i in range(len(row)-1):
-                point.append(float(row[0][i+1]))
+            for i in range(len(row) - 1):
+                point.append(float(row[0][i + 1]))
             train_set_x.append(point)
 
     return train_set_x, train_set_y
+
 
 def write_to_file(positive_list, negative_list, path):
     with open(path, 'w', newline='') as csv_file:
@@ -243,7 +267,7 @@ def generate_partitioned_random_points_for_sphere(single_formula, lower_bound, u
         center = random.choice(formu_list[0])
         index = formu_list[0].index(center)
         radius = formu_list[1][index]
-        move = math.sqrt(radius**2 / dim)
+        move = math.sqrt(radius ** 2 / dim)
 
         r = random.uniform(0, 1)
 
