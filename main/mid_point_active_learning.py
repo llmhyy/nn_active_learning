@@ -111,37 +111,34 @@ class MidPointActiveLearner:
             net = ns.NNStructure(len(self.train_set_x[0]), self.learning_rate)
             sess.run(net.init)
 
-            aggregated_network = None
-            predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
             count = 1
-            while len(self.train_set_x) < self.point_number_limit:
+            while len(self.train_set_x) < self.point_number_limit and count < 10:
                 print("*******", count, "th loop:")
                 label_0, label_1 = util.data_partition(self.train_set_x, self.train_set_y)
                 print("label 0 length", len(label_0), "label 1 length", len(label_1))
 
                 for iteration in range(self.training_epochs):
-                    train_x_ = total_appended_x + self.train_set_x + total_appended_x
-                    train_y_ = total_appended_y + self.train_set_y + total_appended_y
+                    train_x_ = self.train_set_x
+                    train_y_ = self.train_set_y
                     sess.run([net.train_op, net.loss_op],
                              feed_dict={net.X: train_x_, net.Y: train_y_})
 
                 train_y = sess.run(net.probability, feed_dict={net.X: self.train_set_x})
                 train_acc = util.calculate_accuracy(train_y, self.train_set_y, False)
 
-                aggregated_network = net
                 print("train_acc", train_acc)
                 train_acc_list.append(train_acc)
 
                 if self.test_set_x is not None:
-                    test_y = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: self.test_set_x})
+                    test_y = sess.run(net.probability, feed_dict={net.X: self.test_set_x})
                     test_acc = util.calculate_accuracy(test_y, self.test_set_y, False)
                     test_acc_list.append(test_acc)
                     print("test_acc", test_acc)
 
                 data_point_number_list.append(len(self.train_set_x))
 
-                predicted = tf.cast(aggregated_network.probability > 0.5, dtype=tf.float32)
-                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={aggregated_network.X: x}),
+                predicted = tf.cast(net.probability > 0.5, dtype=tf.float32)
+                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
                                             self.train_set_x, self.train_set_y, self.lower_bound, self.upper_bound,
                                             count)
 
@@ -150,7 +147,7 @@ class MidPointActiveLearner:
 
                 std_dev = util.calculate_std_dev(self.train_set_x)
 
-                cluster_number_limit = 3
+                cluster_number_limit = 5
                 border_point_number = (int)(self.generalization_valid_limit / (2 * cluster_number_limit)) + 1
                 centers, centers_label, clusters, border_points_groups = self.cluster_training_data(border_point_number,
                                                                                                     cluster_number_limit)
@@ -161,7 +158,7 @@ class MidPointActiveLearner:
                 total_appended_x.clear()
                 total_appended_y.clear()
 
-                appended_x, appended_y = self.append_generalization_validation_points(sess, aggregated_network,
+                appended_x, appended_y = self.append_generalization_validation_points(sess, net,
                                                                                       std_dev,
                                                                                       centers,
                                                                                       centers_label,
@@ -173,8 +170,13 @@ class MidPointActiveLearner:
                 appending_dict["generalization_validation"] = appended_x
 
                 print("start midpoint selection")
-                pair_list = self.select_point_pair(centers, centers_label, clusters)
-                appended_x, appended_y = self.append_mid_points(sess, aggregated_network, pair_list)
+                diff_label_pair_list = self.select_diff_label_point_pair(centers, centers_label, clusters)
+                appended_x, appended_y = self.append_diff_label_mid_points(sess, net, diff_label_pair_list)
+                total_appended_x += appended_x
+                total_appended_y += appended_y
+
+                same_label_pair_list = self.select_same_label_point_pair(centers, centers_label, clusters)
+                appended_x, appended_y = self.append_same_label_mid_points(same_label_pair_list)
                 total_appended_x += appended_x
                 total_appended_y += appended_y
 
@@ -190,7 +192,16 @@ class MidPointActiveLearner:
         communication.send_training_finish_message()
         return train_acc_list, test_acc_list, data_point_number_list, appended_point_list
 
-    def select_point_pair(self, centers, centers_label, clusters):
+    def construct_pairs(self, positive_cluster, negative_cluster):
+        pairs = []
+        for positive_point in positive_cluster:
+            for negative_point in negative_cluster:
+                pair = data_pair.DataPair(negative_point, positive_point)
+                pairs.append(pair)
+        pairs.sort(key=lambda x: x.distance)
+        return pairs
+
+    def select_diff_label_point_pair(self, centers, centers_label, clusters):
         positive_clusters = []
         negative_clusters = []
         for i in range(len(centers_label)):
@@ -198,34 +209,40 @@ class MidPointActiveLearner:
                 positive_clusters.append(clusters[i])
             else:
                 negative_clusters.append(clusters[i])
-        max_per_pair_num = (int)(self.mid_point_limit / len(positive_clusters))
+        max_per_pair_num = (int)(self.mid_point_limit / (len(positive_clusters) * len(negative_clusters)))
+        if max_per_pair_num == 0:
+            max_per_pair_num = 1
 
         final_pair_list = []
         for positive_cluster in positive_clusters:
-            positive_point = random.choice(positive_cluster)
-
-            pair_list = []
             for negative_cluster in negative_clusters:
-                negative_point = random.choice(negative_cluster)
-                p = data_pair.DataPair(negative_point, positive_point)
-                pair_list.append(p)
+                pair_list = self.construct_pairs(positive_cluster, negative_cluster)
+                if len(pair_list) <= max_per_pair_num:
+                    final_pair_list += pair_list
+                else:
+                    final_pair_list += pair_list[0:max_per_pair_num]
 
-            pair_list.sort(key=lambda x: x.distance)
-            if len(pair_list) <= max_per_pair_num:
-                final_pair_list += pair_list
+        return final_pair_list
+
+    def select_same_label_point_pair(self, centers, centers_label, clusters):
+        positive_centers = []
+        negative_centers = []
+        for i in range(len(centers_label)):
+            if centers_label[i]:
+                positive_centers.append(centers[i])
             else:
-                final_pair_list += pair_list[0:2]
+                negative_centers.append(centers[i])
 
-        # if len(final_pair_list) < mid_point_limit:
-        #     iterations = mid_point_limit - len(final_pair_list)
-        #     for i in range(iterations):
-        #         positive_cluster = random.choice(positive_clusters)
-        #         positive_point = random.choice(positive_cluster)
-        #         negative_cluster = random.choice(negative_clusters)
-        #         negative_point = random.choice(negative_cluster)
-        #
-        #         p = data_pair.DataPair(negative_point, positive_point)
-        #         final_pair_list.append(p)
+        if len(positive_centers) < 2:
+            return []
+
+        final_pair_list = []
+        for i in range(len(positive_centers)-1):
+            pair = data_pair.DataPair(positive_centers[i], positive_centers[i+1])
+            final_pair_list.append(pair)
+
+        if len(positive_centers) > 2:
+            final_pair_list.append(data_pair.DataPair(positive_centers[0], positive_centers[len(positive_centers)-1]))
 
         return final_pair_list
 
@@ -331,7 +348,7 @@ class MidPointActiveLearner:
         # random.shuffle(zip_list)
         # border_points_groups, centers, centers_label, clusters = zip(*zip_list)
 
-        border_point_number_per_center = (int)(self.generalization_valid_limit/len(centers)) + 1
+        border_point_number_per_center = (int)(self.generalization_valid_limit / len(centers)) + 1
 
         appended_x = []
         for i in range(len(centers)):
@@ -354,7 +371,7 @@ class MidPointActiveLearner:
                 best_point = []
                 best_score = -1
                 move_count = 0
-                while move_count < 10:
+                while move_count < 100:
                     gradient_length = util.calculate_vector_size(decided_direction[0])
                     new_point = []
                     for j in range(len(border_point)):
@@ -435,7 +452,7 @@ class MidPointActiveLearner:
                     return False
             return True
 
-        return True
+        return False
 
     def calculate_unconfident_mid_point(self, sess, aggregated_network, pair):
         px = sess.run(aggregated_network.probability, feed_dict={aggregated_network.X: [pair.point_x]})[0]
@@ -458,7 +475,7 @@ class MidPointActiveLearner:
 
         return mid_point
 
-    def append_mid_points(self, sess, aggregated_network, pair_list):
+    def append_diff_label_mid_points(self, sess, aggregated_network, pair_list):
         unconfident_points = []
         for pair in pair_list:
             point = self.calculate_unconfident_mid_point(sess, aggregated_network, pair)
@@ -476,6 +493,27 @@ class MidPointActiveLearner:
             for i in range(len(labels)):
                 result = labels[i]
                 middle_point = unconfident_points[i]
+                if middle_point not in self.train_set_x:
+                    appended_x.append(middle_point)
+                    appended_y.append([result])
+
+        return appended_x, appended_y
+
+    def append_same_label_mid_points(self, pair_list):
+        middle_points = []
+        for pair in pair_list:
+            point = pair.calculate_mid_point()
+            middle_points.append(point)
+
+        appended_x = []
+        appended_y = []
+        if len(middle_points) != 0:
+            middle_points = util.convert_with_data_type_and_mask(middle_points, self.train_set_x_info,
+                                                                 self.label_tester)
+            labels = self.label_tester.test_label(middle_points)
+            for i in range(len(labels)):
+                result = labels[i]
+                middle_point = middle_points[i]
                 if middle_point not in self.train_set_x:
                     appended_x.append(middle_point)
                     appended_y.append([result])
