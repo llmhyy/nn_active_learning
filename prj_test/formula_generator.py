@@ -34,24 +34,20 @@ def generate_polynomial(category, dimension):
     return form
 
 
-def generate_polyhedron(category, dimension):
-    # TODO variable number is up to 10
+def generate_polyhedron(category, num_of_dimension):
     # generate center point and radius and number of circles
-    num_of_center = random.randint(2, 5)
-    num_of_dimension = random.randint(3, 5)
-    num_of_center = 2
-    num_of_dimension = dimension
+    num_of_center = random.randint(1, 5)
     centers = []
-    radiuses = []
+    radius_list = []
     for i in range(num_of_center):
         center = []
         for j in range(num_of_dimension):
             center_coordinate = random.randint(-1000, 1000)
             center.append(center_coordinate)
-        radius = random.randint(400, 500)
+        radius = random.randint(100, 500)
         centers.append(center)
-        radiuses.append(radius)
-    formula_ = [centers, radiuses]
+        radius_list.append(radius)
+    formula_ = [centers, radius_list]
 
     form = formula.Formula(formula_, category)
     return form
