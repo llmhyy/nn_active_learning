@@ -2,7 +2,7 @@ import tensorflow as tf
 import math
 
 
-class NNStructure():
+class NNStructure:
 
     # def decide_neuron_number(self, input_dimension):
     #     if(input_dimension<=10):
@@ -29,29 +29,47 @@ class NNStructure():
 
         # Store layers weight & bias
         # with tf.variable_scope("foo", reuse=tf.AUTO_REUSE):
-        self.weights = {
-            'h1': tf.get_variable(name="h1", shape=[n_input, n_hidden_1], initializer=self.w_init),
-            'h2': tf.get_variable(name="h2", shape=[n_hidden_1, n_hidden_2], initializer=self.w_init),
-            'hout': tf.get_variable(name="hout", shape=[n_hidden_2, n_classes], initializer=self.w_init)
-        }
+        # self.weights = {
+        #     'h1': tf.get_variable(name="h1", shape=[n_input, n_hidden_1], initializer=self.w_init),
+        #     'h2': tf.get_variable(name="h2", shape=[n_hidden_1, n_hidden_2], initializer=self.w_init),
+        #     'hout': tf.get_variable(name="hout", shape=[n_hidden_2, n_classes], initializer=self.w_init)
+        # }
+        # self.biases = {
+        #     'b1': tf.get_variable(name="b1", shape=[n_hidden_1], initializer=self.w_init),
+        #     'b2': tf.get_variable(name="b2", shape=[n_hidden_2], initializer=self.w_init),
+        #     'bout': tf.get_variable(name="bout", shape=[n_classes], initializer=self.w_init)
+        #     # 'b1': tf.Variable(tf.random_normal([n_hidden_1]), name="b1"),
+        #     # 'b2': tf.Variable(tf.random_normal([n_hidden_2]), name="b2"),
+        #     # 'bout': tf.Variable(tf.random_normal([n_classes]), name="bout")
+        # }
 
-        self.biases = {
-            'b1': tf.get_variable(name="b1", shape=[n_hidden_1], initializer=self.w_init),
-            'b2': tf.get_variable(name="b2", shape=[n_hidden_2], initializer=self.w_init),
-            'bout': tf.get_variable(name="bout", shape=[n_classes], initializer=self.w_init)
-            # 'b1': tf.Variable(tf.random_normal([n_hidden_1]), name="b1"),
-            # 'b2': tf.Variable(tf.random_normal([n_hidden_2]), name="b2"),
-            # 'bout': tf.Variable(tf.random_normal([n_classes]), name="bout")
-        }
+        self.weights = [
+            tf.get_variable(name="h1", shape=[2, 4], initializer=self.w_init),
+            tf.get_variable(name="h2", shape=[4, 8], initializer=self.w_init),
+            tf.get_variable(name="h3", shape=[8, 32], initializer=self.w_init),
+            # tf.get_variable(name="h4", shape=[16, 32], initializer=self.w_init),
+            # tf.get_variable(name="h5", shape=[32, 128], initializer=self.w_init),
+            tf.get_variable(name="hout", shape=[32, 1], initializer=self.w_init)
+        ]
+        self.biases = [
+            tf.get_variable(name="b1", shape=[4], initializer=self.w_init),
+            tf.get_variable(name="b2", shape=[8], initializer=self.w_init),
+            tf.get_variable(name="b3", shape=[32], initializer=self.w_init),
+            # tf.get_variable(name="b4", shape=[32], initializer=self.w_init),
+            # tf.get_variable(name="b5", shape=[128], initializer=self.w_init),
+            tf.get_variable(name="bout", shape=[1], initializer=self.w_init)
+        ]
 
         self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
         self.probability = tf.nn.sigmoid(self.logits)
-        self.cross_entrpy_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y)
+        # self.cross_entrpy_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y)
+        self.cross_entrpy_loss = tf.compat.v1.losses.mean_squared_error(predictions=self.probability, labels=self.Y)
         # self.regularizer = tf.nn.l2_loss(self.weights['h1']) + tf.nn.l2_loss(self.weights['h2']) + tf.nn.l2_loss(
         #     self.weights['hout'])
         # self.loss_op = tf.reduce_mean(self.cross_entrpy_loss + self.regularizer * 0.01)
         self.loss_op = tf.reduce_mean(self.cross_entrpy_loss)
         self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
+
         self.train_op = self.optimizer.minimize(self.loss_op)
 
         self.init = tf.global_variables_initializer()
@@ -94,24 +112,31 @@ class NNStructure():
 
     # Create model
     def multilayer_perceptron(self, x, weights, biases):
-        # Hidden fully connected layer with 256 neurons
-        # x0 = tf.nn.batch_normalization(x, mean=0.01, variance=1, offset=0, scale=1, variance_epsilon=0.001)
-        x0 = x
-        self.layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
+        layer = x
+        for i in range(len(weights) - 1):
+            layer = tf.nn.relu(tf.add(tf.matmul(layer, weights[i]), biases[i]))
+            # layer = tf.nn.batch_normalization(layer, mean=0.01, variance=1, offset=0, scale=1,
+            #                                      variance_epsilon=0.001)
 
-        self.layer_1 = tf.nn.batch_normalization(self.layer_1, mean=0.01, variance=1, offset=0, scale=1,
-                                                 variance_epsilon=0.001)
-        # layer1_out = tf.sigmoid(layer_1)
+        last_index = len(weights) - 1
+        out_layer = tf.matmul(layer, weights[last_index]) + biases[last_index]
 
-        # Hidden fully connected layer with 256 neurons
-        self.layer_2 = tf.nn.relu(tf.add(tf.matmul(self.layer_1, weights['h2']), biases['b2']))
-
-        self.layer_2 = tf.nn.batch_normalization(self.layer_2, mean=0.01, variance=1, offset=0, scale=1,
-                                                 variance_epsilon=0.001)
-        # layer2_out = tf.sigmoid(layer_2)
-
-        # Output fully connected layer with a neuron for each class
-        out_layer = tf.matmul(self.layer_2, weights['hout']) + biases['bout']
+        # x0 = x
+        # self.layer_1 = tf.nn.relu(tf.add(tf.matmul(x0, weights['h1']), biases['b1']))
+        #
+        # self.layer_1 = tf.nn.batch_normalization(self.layer_1, mean=0.01, variance=1, offset=0, scale=1,
+        #                                          variance_epsilon=0.001)
+        # # layer1_out = tf.sigmoid(layer_1)
+        #
+        # # Hidden fully connected layer with 256 neurons
+        # self.layer_2 = tf.nn.relu(tf.add(tf.matmul(self.layer_1, weights['h2']), biases['b2']))
+        #
+        # self.layer_2 = tf.nn.batch_normalization(self.layer_2, mean=0.01, variance=1, offset=0, scale=1,
+        #                                          variance_epsilon=0.001)
+        # # layer2_out = tf.sigmoid(layer_2)
+        #
+        # # Output fully connected layer with a neuron for each class
+        # out_layer = tf.matmul(self.layer_2, weights['hout']) + biases['bout']
         return out_layer
 
 
