@@ -48,22 +48,22 @@ class NNStructure:
             tf.get_variable(name="h2", shape=[4, 8], initializer=self.w_init),
             tf.get_variable(name="h3", shape=[8, 32], initializer=self.w_init),
             # tf.get_variable(name="h4", shape=[16, 32], initializer=self.w_init),
-            # tf.get_variable(name="h5", shape=[32, 128], initializer=self.w_init),
-            tf.get_variable(name="hout", shape=[32, 1], initializer=self.w_init)
+            tf.get_variable(name="h5", shape=[32, 128], initializer=self.w_init),
+            tf.get_variable(name="hout", shape=[128, 1], initializer=self.w_init)
         ]
         self.biases = [
             tf.get_variable(name="b1", shape=[4], initializer=self.w_init),
             tf.get_variable(name="b2", shape=[8], initializer=self.w_init),
             tf.get_variable(name="b3", shape=[32], initializer=self.w_init),
             # tf.get_variable(name="b4", shape=[32], initializer=self.w_init),
-            # tf.get_variable(name="b5", shape=[128], initializer=self.w_init),
+            tf.get_variable(name="b5", shape=[128], initializer=self.w_init),
             tf.get_variable(name="bout", shape=[1], initializer=self.w_init)
         ]
 
         self.logits = self.multilayer_perceptron(self.X, self.weights, self.biases)
         self.probability = tf.nn.sigmoid(self.logits)
-        # self.cross_entrpy_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y)
-        self.cross_entrpy_loss = tf.compat.v1.losses.mean_squared_error(predictions=self.probability, labels=self.Y)
+        self.cross_entrpy_loss = tf.nn.sigmoid_cross_entropy_with_logits(logits=self.logits, labels=self.Y)
+        # self.cross_entrpy_loss = tf.compat.v1.losses.mean_squared_error(predictions=self.probability, labels=self.Y)
         # self.regularizer = tf.nn.l2_loss(self.weights['h1']) + tf.nn.l2_loss(self.weights['h2']) + tf.nn.l2_loss(
         #     self.weights['hout'])
         # self.loss_op = tf.reduce_mean(self.cross_entrpy_loss + self.regularizer * 0.01)

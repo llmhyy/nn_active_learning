@@ -31,14 +31,16 @@ def generate_accuracy(train_set_x, train_set_y, test_set_x, test_set_y, learning
                 [net.train_op, net.loss_op, write_op],
                 feed_dict={net.X: train_set_x[:data_size],
                            net.Y: train_set_y[:data_size]})
-            summary_writer.add_summary(summary, epoch)
+            # summary_writer.add_summary(summary, epoch)
 
-            if epoch % 200 == 0:
-                util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
-                                            train_set_x[:data_size], train_set_y[:data_size],
-                                            lower_bound, upper_bound, epoch)
+            # if epoch % 200 == 0:
+            #     util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
+            #                                 train_set_x[:data_size], train_set_y[:data_size],
+            #                                 lower_bound, upper_bound, epoch)
 
-
+        util.plot_decision_boundary(lambda x: sess.run(predicted, feed_dict={net.X: x}),
+                                    train_set_x[:data_size], train_set_y[:data_size],
+                                    lower_bound, upper_bound, 0)
         util.save_model(sess, model_folder, model_file)
         # for op in tf.get_default_graph().get_operations():
         #     print(str(op.name))
